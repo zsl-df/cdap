@@ -1025,6 +1025,10 @@ cdap_sdk_start() {
     CDAP_SDK_OPTS+=" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${LOG_DIR}"
   fi
 
+  if [[ ${KILL_ON_OOM} == true ]]; then
+    CDAP_SDK_OPTS+=' "-XX:OnOutOfMemoryError=\"kill -9 %p\""'
+  fi
+
   eval split_jvm_opts ${CDAP_SDK_DEFAULT_JVM_OPTS} ${CDAP_SDK_OPTS} ${SDK_GC_OPTS} ${JAVA_OPTS}
 
   cdap_sdk_check_before_start || return 1
@@ -1474,3 +1478,5 @@ CDAP_SDK_OPTS="${OPTS} -Djava.security.krb5.realm= -Djava.security.krb5.kdc= -Dj
 export HEAPDUMP_ON_OOM=${HEAPDUMP_ON_OOM:-true}
 
 export NICENESS=${NICENESS:-0}
+
+export KILL_ON_OOM=${KILL_ON_OOM:-true}
