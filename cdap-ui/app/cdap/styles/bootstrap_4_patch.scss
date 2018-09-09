@@ -17,10 +17,7 @@
 @import "~bootstrap/scss/mixins";
 @import "./variables.scss";
 
-// This is here just for specificity. We add bootstrap patch styles before bootstrap styles
-// Hence this specificity is needed when we want to deliberately override bootstrap
-// styles (say .input-group).
-.cdap-body-container {
+@mixin bootstrap_patch() {
   .dropdown-menu {
     &[aria-hidden="false"] {
       display: block;
@@ -188,4 +185,11 @@
     max-width: 100%;
     height: auto;
   }
+}
+
+// This is here just for specificity. We add bootstrap patch styles before bootstrap styles
+// Hence this specificity is needed when we want to deliberately override bootstrap
+// styles (say .input-group).
+.cdap-body-container {
+  @include bootstrap_patch();
 }
