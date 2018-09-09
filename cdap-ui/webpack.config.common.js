@@ -154,13 +154,6 @@ if (mode === 'production') {
 var webpackConfig = {
   mode,
   context: __dirname + '/app/common',
-  optimization: {
-    splitChunks: {
-      name: COMMON_LIB_NAME,
-      fileName: COMMON_LIB_NAME + '.js',
-      minChunks: Infinity
-    }
-  },
   entry: {
     'common-new': ['./cask-shared-components.js'],
     [COMMON_LIB_NAME]: [

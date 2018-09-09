@@ -64,7 +64,6 @@ var plugins = [
     collections: true,
     caching: true
   }),
-  new CleanWebpackPlugin(pathsToClean, cleanOptions),
   new CaseSensitivePathsPlugin(),
   ...getWebpackDllPlugins(mode),
   new CopyWebpackPlugin([
