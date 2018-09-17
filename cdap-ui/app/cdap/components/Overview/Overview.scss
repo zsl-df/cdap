@@ -51,6 +51,9 @@
       > div {
         height: 100%;
         width: 100%;
+        display: grid;
+        // Top panel, metadata section and tab content
+        grid-template-rows: auto auto 1fr;
       }
 
       > div.overview-error-container {
