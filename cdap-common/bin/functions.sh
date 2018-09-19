@@ -1474,4 +1474,6 @@ export HEAPDUMP_ON_OOM=${HEAPDUMP_ON_OOM:-true}
 
 export NICENESS=${NICENESS:-0}
 
+# Default jvm option for the kill command, it cannot be combined with the SDK options because split_jvm_opts() method will
+# always split the "kill -9 %p" into three different commands 
 export KILL_ON_OOM_OPTS=${KILL_ON_OOM_OPTS:--XX:OnOutOfMemoryError="kill -9 %p"}
