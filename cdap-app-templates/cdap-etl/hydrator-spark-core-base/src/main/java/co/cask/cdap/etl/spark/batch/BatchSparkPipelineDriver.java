@@ -25,6 +25,8 @@ import co.cask.cdap.api.data.schema.Schema;
 import co.cask.cdap.api.spark.JavaSparkExecutionContext;
 import co.cask.cdap.api.spark.JavaSparkMain;
 import co.cask.cdap.api.workflow.WorkflowToken;
+import co.cask.cdap.app.runtime.spark.SparkClassLoader;
+import co.cask.cdap.app.runtime.spark.etl.pyspark.PySparkComputeInterface;
 import co.cask.cdap.etl.api.JoinElement;
 import co.cask.cdap.etl.api.batch.BatchSource;
 import co.cask.cdap.etl.batch.BatchPhaseSpec;
@@ -46,12 +48,23 @@ import co.cask.cdap.etl.spark.function.JoinOnFunction;
 import co.cask.cdap.etl.spark.function.PluginFunctionContext;
 import co.cask.cdap.etl.spec.StageSpec;
 import co.cask.cdap.internal.io.SchemaTypeAdapter;
+
 import com.google.common.collect.SetMultimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import org.apache.commons.lang3.SerializationUtils;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -80,6 +93,17 @@ public class BatchSparkPipelineDriver extends SparkPipelineRunner implements Jav
   private transient Map<String, Integer> stagePartitions;
   private transient int numOfRecordsPreview;
 
+//  private SparkClassLoader sparkClassLoader;
+  private static final Logger LOG = LoggerFactory.getLogger(BatchSparkPipelineDriver.class);
+
+  public void setPySparkCompute(String stageName, Object pySparkComputeInstance) {
+    LOG.info("StageName:" + stageName);
+    LOG.info("CL--------->>" + stageName.getClass().getClassLoader());
+//    LOG.info("pySparkComputeInstance:" + pySparkComputeInstance.toString());
+//    LOG.info("CL--------->>" + pySparkComputeInstance.getClass().getClassLoader());
+    stageToPySparkComputeMap.put(stageName, pySparkComputeInstance);
+  }
+
   @Override
   protected SparkCollection<RecordInfo<Object>> getSource(StageSpec stageSpec, StageStatisticsCollector collector) {
     PluginFunctionContext pluginFunctionContext = new PluginFunctionContext(stageSpec, sec, collector);
@@ -106,10 +130,32 @@ public class BatchSparkPipelineDriver extends SparkPipelineRunner implements Jav
     PluginFunctionContext pluginFunctionContext = new PluginFunctionContext(stageSpec, sec, collector);
     return joinedInputs.flatMap(Compat.convert(new JoinMergeFunction<>(pluginFunctionContext)));
   }
+  
+  public void runPyProxy(Object sec) throws Exception {
+    byte[] data = convertToBytes(sec);
+    JavaSparkExecutionContext jsec = (JavaSparkExecutionContext) convertFromBytes(data);
+    System.out.println("jsec==>>" + jsec.getClass().getClassLoader());
+    run(jsec);
+  }
+  
+  private byte[] convertToBytes(Object object) throws IOException {
+    try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      ObjectOutputStream out = new ObjectOutputStream(bos)) {
+      out.writeObject(object);
+      return bos.toByteArray();
+    } 
+  }
+  
+  private Object convertFromBytes(byte[] bytes) throws IOException, ClassNotFoundException {
+    try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+      ObjectInputStream in = new ObjectInputStream(bis)) {
+      return in.readObject();
+    } 
+  }
 
   @Override
   public void run(JavaSparkExecutionContext sec) throws Exception {
-    this.jsc = new JavaSparkContext();
+    this.jsc = new JavaSparkContext(SparkContext.getOrCreate());
     this.sec = sec;
 
     // Execution the whole pipeline in one long transaction. This is because the Spark execution

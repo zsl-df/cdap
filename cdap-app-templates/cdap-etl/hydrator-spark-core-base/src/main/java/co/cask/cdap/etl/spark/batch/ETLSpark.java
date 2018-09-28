@@ -105,10 +105,6 @@ public class ETLSpark extends AbstractSpark {
     setName(phaseSpec.getPhaseName());
     setDescription(phaseSpec.getDescription());
 
-    // register the plugins at program level so that the program can be failed by the platform early in case of
-    // plugin requirements not being meet
-    phaseSpec.getPhase().registerPlugins(getConfigurer());
-
     setMainClass(BatchSparkPipelineDriver.class);
 
     setExecutorResources(phaseSpec.getResources());
@@ -124,6 +120,7 @@ public class ETLSpark extends AbstractSpark {
   @Override
   @TransactionPolicy(TransactionControl.EXPLICIT)
   public void initialize() throws Exception {
+    getContext().setPySparkScript(getClass().getClassLoader().getResource("testPySpark.py").toURI());
     final SparkClientContext context = getContext();
     cleanupFiles = new ArrayList<>();
     List<Finisher> finishers = new ArrayList<>();
@@ -298,4 +295,5 @@ public class ETLSpark extends AbstractSpark {
       }
     }
   }
+
 }

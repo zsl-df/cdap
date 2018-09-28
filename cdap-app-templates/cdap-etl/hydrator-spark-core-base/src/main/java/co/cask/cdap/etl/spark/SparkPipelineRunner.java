@@ -18,7 +18,10 @@ package co.cask.cdap.etl.spark;
 
 import co.cask.cdap.api.macro.MacroEvaluator;
 import co.cask.cdap.api.plugin.PluginContext;
+import co.cask.cdap.api.spark.AbstractSpark;
 import co.cask.cdap.api.spark.JavaSparkExecutionContext;
+import co.cask.cdap.app.runtime.spark.etl.pyspark.PySparkComputeAdapter;
+import co.cask.cdap.app.runtime.spark.etl.pyspark.PySparkComputeInterface;
 import co.cask.cdap.etl.api.Alert;
 import co.cask.cdap.etl.api.AlertPublisher;
 import co.cask.cdap.etl.api.ErrorRecord;
@@ -62,7 +65,9 @@ import java.util.Set;
 /**
  * Base Spark program to run a Hydrator pipeline.
  */
-public abstract class SparkPipelineRunner {
+public abstract class SparkPipelineRunner extends AbstractSpark {
+
+  protected transient Map<String, Object> stageToPySparkComputeMap = new HashMap<>();
 
   protected abstract SparkCollection<RecordInfo<Object>> getSource(StageSpec stageSpec,
                                                                    StageStatisticsCollector collector) throws Exception;
@@ -216,9 +221,14 @@ public abstract class SparkPipelineRunner {
         }
 
       } else if (SparkCompute.PLUGIN_TYPE.equals(pluginType)) {
-
+        PySparkComputeInterface pysCompute = (PySparkComputeInterface) stageToPySparkComputeMap.get("test");
         SparkCompute<Object, Object> sparkCompute = pluginContext.newPluginInstance(stageName, macroEvaluator);
-        emittedBuilder = emittedBuilder.setOutput(stageData.compute(stageSpec, sparkCompute));
+        
+        System.out.println("pys==>" + pysCompute.getClass().getClassLoader());
+        System.out.println("sc==>" + sparkCompute.getClass().getClassLoader());
+        PySparkComputeAdapter<Object, Object> pySparkAdapter = new PySparkComputeAdapter<>(sparkCompute, pysCompute);
+//        emittedBuilder = emittedBuilder.setOutput(stageData.compute(stageSpec, sparkCompute));
+        emittedBuilder = emittedBuilder.setOutput(stageData.compute(stageSpec, pySparkAdapter));
 
       } else if (SparkSink.PLUGIN_TYPE.equals(pluginType)) {
 
