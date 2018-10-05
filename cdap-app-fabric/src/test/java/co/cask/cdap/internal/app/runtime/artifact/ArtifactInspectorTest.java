@@ -110,6 +110,7 @@ public class ArtifactInspectorTest {
       // check plugin classes
       PluginClass expectedPlugin = new PluginClass(
         InspectionApp.PLUGIN_TYPE, InspectionApp.PLUGIN_NAME, InspectionApp.PLUGIN_DESCRIPTION,
+        InspectionApp.PLUGIN_INPUT, InspectionApp.PLUGIN_OUTPUT, InspectionApp.PLUGIN_FUNCTION,
         InspectionApp.AppPlugin.class.getName(), "pluginConf",
         ImmutableMap.of(
           "y", new PluginPropertyField("y", "", "double", true, true),

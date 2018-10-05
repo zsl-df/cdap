@@ -33,12 +33,16 @@ public class PluginClass {
   private final String type;
   private final String name;
   private final String description;
+  private final String[] pluginInput;
+  private final String[] pluginOutput;
+  private final String[] pluginFunction;
   private final String className;
   private final String configFieldName;
   private final Map<String, PluginPropertyField> properties;
   private final Set<String> endpoints;
 
-  public PluginClass(String type, String name, String description, String className,
+  public PluginClass(String type, String name, String description, String[] pluginInput, 
+		  			 String[] pluginOutput, String[] pluginFunction,String className,
                      @Nullable String configfieldName, Map<String, PluginPropertyField> properties,
                      Set<String> endpoints) {
     if (type == null) {
@@ -64,13 +68,22 @@ public class PluginClass {
     this.configFieldName = configfieldName;
     this.properties = properties;
     this.endpoints = endpoints;
+    this.pluginInput = pluginInput;
+    this.pluginOutput = pluginOutput;
+    this.pluginFunction = pluginFunction;
+  }
+
+  public PluginClass(String type, String name, String description, String[] pluginInput, 
+		  			 String[] pluginOutput,String[] pluginFunction, String className,
+                     @Nullable String configfieldName, Map<String, PluginPropertyField> properties) {
+    this(type, name, description, pluginInput, pluginOutput, pluginFunction, className, configfieldName, properties, new HashSet<>());
   }
 
   public PluginClass(String type, String name, String description, String className,
-                     @Nullable String configfieldName, Map<String, PluginPropertyField> properties) {
-    this(type, name, description, className, configfieldName, properties, new HashSet<>());
+          @Nullable String configfieldName, Map<String, PluginPropertyField> properties) {
+   this(type, name, description, null, null, null, className, configfieldName, properties, new HashSet<>());
   }
-
+  
   /**
    * Returns the type name of the plugin.
    */
@@ -92,6 +105,48 @@ public class PluginClass {
     return description;
   }
 
+  public String[] getPluginInput() {
+	return pluginInput;
+  }
+	           
+  public String[] getPluginOutput() {
+	return pluginOutput;
+  }
+	    
+  public String[] getPluginFunction() {
+	return pluginFunction;
+  }
+
+  public String getPluginInputToString() {
+	if(pluginInput == null) return "";
+    StringBuilder sb = new StringBuilder();
+    for(String info : pluginInput) {
+      sb.append(info);
+      sb.append(",");
+    }
+    return sb.toString();
+  }
+        
+  public String getPluginOutputToString() {
+	if(pluginOutput == null) return "";
+    StringBuilder sb = new StringBuilder();
+    for(String info : pluginOutput) {
+      sb.append(info);
+      sb.append(",");
+    }
+    return sb.toString();
+  }
+         
+  public String getPluginFunctionToString() {
+	if(pluginFunction == null) return "";
+	StringBuilder sb = new StringBuilder();
+    for(String info : pluginFunction) {
+      sb.append(info);
+      sb.append(",");
+    }
+    return sb.toString();
+  }
+  
   /**
    * Returns the fully qualified class name of the plugin.
    */
@@ -137,6 +192,9 @@ public class PluginClass {
     return Objects.equals(type, that.type)
       && Objects.equals(name, that.name)
       && Objects.equals(description, that.description)
+      && Objects.equals(pluginInput == null ? "" : pluginInput, that.pluginInput == null ? "" : that.pluginInput) 
+      && Objects.equals(pluginOutput == null ? "" : pluginOutput, that.pluginOutput == null ? "" : that.pluginOutput)
+      && Objects.equals(pluginFunction == null ? "" : pluginFunction, that.pluginFunction == null ? "" : that.pluginFunction)
       && Objects.equals(className, that.className)
       && Objects.equals(configFieldName, that.configFieldName)
       && Objects.equals(properties, that.properties)
@@ -148,6 +206,9 @@ public class PluginClass {
     int result = type.hashCode();
     result = 31 * result + name.hashCode();
     result = 31 * result + description.hashCode();
+    result = 31 * result + ((pluginInput == null) ? 1 : pluginInput.hashCode());
+    result = 31 * result + ((pluginOutput == null) ? 1 : pluginOutput.hashCode());
+    result = 31 * result + ((pluginFunction == null) ? 1 : pluginFunction.hashCode());
     result = 31 * result + className.hashCode();
     result = 31 * result + (configFieldName != null ? configFieldName.hashCode() : 0);
     result = 31 * result + properties.hashCode();
@@ -162,6 +223,9 @@ public class PluginClass {
       ", type='" + type + '\'' +
       ", name='" + name + '\'' +
       ", description='" + description + '\'' +
+      ", pluginFunction='" + getPluginFunctionToString() + '\'' +
+      ", pluginInput='" + getPluginInputToString() + '\'' +
+      ", pluginOutput='" + getPluginOutputToString() + '\'' +
       ", configFieldName='" + configFieldName + '\'' +
       ", properties=" + properties + '\'' +
       ", endpoints='" + endpoints +

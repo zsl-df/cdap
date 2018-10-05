@@ -66,12 +66,14 @@ public class DescribeArtifactPluginCommand extends AbstractAuthCommand {
         ArtifactScope.valueOf(scopeStr.toUpperCase()));
     }
     Table table = Table.builder()
-      .setHeader("type", "name", "classname", "description", "properties", "artifact")
+      .setHeader("type", "name", "classname", "description", "pluginInputTypes","pluginOutputTypes", 
+      "pluginFunctions", "properties", "artifact")
       .setRows(pluginInfos, new RowMaker<PluginInfo>() {
         @Override
         public List<?> makeRow(PluginInfo object) {
           return Lists.newArrayList(
             object.getType(), object.getName(), object.getClassName(), object.getDescription(),
+            object.getPluginInputToString(), object.getPluginOutputToString(), object.getPluginFunctionToString(),
             GSON.toJson(object.getProperties()), object.getArtifact().toString());
         }
       }).build();

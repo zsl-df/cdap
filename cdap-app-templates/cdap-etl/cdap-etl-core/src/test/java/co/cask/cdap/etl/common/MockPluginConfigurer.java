@@ -52,7 +52,7 @@ public class MockPluginConfigurer implements PluginConfigurer, DatasetConfigurer
       this.plugin = plugin;
       this.artifacts = new TreeMap<>();
       for (ArtifactId artifactId : artifacts) {
-        this.artifacts.put(artifactId, new PluginClass("type", "name", "desc", "clsname", "cfgfield",
+        this.artifacts.put(artifactId, new PluginClass("type", "name", "desc",null, null, null, "clsname", "cfgfield",
                                                        ImmutableMap.<String, PluginPropertyField>of()));
       }
     }
