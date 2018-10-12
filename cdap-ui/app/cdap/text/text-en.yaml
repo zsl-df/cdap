@@ -1001,6 +1001,7 @@ features:
         modalHeader: Upgrade Data Preparation
       upload: Local File Upload
       viewSchemaBtnLabel: View Schema
+      persistViewSchemaBtnLabel: Persist Data Schema
     Upgrade:
       errorCommunicating: Error while communicating with Data Preparation service
       errorTitle: Enabling Data Preparation failed
