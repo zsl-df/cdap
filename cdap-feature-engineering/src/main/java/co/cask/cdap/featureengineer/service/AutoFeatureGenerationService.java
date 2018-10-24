@@ -17,26 +17,26 @@ package co.cask.cdap.featureengineer.service;
 
 import co.cask.cdap.api.service.AbstractService;
 import co.cask.cdap.featureengineer.FeatureEngineeringApp;
-import co.cask.cdap.featureengineer.service.handler.DataPrepSchemaServiceHandler;
+import co.cask.cdap.featureengineer.service.handler.AutoFeatureGenerationServiceHandler;
 
 /**
  * @author bhupesh.goel
  *
  */
-public class DataPrepSchemaService extends AbstractService {
+public class AutoFeatureGenerationService extends AbstractService {
 
-	public static final String SERVICE_NAME = "DataPrepSchemaService";
+	public static final String SERVICE_NAME = "AutoFeatureGenerationService";
 	private final FeatureEngineeringApp.FeatureEngineeringConfig config;
 
-	public DataPrepSchemaService(FeatureEngineeringApp.FeatureEngineeringConfig config) {
+	public AutoFeatureGenerationService(FeatureEngineeringApp.FeatureEngineeringConfig config) {
 		this.config = config;
 	}
 
 	@Override
 	protected void configure() {
 		setName(SERVICE_NAME);
-		setDescription("A service to retrieve statistics, word counts, and associations.");
-		addHandler(new DataPrepSchemaServiceHandler(config));
+		setDescription("A service to trigger generation of features automatically.");
+		addHandler(new AutoFeatureGenerationServiceHandler(config));
 	}
 
 }

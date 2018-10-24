@@ -20,6 +20,7 @@ import co.cask.cdap.api.Config;
 import co.cask.cdap.api.app.AbstractApplication;
 import co.cask.cdap.api.dataset.DatasetProperties;
 import co.cask.cdap.api.dataset.lib.KeyValueTable;
+import co.cask.cdap.featureengineer.service.AutoFeatureGenerationService;
 import co.cask.cdap.featureengineer.service.DataPrepSchemaService;
 
 /**
@@ -31,8 +32,12 @@ public class FeatureEngineeringApp extends AbstractApplication<FeatureEngineerin
 	public static class FeatureEngineeringConfig extends Config {
 
 		private String dataSchemaTable;
-		
+
 		private String pluginConfigTable;
+
+		private String featureDAGTable;
+
+		private String featureEngineeringConfigTable;
 
 		/**
 		 * Set default values for the configuration variables.
@@ -40,22 +45,41 @@ public class FeatureEngineeringApp extends AbstractApplication<FeatureEngineerin
 		public FeatureEngineeringConfig() {
 			this.dataSchemaTable = "schemaDataSet";
 			this.pluginConfigTable = "pluginConfigDataSet";
+			this.featureDAGTable = "featureDAGDataSet";
+			this.featureEngineeringConfigTable = "featureEngineeringDataSet";
 		}
 
 		/**
 		 * Used only for unit testing.
 		 */
-		public FeatureEngineeringConfig(String dataSchemaTable, String pluginConfigTable) {
+		public FeatureEngineeringConfig(final String dataSchemaTable, final String pluginConfigTable,
+				final String featureDAGTable, final String featureEngineeringConfigTable) {
 			this.dataSchemaTable = dataSchemaTable;
 			this.pluginConfigTable = pluginConfigTable;
+			this.featureDAGTable = featureDAGTable;
+			this.featureEngineeringConfigTable = featureEngineeringConfigTable;
 		}
 
 		public String getDataSchemaTable() {
 			return dataSchemaTable;
 		}
-		
+
 		public String getPluginConfigTable() {
 			return pluginConfigTable;
+		}
+
+		/**
+		 * @return the featureDAGTable
+		 */
+		public String getFeatureDAGTable() {
+			return featureDAGTable;
+		}
+
+		/**
+		 * @return the featureEngineeringConfigTable
+		 */
+		public String getFeatureEngineeringConfigTable() {
+			return featureEngineeringConfigTable;
 		}
 
 	}
@@ -65,10 +89,15 @@ public class FeatureEngineeringApp extends AbstractApplication<FeatureEngineerin
 		FeatureEngineeringConfig config = getConfig();
 		setName("FeatureEngineeringApp");
 		setDescription("Application for Feature Engineering");
-		createDataset(config.getDataSchemaTable(), KeyValueTable.class, DatasetProperties.builder()
-				.setDescription("Table to persist prepared data schema").build());
-		createDataset(config.getPluginConfigTable(), KeyValueTable.class, DatasetProperties.builder()
-				.setDescription("Table to persist prepared wrangler plugin").build());
+		createDataset(config.getDataSchemaTable(), KeyValueTable.class,
+				DatasetProperties.builder().setDescription("Table to persist prepared data schema").build());
+		createDataset(config.getPluginConfigTable(), KeyValueTable.class,
+				DatasetProperties.builder().setDescription("Table to persist prepared wrangler plugin").build());
+		createDataset(config.getFeatureDAGTable(), KeyValueTable.class,
+				DatasetProperties.builder().setDescription("Table to persist Feature DAG").build());
+		createDataset(config.getFeatureEngineeringConfigTable(), KeyValueTable.class,
+				DatasetProperties.builder().setDescription("Table to persist feature engineering config").build());
 		addService(new DataPrepSchemaService(config));
+		addService(new AutoFeatureGenerationService(config));
 	}
 }

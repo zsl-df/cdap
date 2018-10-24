@@ -77,26 +77,22 @@ export default class PersistViewSchemaModel extends Component {
     }
     let workspaceId = DataPrepStore.getState().dataprep.workspaceId;
     let namespace = NamespaceStore.getState().selectedNamespace;
-    alert("NameSpace = " + namespace+" workspaceId="+workspaceId+" configType="+configType);
     let requestObj = {
         namespace: namespace,
         workspaceId: workspaceId,
         configType: configType
       };
      let requestBody = viewSchemaPersistRequestBodyCreator(JSON.stringify([getSchemaObjFromFieldsArray(this.state.schema)], null, 4),JSON.stringify(config));
-     alert("after viewSchemaPersistRequestBodyCreator schema =\n"+JSON.stringify(this.state.schema)+"\n pluginConfig="+JSON.stringify(config));
       MyFeatureEngineeringApi
         .persistWranglerPluginConfig(requestObj, requestBody)
         .subscribe(
           (res) => {
-            alert("Entered success method of MyFeatureEngineeringApi");
             this.setState({
               loading: false,
               response: objectQuery(res, 'response', 'message') || JSON.stringify(res)
             });
           },
           (err) => {
-            alert("Entered error method of MyFeatureEngineeringApi");
             this.setState({
               loading: false,
               error: objectQuery(err, 'response', 'message') || JSON.stringify(err)
@@ -104,7 +100,6 @@ export default class PersistViewSchemaModel extends Component {
             console.log('Error', err);
           }
         );
-        alert("in the end loading state ="+this.state.loading);
   }
 
   generateLinks() {
