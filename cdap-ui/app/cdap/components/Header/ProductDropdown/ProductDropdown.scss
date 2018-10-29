@@ -16,6 +16,11 @@
 @import '~styles/variables.scss';
 
 $dropdown_divider_bg_color: $grey-06;
+$product-dropdown-border-color: $grey-06;
+
+#product-dropdown {
+  border-left: 1px solid $product-dropdown-border-color;
+}
 
 .product-dropdown {
   @media (max-width: 580px) {
@@ -47,12 +52,13 @@ $dropdown_divider_bg_color: $grey-06;
       box-shadow: none;
       vertical-align: top;
       height: 50px;
+      width: 50px;
       padding: 0;
       margin: 0;
-      width: 100%;
       color: inherit;
-      margin-right: 15px;
+      margin-right: 0;
       display: inline-flex;
+      justify-content: center;
       background: transparent;
 
       &:focus {
@@ -71,8 +77,9 @@ $dropdown_divider_bg_color: $grey-06;
       &:after {
         display: none;
       }
-      .cdap-logo-container {
+      .caret-down-container {
         position: relative;
+        margin-left: 5px;
       }
       .cdap-logo {
         display: inline-block;
@@ -89,10 +96,6 @@ $dropdown_divider_bg_color: $grey-06;
       .secure-mode-icon {
         display: inline-flex;
         align-items: center;
-        padding-left: 10px;
-        .icon-svg {
-          font-size: 11px;
-        }
       }
     }
     .dropdown-menu {

@@ -1,5 +1,5 @@
 /*
-* Copyright © 2016-2017 Cask Data, Inc.
+* Copyright © 2016-2018 Cask Data, Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not
 * use this file except in compliance with the License. You may obtain a copy of
@@ -32,15 +32,17 @@ import {connect , Provider} from 'react-redux';
 import KeyValueStore from './KeyValueStore';
 import KeyValueStoreActions from './KeyValueStoreActions';
 import KeyValuePair from './KeyValuePair';
+import {objectQuery} from 'services/helpers';
+import cloneDeep from 'lodash/cloneDeep';
 
 // Prop Name is used in place of the reserved prop 'key'
 const mapStateToFieldNameProps = (state, ownProps) => {
   return {
-    name: state.keyValues.pairs[ownProps.index].key,
-    value: state.keyValues.pairs[ownProps.index].value,
-    provided: state.keyValues.pairs[ownProps.index].provided,
-    notDeletable: state.keyValues.pairs[ownProps.index].notDeletable,
-    showReset: state.keyValues.pairs[ownProps.index].showReset
+    name: objectQuery(state.keyValues.pairs, ownProps.index, 'key'),
+    value: objectQuery(state.keyValues.pairs, ownProps.index, 'value'),
+    provided: objectQuery(state.keyValues.pairs, ownProps.index, 'provided'),
+    notDeletable: objectQuery(state.keyValues.pairs, ownProps.index, 'notDeletable'),
+    showReset: objectQuery(state.keyValues.pairs, ownProps.index, 'showReset')
   };
 };
 
@@ -94,7 +96,7 @@ export default class KeyValuePairs extends Component {
     super(props);
     var { keyValues } = props;
     this.state = {
-      pairs: [...keyValues.pairs]
+      pairs: cloneDeep(keyValues.pairs)
     };
     KeyValueStore.dispatch({
       type: KeyValueStoreActions.onUpdate,
@@ -111,15 +113,6 @@ export default class KeyValuePairs extends Component {
       }
     });
   }
-  shouldComponentUpdate(nextProps) {
-    if (this.state.pairs.length !== nextProps.keyValues.pairs.length) {
-      KeyValueStore.dispatch({
-        type: KeyValueStoreActions.onUpdate,
-        payload: {pairs: nextProps.keyValues.pairs}
-      });
-    }
-    return this.state.pairs.length !== nextProps.keyValues.pairs.length;
-  }
 
   componentWillUnmount() {
     this.subscription();
@@ -128,9 +121,11 @@ export default class KeyValuePairs extends Component {
     });
   }
   componentWillReceiveProps(nextProps) {
-    this.setState({
-      pairs: [...nextProps.keyValues.pairs]
-    });
+    if (nextProps.keyValues.pairs.length !== this.state.pairs.length) {
+      this.setState({
+        pairs: [...nextProps.keyValues.pairs]
+      });
+    }
   }
 
   render() {

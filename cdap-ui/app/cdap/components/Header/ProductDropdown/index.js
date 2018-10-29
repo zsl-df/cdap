@@ -29,8 +29,8 @@ import AccessTokenModal from 'components/Header/ProductDropdown/AccessTokenModal
 import IconSVG from 'components/IconSVG';
 import getLastSelectedNamespace from 'services/get-last-selected-namespace';
 import T from 'i18n-react';
-import {getMode} from 'components/Header/ProductDropdown/helper';
 import classnames from 'classnames';
+import If from 'components/If';
 import {Theme} from 'services/ThemeHelper';
 
 require('./ProductDropdown.scss');
@@ -95,9 +95,8 @@ export default class ProductDropdown extends Component {
   render() {
     let baseCDAPURL = window.getAbsUIUrl();
     let cdapVersion = VersionStore.getState().version;
-    let docsUrl = `http://docs.cask.co/cdap/${cdapVersion}/en/index.html`;
+    let docsUrl = `http://docs.cdap.io/cdap/${cdapVersion}/en/index.html`;
     let administrationURL = '/administration/configuration';
-    let mode = getMode();
     let userSection;
     if (this.state.username && window.CDAP_CONFIG.securityEnabled) {
       userSection = (
@@ -143,24 +142,23 @@ export default class ProductDropdown extends Component {
           toggle={this.toggleCdapMenuDropdown.bind(this)}>
           <DropdownToggle caret>
             <div className="secure-mode-icon">
-              <IconSVG name={ window.CDAP_CONFIG.securityEnabled ? "icon-lock_close" : "" } />
-              <div className="cdap-mode">{mode}</div>
-            </div>
-            <div className="cdap-logo-container">
+              <IconSVG name="icon-cogs" />
               <div className="caret-down-container">
                 <IconSVG name="icon-caret-down" />
               </div>
             </div>
           </DropdownToggle>
           <CustomDropdownMenu right>
-            <DropdownItem
-              tag="li"
-              onClick={this.toggleAboutPage}
-            >
-              <a>{T.translate('features.Navbar.ProductDropdown.aboutLabel', {
-                productName: Theme.productName,
-              })}</a>
-            </DropdownItem>
+            <If condition={Theme.showAboutProductModal === true}>
+              <DropdownItem
+                tag="li"
+                onClick={this.toggleAboutPage}
+              >
+                <a>{T.translate('features.Navbar.ProductDropdown.aboutLabel', {
+                  productName: Theme.productName,
+                })}</a>
+              </DropdownItem>
+            </If>
             <DropdownItem tag="li">
               {
                 !this.props.nativeLink ?
@@ -203,11 +201,13 @@ export default class ProductDropdown extends Component {
             }
           </CustomDropdownMenu>
         </Dropdown>
-        <AboutPageModal
-          cdapVersion={cdapVersion}
-          isOpen={this.state.aboutPageOpen}
-          toggle={this.toggleAboutPage}
-        />
+        <If condition={Theme.showAboutProductModal === true}>
+          <AboutPageModal
+            cdapVersion={cdapVersion}
+            isOpen={this.state.aboutPageOpen}
+            toggle={this.toggleAboutPage}
+          />
+        </If>
       </div>
     );
   }

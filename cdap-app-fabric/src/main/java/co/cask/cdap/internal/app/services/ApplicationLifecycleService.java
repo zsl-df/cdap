@@ -25,7 +25,6 @@ import co.cask.cdap.api.artifact.ArtifactScope;
 import co.cask.cdap.api.artifact.ArtifactSummary;
 import co.cask.cdap.api.artifact.ArtifactVersion;
 import co.cask.cdap.api.artifact.ArtifactVersionRange;
-import co.cask.cdap.api.artifact.InvalidArtifactRangeException;
 import co.cask.cdap.api.flow.FlowSpecification;
 import co.cask.cdap.api.metrics.MetricDeleteQuery;
 import co.cask.cdap.api.metrics.MetricStore;
@@ -617,7 +616,7 @@ public class ApplicationLifecycleService extends AbstractIdleService {
    *
    * @param applicationId the application to delete metrics for.
    */
-  private void deleteMetrics(ApplicationId applicationId) throws Exception {
+  private void deleteMetrics(ApplicationId applicationId) {
     ApplicationSpecification spec = this.store.getApplication(applicationId);
     long endTs = System.currentTimeMillis() / 1000;
     Map<String, String> tags = new LinkedHashMap<>();

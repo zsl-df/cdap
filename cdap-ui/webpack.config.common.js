@@ -14,7 +14,6 @@
  * the License.
  */
 var webpack = require('webpack');
-var mode = process.env.NODE_ENV || 'production';
 var CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 var UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
@@ -29,8 +28,9 @@ let cleanOptions = {
   verbose: true,
   dry: false
 };
+var mode = process.env.NODE_ENV || 'production';
+const isModeProduction = (mode) => mode === 'production' || mode === 'non-optimized-production';
 
-const COMMON_LIB_NAME = 'common-lib-new';
 
 var plugins = [
   new LodashModuleReplacementPlugin({
@@ -43,16 +43,22 @@ var plugins = [
   // by default minify it.
   new webpack.DefinePlugin({
     'process.env':{
-      'NODE_ENV': JSON.stringify(mode)
+      'NODE_ENV': isModeProduction(mode) ? JSON.stringify('production') : JSON.stringify('development')
     },
   }),
-  new ForkTsCheckerWebpackPlugin({
-    tsconfig: __dirname + '/tsconfig.json',
-    tslint: __dirname + '/tslint.json',
-    // watch: ["./app/cdap"], // optional but improves performance (less stat calls)
-    memoryLimit: 4096
-  }),
 ];
+
+if (!isModeProduction(mode)) {
+  plugins.push(
+    new ForkTsCheckerWebpackPlugin({
+      tsconfig: __dirname + '/tsconfig.json',
+      tslint: __dirname + '/tslint.json',
+      // watch: ["./app/cdap"], // optional but improves performance (less stat calls)
+      memoryLimit: 4096
+    }),
+  );
+}
+
 var rules = [
   {
     test: /\.scss$/,
@@ -135,7 +141,7 @@ var rules = [
     ]
   }
 ];
-if (mode === 'production') {
+if (isModeProduction(mode)) {
   plugins.push(
     new UglifyJsPlugin({
       uglifyOptions: {
@@ -152,18 +158,16 @@ if (mode === 'production') {
   );
 }
 var webpackConfig = {
-  mode,
+  mode: isModeProduction(mode) ? 'production' : 'development',
   context: __dirname + '/app/common',
   optimization: {
     splitChunks: {
-      name: COMMON_LIB_NAME,
-      fileName: COMMON_LIB_NAME + '.js',
       minChunks: Infinity
     }
   },
   entry: {
     'common-new': ['./cask-shared-components.js'],
-    [COMMON_LIB_NAME]: [
+    'common-lib-new': [
       '@babel/polyfill',
       'classnames',
       'reactstrap',
@@ -189,9 +193,6 @@ var webpackConfig = {
     library: 'CaskCommon',
     libraryTarget: 'umd',
     publicPath: '/common_assets/'
-  },
-  optimization: {
-    splitChunks: false
   },
   externals: {
     'react': {

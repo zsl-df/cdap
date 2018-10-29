@@ -41,7 +41,7 @@ import isNil from 'lodash/isNil';
 import ExpandableMenu from 'components/UncontrolledComponents/ExpandableMenu';
 import ConnectionPopover from 'components/DataPrepConnections/ConnectionPopover';
 import DataPrepStore from 'components/DataPrep/store';
-import {objectQuery, preventPropagation} from 'services/helpers';
+import {objectQuery, preventPropagation, isNilOrEmpty} from 'services/helpers';
 import Helmet from 'react-helmet';
 import LoadingSVGCentered from 'components/LoadingSVGCentered';
 import queryString from 'query-string';
@@ -104,7 +104,7 @@ export default class DataPrepConnections extends Component {
       activeConnectionid,
       activeConnectionType,
       showAddConnectionPopover: false,
-      showUpload: false, // FIXME: This is used only when showing with no routing. We can do better.,
+      showUpload: activeConnectionType === 'UPLOAD' || false, // FIXME: This is used only when showing with no routing. We can do better.,
       redirectToDefaultConnectionOnDelete: false
     };
   }
@@ -186,23 +186,16 @@ export default class DataPrepConnections extends Component {
         });
 
         this.fetchConnectionTypes();
-      }, (err) => {
-        if (err.statusCode === 503) {
-          console.log('backend not started');
-
-          this.setState({
-            backendChecking: false,
-            backendDown: true
-          });
-
-          return;
-        }
+      }, () => {
+        this.setState({
+          backendChecking: false,
+          backendDown: true
+        });
       });
   }
 
   handlePropagation(browserName, e) {
     if (this.props.enableRouting && !this.props.singleWorkspaceMode) {
-      setActiveBrowser({name: typeof browserName === 'object' ? browserName.name : browserName});
       return;
     }
     preventPropagation(e);
@@ -239,11 +232,11 @@ export default class DataPrepConnections extends Component {
       activeConnectionid = browserName.id;
       activeConnectionType = ConnectionType.GCS;
     } else if (typeof browserName === 'object' && browserName.type === ConnectionType.BIGQUERY) {
-      setBigQueryAsActiveBrowser({name: ConnectionType.BIGQUERY, id: browserName.id});
+      setBigQueryAsActiveBrowser({name: ConnectionType.BIGQUERY, id: browserName.id}, true);
       activeConnectionid = browserName.id;
       activeConnectionType = ConnectionType.BIGQUERY;
     } else if (typeof browserName === 'object' && browserName.type === ConnectionType.SPANNER) {
-      setSpannerAsActiveBrowser({name: ConnectionType.SPANNER, id: browserName.id});
+      setSpannerAsActiveBrowser({name: ConnectionType.SPANNER, id: browserName.id}, true);
       activeConnectionid = browserName.id;
       activeConnectionType = ConnectionType.SPANNER;
     }
@@ -304,14 +297,13 @@ export default class DataPrepConnections extends Component {
     this.fetchConnectionsList();
   }
 
-  fetchConnectionsList = (action, targetId) => {
+  fetchConnectionsList = () => {
     let namespace = getCurrentNamespace();
 
     MyDataPrepApi.listConnections({
       namespace,
-      type: '*' // currently only going to fetch database connection
+      type: '*'
     }).subscribe((res) => {
-      // need to group by connection type
       let state = {};
 
       if (res.default) {
@@ -327,9 +319,12 @@ export default class DataPrepConnections extends Component {
           bigQueryList = [],
           spannerList = [];
 
-
-      if (action === 'delete' && this.state.activeConnectionid === targetId) {
-        state.activeConnectionid = null;
+      if (!state.activeConnectionId && !state.activeConnectionType && state.defaultConnection) {
+        let defaultConnectionObj = find(res.values, {id: state.defaultConnection});
+        if (defaultConnectionObj) {
+          state.activeConnectionid = objectQuery(defaultConnectionObj, 'id');
+          state.activeConnectionType = objectQuery(defaultConnectionObj, 'type');
+        }
       }
 
       res.values.forEach((connection) => {
@@ -769,12 +764,11 @@ export default class DataPrepConnections extends Component {
       <Switch>
         <Route
           path={`${BASEPATH}/file`}
-          render={({match, location}) => {
+          render={({match}) => {
             const setActiveConnection = setActiveBrowser.bind(null, {name: ConnectionType.FILE});
             return (
               <DataPrepBrowser
                 match={match}
-                location={location}
                 toggle={this.toggleSidePanel}
                 onWorkspaceCreate={this.onUploadSuccess}
                 setActiveConnection={setActiveConnection}
@@ -801,7 +795,6 @@ export default class DataPrepConnections extends Component {
             return (
               <DataPrepBrowser
                 match={match}
-                location={location}
                 toggle={this.toggleSidePanel}
                 onWorkspaceCreate={this.onUploadSuccess}
                 setActiveConnection={setActiveConnection}
@@ -817,7 +810,6 @@ export default class DataPrepConnections extends Component {
             return (
               <DataPrepBrowser
                 match={match}
-                location={location}
                 toggle={this.toggleSidePanel}
                 onWorkspaceCreate={this.onUploadSuccess}
                 setActiveConnection={setActiveConnection}
@@ -834,7 +826,6 @@ export default class DataPrepConnections extends Component {
             return (
               <DataPrepBrowser
                 match={match}
-                location={location}
                 toggle={this.toggleSidePanel}
                 onWorkspaceCreate={this.onUploadSuccess}
                 setActiveConnection={setActiveConnection}
@@ -851,7 +842,6 @@ export default class DataPrepConnections extends Component {
             return (
               <DataPrepBrowser
                 match={match}
-                location={location}
                 toggle={this.toggleSidePanel}
                 onWorkspaceCreate={this.onUploadSuccess}
                 setActiveConnection={setActiveConnection}
@@ -867,7 +857,6 @@ export default class DataPrepConnections extends Component {
             return (
               <DataPrepBrowser
                 match={match}
-                location={location}
                 toggle={this.toggleSidePanel}
                 onWorkspaceCreate={this.onUploadSuccess}
                 setActiveConnection={setActiveConnection}
@@ -933,6 +922,15 @@ export default class DataPrepConnections extends Component {
     let {enableRouting, ...attributes} = this.props;
     enableRouting = this.props.singleWorkspaceMode ? false : this.props.enableRouting;
     let setActiveConnection;
+    let {
+      activeConnectionType,
+      activeConnectionid,
+      defaultConnection,
+      connectionTypes,
+      connectionsList
+    } = this.state;
+    let defaultConnectionObj = find(connectionsList, { id: defaultConnection});
+    defaultConnection = isNilOrEmpty(defaultConnectionObj) ? null : defaultConnection;
     if (this.state.activeConnectionType === ConnectionType.DATABASE) {
       setActiveConnection = setDatabaseAsActiveBrowser.bind(null, {name: ConnectionType.DATABASE, id: this.state.activeConnectionid});
     } else if (this.state.activeConnectionType === ConnectionType.KAFKA) {
@@ -941,46 +939,54 @@ export default class DataPrepConnections extends Component {
       setActiveConnection = setActiveBrowser.bind(null, {name: ConnectionType.FILE});
     } else if (this.state.activeConnectionType === ConnectionType.S3) {
       let {workspaceInfo} = DataPrepStore.getState().dataprep;
-      let path;
-      if (isObject(workspaceInfo)) {
-        let {key} = workspaceInfo.properties;
-        let bucketName = workspaceInfo.properties['bucket-name'];
-        if (bucketName) {
-          path = `/${bucketName}/${key}`;
-        } else {
-          let state = DataPrepBrowserStore.getState();
-          path = state.s3.prefix;
+      let {s3} = DataPrepBrowserStore.getState();
+      // So the code path below will set the path of the s3 browser to current path,
+      // when opening up connections from S3 workspace. However, this function is also
+      // called when the user clicks on another S3 connection from this view :(. So
+      // this if condition is to make sure we only set path to current workspace path
+      // when the user is going back to connections view, not when they select another
+      // S3 connection
+      if (!s3.connectionId || s3.connectionId === objectQuery(workspaceInfo, 'properties', 'connectionId')) {
+        let path = '/';
+        if (isObject(workspaceInfo)) {
+          let {key} = workspaceInfo.properties;
+          let bucketName = workspaceInfo.properties['bucket-name'];
+          if (bucketName) {
+            path = `/${bucketName}/${key}`;
+          } else {
+            let state = DataPrepBrowserStore.getState();
+            path = state.s3.prefix;
+          }
         }
+        setActiveConnection = setS3AsActiveBrowser.bind(null, {name: ConnectionType.S3, id: this.state.activeConnectionid, path});
       }
-      setActiveConnection = setS3AsActiveBrowser.bind(null, {name: ConnectionType.S3, id: this.state.activeConnectionid, path});
     } else if (this.state.activeConnectionType === ConnectionType.GCS) {
       let {workspaceInfo} = DataPrepStore.getState().dataprep;
-      let path;
-      if (isObject(workspaceInfo) && workspaceInfo.properties.path) {
-        path = workspaceInfo.properties.path;
-        path = path.split('/');
-        path = path.slice(0, path.length - 1).join('/');
-        let bucketName = workspaceInfo.properties.bucket;
-        if (bucketName) {
-          path = `/${bucketName}/${path}/`;
-        } else {
-          let state = DataPrepBrowserStore.getState();
-          path = state.gcs.prefix;
+      let {gcs} = DataPrepBrowserStore.getState();
+      // Same as S3 connection above
+      if (!gcs.connectionId || gcs.connectionId === objectQuery(workspaceInfo, 'properties', 'connectionId')) {
+        let path = '/';
+        if (isObject(workspaceInfo) && workspaceInfo.properties.path) {
+          path = workspaceInfo.properties.path;
+          path = path.split('/');
+          path = path.slice(0, path.length - 1).join('/');
+          let bucketName = workspaceInfo.properties.bucket;
+          if (bucketName) {
+            path = !isNilOrEmpty(path) ? `/${bucketName}/${path}/` : `/${bucketName}`;
+          } else {
+            let state = DataPrepBrowserStore.getState();
+            path = state.gcs.prefix;
+          }
         }
+        setActiveConnection = setGCSAsActiveBrowser.bind(null, {name: ConnectionType.GCS, id: this.state.activeConnectionid, path});
       }
-      setActiveConnection = setGCSAsActiveBrowser.bind(null, {name: ConnectionType.GCS, id: this.state.activeConnectionid, path});
+
     } else if (this.state.activeConnectionType === ConnectionType.BIGQUERY) {
-      setActiveConnection = setBigQueryAsActiveBrowser.bind(null, {name: ConnectionType.BIGQUERY, id: this.state.activeConnectionid});
+      setActiveConnection = setBigQueryAsActiveBrowser.bind(null, {name: ConnectionType.BIGQUERY, id: this.state.activeConnectionid}, true);
     } else if (this.state.activeConnectionType === ConnectionType.SPANNER) {
-      setActiveConnection = setSpannerAsActiveBrowser.bind(null, {name: ConnectionType.SPANNER, id: this.state.activeConnectionid});
+      setActiveConnection = setSpannerAsActiveBrowser.bind(null, {name: ConnectionType.SPANNER, id: this.state.activeConnectionid}, true);
     }
 
-    let {
-      activeConnectionType,
-      activeConnectionid,
-      defaultConnection,
-      connectionTypes
-    } = this.state;
     const isFileConnectionValid = find(connectionTypes, {type: ConnectionType.FILE});
     if (
       !activeConnectionType &&
@@ -1021,10 +1027,12 @@ export default class DataPrepConnections extends Component {
   };
 
   render() {
+    const featureName = Theme.featureNames.dataPrep;
     let pageTitle = (
       <Helmet
         title={T.translate(DATAPREP_I18N_PREFIX, {
           productName: Theme.productName,
+          featureName
         })}
       />
     );

@@ -23,7 +23,6 @@ import co.cask.cdap.api.Resources;
 import co.cask.cdap.api.Transactionals;
 import co.cask.cdap.api.annotation.TransactionControl;
 import co.cask.cdap.api.data.batch.InputFormatProvider;
-import co.cask.cdap.api.data.batch.OutputFormatProvider;
 import co.cask.cdap.api.flow.flowlet.StreamEvent;
 import co.cask.cdap.api.mapreduce.AbstractMapReduce;
 import co.cask.cdap.api.mapreduce.MapReduce;
@@ -50,10 +49,8 @@ import co.cask.cdap.data2.util.hbase.HBaseTableUtilFactory;
 import co.cask.cdap.internal.app.runtime.LocalizationUtils;
 import co.cask.cdap.internal.app.runtime.ProgramRunners;
 import co.cask.cdap.internal.app.runtime.SystemArguments;
-import co.cask.cdap.internal.app.runtime.batch.dataset.UnsupportedOutputFormat;
 import co.cask.cdap.internal.app.runtime.batch.dataset.input.MapperInput;
 import co.cask.cdap.internal.app.runtime.batch.dataset.input.MultipleInputs;
-import co.cask.cdap.internal.app.runtime.batch.dataset.output.MultipleOutputs;
 import co.cask.cdap.internal.app.runtime.batch.dataset.output.MultipleOutputsMainOutputWrapper;
 import co.cask.cdap.internal.app.runtime.batch.dataset.output.ProvidedOutput;
 import co.cask.cdap.internal.app.runtime.batch.distributed.ContainerLauncherGenerator;
@@ -121,7 +118,6 @@ import java.net.URL;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -238,12 +234,14 @@ final class MapReduceRuntimeService extends AbstractExecutionThreadService {
                                                                   context.getProgram().getClassLoader(),
                                                                   context.getApplicationSpecification().getPlugins(),
                                                                   context.getPluginInstantiator());
-      cleanupTask = createCleanupTask(cleanupTask, classLoader);
+      cleanupTask = createCleanupTask(classLoader, cleanupTask);
       context.setMapReduceClassLoader(classLoader);
       context.setJob(job);
 
       mapredConf.setClassLoader(context.getProgramInvocationClassLoader());
 
+      // we will now call initialize(), hence destroy() must be called on shutdown/cleanup
+      cleanupTask = createCleanupTask((Runnable) this::destroy, cleanupTask);
       beforeSubmit(job);
 
       // Localize additional resources that users have requested via BasicMapReduceContext.localize methods
@@ -259,7 +257,7 @@ final class MapReduceRuntimeService extends AbstractExecutionThreadService {
 
       // Create a temporary location for storing all generated files through the LocationFactory.
       Location tempLocation = createTempLocationDirectory();
-      cleanupTask = createCleanupTask(cleanupTask, tempLocation);
+      cleanupTask = createCleanupTask(tempLocation, cleanupTask);
 
       // For local mode, everything is in the configuration classloader already, hence no need to create new jar
       if (!MapReduceTaskContextProvider.isLocal(mapredConf)) {
@@ -439,12 +437,8 @@ final class MapReduceRuntimeService extends AbstractExecutionThreadService {
   }
 
   @Override
-  protected void shutDown() throws Exception {
-    try {
-      destroy();
-    } finally {
-      cleanupTask.run();
-    }
+  protected void shutDown() {
+    cleanupTask.run();
   }
 
   @Override
@@ -749,35 +743,8 @@ final class MapReduceRuntimeService extends AbstractExecutionThreadService {
     List<ProvidedOutput> outputsMap = context.getOutputs();
     fixOutputPermissions(job, outputsMap);
     LOG.debug("Using as output for MapReduce Job: {}", outputsMap);
-    OutputFormatProvider rootOutputFormatProvider;
-    if (outputsMap.isEmpty()) {
-      // user is not going through our APIs to add output; propagate the job's output format
-      rootOutputFormatProvider =
-        new BasicOutputFormatProvider(job.getOutputFormatClass().getName(), Collections.<String, String>emptyMap());
-    } else if (outputsMap.size() == 1) {
-      // If only one output is configured through the context, then set it as the root OutputFormat
-      rootOutputFormatProvider = outputsMap.get(0).getOutputFormatProvider();
-    } else {
-      // multiple output formats configured via the context. We should use a RecordWriter that doesn't support writing
-      // as the root output format in this case to disallow writing directly on the context.
-      // the OutputCommitter is effectively a no-op, as it runs as the RootOutputCommitter in MultipleOutputsCommitter
-      rootOutputFormatProvider =
-        new BasicOutputFormatProvider(UnsupportedOutputFormat.class.getName(), Collections.<String, String>emptyMap());
-    }
-
-    MultipleOutputsMainOutputWrapper.setRootOutputFormat(job,
-                                                         rootOutputFormatProvider.getOutputFormatClassName(),
-                                                         rootOutputFormatProvider.getOutputFormatConfiguration());
+    MultipleOutputsMainOutputWrapper.setOutputs(job, outputsMap);
     job.setOutputFormatClass(MultipleOutputsMainOutputWrapper.class);
-
-    for (ProvidedOutput output : outputsMap) {
-      String outputName = output.getOutput().getAlias();
-      String outputFormatClassName = output.getOutputFormatClassName();
-      Map<String, String> outputConfig = output.getOutputFormatConfiguration();
-      MultipleOutputs.addNamedOutput(job, outputName, outputFormatClassName,
-                                     job.getOutputKeyClass(), job.getOutputValueClass(), outputConfig);
-
-    }
   }
 
   private void fixOutputPermissions(JobContext job, List<ProvidedOutput> outputs) {
@@ -1172,32 +1139,28 @@ final class MapReduceRuntimeService extends AbstractExecutionThreadService {
   }
 
   private Runnable createCleanupTask(final Object...resources) {
-    return new Runnable() {
+    return () -> {
+      for (Object resource : resources) {
+        if (resource == null) {
+          continue;
+        }
 
-      @Override
-      public void run() {
-        for (Object resource : resources) {
-          if (resource == null) {
-            continue;
-          }
-
-          try {
-            if (resource instanceof File) {
-              if (((File) resource).isDirectory()) {
-                DirUtils.deleteDirectoryContents((File) resource);
-              } else {
-                ((File) resource).delete();
-              }
-            } else if (resource instanceof Location) {
-              Locations.deleteQuietly((Location) resource, true);
-            } else if (resource instanceof AutoCloseable) {
-              ((AutoCloseable) resource).close();
-            } else if (resource instanceof Runnable) {
-              ((Runnable) resource).run();
+        try {
+          if (resource instanceof File) {
+            if (((File) resource).isDirectory()) {
+              DirUtils.deleteDirectoryContents((File) resource);
+            } else {
+              ((File) resource).delete();
             }
-          } catch (Throwable t) {
-            LOG.warn("Exception when cleaning up resource {}", resource, t);
+          } else if (resource instanceof Location) {
+            Locations.deleteQuietly((Location) resource, true);
+          } else if (resource instanceof AutoCloseable) {
+            ((AutoCloseable) resource).close();
+          } else if (resource instanceof Runnable) {
+            ((Runnable) resource).run();
           }
+        } catch (Throwable t) {
+          LOG.warn("Exception when cleaning up resource {}", resource, t);
         }
       }
     };

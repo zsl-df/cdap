@@ -14,7 +14,8 @@
  * the License.
  */
 
-@import '../../styles/variables.scss';
+@import '~styles/variables.scss';
+@import '../DataPrep/DataPrepBrowser/DataprepBrowserVariables.scss';
 
 $connections-panel-bg-color: $grey-07;
 $connections-panel-border-color: $grey-05;
@@ -124,8 +125,9 @@ $info-font-color: $grey-03;
     width: calc(100% - 250px);
 
     .sub-panel {
-      padding: 10px;
+      padding: 4px 10px;
       display: flex;
+      align-items: center;
       .path-container,
       .info-container {
         width: 50%;
@@ -165,6 +167,10 @@ $info-font-color: $grey-03;
           color: $info-font-color;
           text-align: right;
           padding-right: 5px;
+          overflow: hidden;
+          word-break: inherit;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
         .search-container {
           flex: 0.3;

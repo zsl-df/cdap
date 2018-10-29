@@ -1058,14 +1058,13 @@ cdap_sdk_start() {
   # Start SDK processes
   echo -n "$(date) Starting CDAP Sandbox ..."
   if ${__foreground}; then
-    echo
-    nice -1 "${JAVA}" ${JVM_OPTS[@]} ${ROUTER_OPTS} -classpath "${CLASSPATH}" co.cask.cdap.StandaloneMain \
-      | tee -a "${LOG_DIR}"/cdap.log
+    # this eval is needed to get around the double quote issue in KILL_ON_OOM_OPTS
+    eval "nice -1 \"${JAVA}\" ${KILL_ON_OOM_OPTS} ${JVM_OPTS[@]} ${ROUTER_OPTS} -classpath \"${CLASSPATH}\" co.cask.cdap.StandaloneMain | tee -a \"${LOG_DIR}\"/cdap.log"
     __ret=${?}
     return ${__ret}
   else
-    nohup nice -1 "${JAVA}" ${JVM_OPTS[@]} ${ROUTER_OPTS} -classpath "${CLASSPATH}" co.cask.cdap.StandaloneMain \
-      </dev/null >>"${LOG_DIR}"/cdap.log 2>&1 &
+    # this eval is needed to get around the double quote issue in KILL_ON_OOM_OPTS
+    eval "nohup nice -1 \"${JAVA}\" ${KILL_ON_OOM_OPTS} ${JVM_OPTS[@]} ${ROUTER_OPTS} -classpath \"${CLASSPATH}\" co.cask.cdap.StandaloneMain </dev/null >>\"${LOG_DIR}\"/cdap.log 2>&1 &"
     __ret=${?}
     __pid=${!}
     sleep 2 # wait for JVM spin up
@@ -1438,11 +1437,17 @@ cdap_sdk() {
 #
 # User-definable variables
 
-# Default CDAP_CONF to /etc/cdap/conf (package default)
-export CDAP_CONF=${CDAP_CONF:-/etc/cdap/conf}
-
 # Set CDAP_HOME
 export CDAP_HOME=$(cdap_home)
+
+# Default CDAP_CONF to either:
+# /etc/cdap/conf (package default), or
+# ${CDAP_HOME}/conf (sandbox default)
+if [[ $(cdap_context) == 'sdk' ]]; then
+  export CDAP_CONF=${CDAP_CONF:-${CDAP_HOME}/conf}
+else
+  export CDAP_CONF=${CDAP_CONF:-/etc/cdap/conf}
+fi
 
 # Make sure HOSTNAME is in the environment
 export HOSTNAME=$(hostname -f)
@@ -1471,6 +1476,6 @@ export TEMP_DIR=${CDAP_TEMP_DIR:-/tmp}
 # Default SDK options
 CDAP_SDK_OPTS="${OPTS} -Djava.security.krb5.realm= -Djava.security.krb5.kdc= -Djava.awt.headless=true"
 
-export HEAPDUMP_ON_OOM=${HEAPDUMP_ON_OOM:-true}
+export HEAPDUMP_ON_OOM=${HEAPDUMP_ON_OOM:-false}
 
 export NICENESS=${NICENESS:-0}

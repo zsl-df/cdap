@@ -1,6 +1,6 @@
 {
   "name": "cdap-ui",
-  "version": "5.1.0-SNAPSHOT",
+  "version": "5.1.0",
   "description": "Front-end for CDAP",
   "license": "Apache-2.0",
   "scripts": {
@@ -9,6 +9,7 @@
     "cdap-dev-build": "NODE_ENV=development parallel-webpack --config=webpack.config.js -d",
     "cdap-dev-build-w": "NODE_ENV=development parallel-webpack --watch -d ",
     "cdap-full-build": "run-p cdap-prod-build distribute",
+    "cdap-non-optimized-full-build": "NODE_ENV=non-optimized-production webpack --config=webpack.config.js",
     "clean-node-modules": "modclean -P -r --patterns=\"default:safe\" --additional-patterns=\"*.xls?x,*.ppt?x,*.rtf,*.png,*.jpg,*.jpeg,*.txt\" --ignore=\"validate-npm-license,readme*\"",
     "distribute": "node ./node_modules/gulp/bin/gulp.js distribute",
     "build": "node ./node_modules/gulp/bin/gulp.js build",
@@ -100,13 +101,15 @@
     "uglifyjs-webpack-plugin": "1.2.7",
     "url-loader": "0.6.2",
     "webpack": "4.16.0",
+    "webpack-cli": "3.1.1",
+    "parallel-webpack": "2.2.0",
     "webpack-livereload-plugin": "2.1.1"
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0-beta.53",
     "body-parser": "1.14.2",
     "bootstrap": "4.0.0-alpha.5",
-    "cask-datavoyager": "2.0.0-alpha.12.8",
+    "cask-datavoyager": "2.0.0-alpha.12.9",
     "cdap-avsc": "4.1.12",
     "classnames": "2.2.5",
     "clipboard": "1.7.1",
@@ -133,7 +136,6 @@
     "ngreact": "0.3.0",
     "numeral": "1.5.3",
     "object-hash": "1.1.0",
-    "parallel-webpack": "^2.2.0",
     "prop-types": "15.5.10",
     "q": "1.4.1",
     "query-string": "4.3.2",

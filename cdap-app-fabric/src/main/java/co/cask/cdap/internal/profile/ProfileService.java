@@ -19,10 +19,13 @@ package co.cask.cdap.internal.profile;
 import co.cask.cdap.api.Transactional;
 import co.cask.cdap.api.Transactionals;
 import co.cask.cdap.api.data.DatasetContext;
+import co.cask.cdap.api.metrics.MetricDeleteQuery;
+import co.cask.cdap.api.metrics.MetricStore;
 import co.cask.cdap.common.MethodNotAllowedException;
 import co.cask.cdap.common.NotFoundException;
 import co.cask.cdap.common.ProfileConflictException;
 import co.cask.cdap.common.conf.CConfiguration;
+import co.cask.cdap.common.conf.Constants;
 import co.cask.cdap.data.dataset.SystemDatasetInstantiator;
 import co.cask.cdap.data2.dataset2.DatasetFramework;
 import co.cask.cdap.data2.dataset2.MultiThreadDatasetCache;
@@ -31,9 +34,12 @@ import co.cask.cdap.internal.app.runtime.SystemArguments;
 import co.cask.cdap.internal.app.store.AppMetadataStore;
 import co.cask.cdap.internal.app.store.RunRecordMeta;
 import co.cask.cdap.internal.app.store.profile.ProfileDataset;
+import co.cask.cdap.proto.EntityScope;
+import co.cask.cdap.proto.id.ApplicationId;
 import co.cask.cdap.proto.id.EntityId;
 import co.cask.cdap.proto.id.NamespaceId;
 import co.cask.cdap.proto.id.ProfileId;
+import co.cask.cdap.proto.id.ProgramId;
 import co.cask.cdap.proto.id.ProgramRunId;
 import co.cask.cdap.proto.profile.Profile;
 import co.cask.cdap.proto.provisioner.ProvisionerInfo;
@@ -48,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,10 +70,12 @@ public class ProfileService {
   private final DatasetFramework datasetFramework;
   private final Transactional transactional;
   private final CConfiguration cConf;
+  private final MetricStore metricStore;
 
   @Inject
   public ProfileService(CConfiguration cConfiguration,
-                        DatasetFramework datasetFramework, TransactionSystemClient txClient) {
+                        DatasetFramework datasetFramework, TransactionSystemClient txClient,
+                        MetricStore metricStore) {
     this.datasetFramework = datasetFramework;
     this.transactional = Transactions.createTransactionalWithRetry(
       Transactions.createTransactional(new MultiThreadDatasetCache(new SystemDatasetInstantiator(datasetFramework),
@@ -75,6 +84,7 @@ public class ProfileService {
       RetryStrategies.retryOnConflict(20, 100)
     );
     this.cConf = cConfiguration;
+    this.metricStore = metricStore;
   }
 
   /**
@@ -193,7 +203,7 @@ public class ProfileService {
    * @throws MethodNotAllowedException if trying to delete the Native profile
    */
   public void deleteProfile(ProfileId profileId)
-    throws NotFoundException, ProfileConflictException, MethodNotAllowedException {
+    throws MethodNotAllowedException, NotFoundException, ProfileConflictException {
     if (profileId.equals(ProfileId.NATIVE)) {
       throw new MethodNotAllowedException(String.format("Profile Native %s cannot be deleted.",
                                                         profileId.getScopedName()));
@@ -204,6 +214,7 @@ public class ProfileService {
       AppMetadataStore appMetadataStore = AppMetadataStore.create(cConf, context, datasetFramework);
       deleteProfile(profileDataset, appMetadataStore, profileId, profile);
     }, NotFoundException.class, ProfileConflictException.class);
+    deleteMetrics(profileId);
   }
 
   /**
@@ -216,14 +227,21 @@ public class ProfileService {
     if (namespaceId.equals(NamespaceId.SYSTEM)) {
       throw new MethodNotAllowedException("Deleting all system profiles is not allowed.");
     }
+    List<ProfileId> deleted = new ArrayList<>();
     Transactionals.execute(transactional, context -> {
       ProfileDataset profileDataset = getProfileDataset(context);
       AppMetadataStore appMetadataStore = AppMetadataStore.create(cConf, context, datasetFramework);
       List<Profile> profiles = profileDataset.getProfiles(namespaceId, false);
       for (Profile profile : profiles) {
-        deleteProfile(profileDataset, appMetadataStore, namespaceId.profile(profile.getName()), profile);
+        ProfileId profileId = namespaceId.profile(profile.getName());
+        deleteProfile(profileDataset, appMetadataStore, profileId, profile);
+        deleted.add(profileId);
       }
     }, ProfileConflictException.class, NotFoundException.class);
+    // delete the metrics
+    for (ProfileId profileId : deleted) {
+      deleteMetrics(profileId);
+    }
   }
 
   /**
@@ -323,13 +341,16 @@ public class ProfileService {
         profileId);
     }
 
-    // There must be no assigments to this profile
+    // There must be no assignments to this profile
     Set<EntityId> assignments = profileDataset.getProfileAssignments(profileId);
-    if (!assignments.isEmpty()) {
+    int numAssignments = assignments.size();
+    if (numAssignments > 0) {
+      String firstEntity = getUserFriendlyEntityStr(assignments.iterator().next());
+      String countStr = getCountStr(numAssignments, "entity", "entities");
       throw new ProfileConflictException(
-        String.format("This profile %s is still assigned to %d entities, like %s. " +
+        String.format("Profile '%s' is still assigned to %s%s. " +
                         "Please delete all assignments before deleting the profile.",
-                      profileId.toString(), assignments.size(), assignments.iterator().next()),
+                      profileId.getProfile(), firstEntity, countStr),
         profileId);
     }
 
@@ -346,15 +367,64 @@ public class ProfileService {
       activeRuns = appMetadataStore.getActiveRuns(Collections.singleton(profileId.getNamespaceId()),
                                                   runRecordMetaPredicate);
     }
-    if (!activeRuns.isEmpty()) {
+    int numRuns = activeRuns.size();
+    if (numRuns > 0) {
+      String firstRun = activeRuns.keySet().iterator().next().toString();
+      String countStr = getCountStr(numRuns, "run", "runs");
       throw new ProfileConflictException(
-        String.format("The profile %s is in use by %d active runs, like %s. Please stop all active runs " +
+        String.format("Profile '%s' is in use by run %s%s. Please stop all active runs " +
                         "before deleting the profile.",
-                      profileId.toString(), activeRuns.size(), activeRuns.keySet().iterator().next()),
+                      profileId.toString(), firstRun, countStr),
         profileId);
     }
 
     // delete the profile
     profileDataset.deleteProfile(profileId);
+  }
+
+  private String getUserFriendlyEntityStr(EntityId entityId) {
+    switch (entityId.getEntityType()) {
+      case INSTANCE:
+        return "the system instance";
+      case NAMESPACE:
+        return String.format("namespace '%s'", entityId.getEntityName());
+      case APPLICATION:
+        ApplicationId applicationId = (ApplicationId) entityId;
+        return String.format("application '%s' in namespace '%s'", applicationId.getApplication(),
+                             applicationId.getNamespace());
+      case PROGRAM:
+        ProgramId programId = (ProgramId) entityId;
+        return String.format("%s '%s' in namespace '%s'", programId.getType().name().toLowerCase(),
+                             programId.getProgram(), programId.getNamespace());
+    }
+    return entityId.toString();
+  }
+
+  private String getCountStr(int count, String singular, String plural) {
+    if (count == 1) {
+      return "";
+    } else if (count == 2) {
+      return String.format(" and 1 other %s", singular);
+    }
+    return String.format(" and %d other %s", count - 1, plural);
+  }
+
+  /**
+   * Delete the metrics for a profile.
+   *
+   * @param profileId the profile to delete metrics for.
+   */
+  private void deleteMetrics(ProfileId profileId) {
+    long endTs = System.currentTimeMillis() / 1000;
+    Map<String, String> tags = new LinkedHashMap<>();
+    tags.put(Constants.Metrics.Tag.PROFILE_SCOPE, profileId.getScope().name());
+    tags.put(Constants.Metrics.Tag.PROFILE, profileId.getProfile());
+    // if the profile is in user scope, we need to add the namespace info to distinguish the profile
+    if (profileId.getScope().equals(EntityScope.USER)) {
+      tags.put(Constants.Metrics.Tag.NAMESPACE, profileId.getNamespace());
+    }
+    MetricDeleteQuery deleteQuery = new MetricDeleteQuery(0, endTs, Collections.emptySet(), tags,
+                                                          new ArrayList<>(tags.keySet()));
+    metricStore.delete(deleteQuery);
   }
 }

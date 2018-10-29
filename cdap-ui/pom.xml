@@ -23,7 +23,7 @@
   <parent>
     <groupId>co.cask.cdap</groupId>
     <artifactId>cdap</artifactId>
-    <version>5.1.0-SNAPSHOT</version>
+    <version>5.1.0</version>
   </parent>
 
   <artifactId>cdap-ui</artifactId>
@@ -192,6 +192,7 @@
         <package.rpm.depends>--depends cdap --replaces cdap-web-app --conflicts cdap-web-app --replaces 'cdap-ui &lt; 3.4.0'</package.rpm.depends>
         <package.deb.arch>amd64</package.deb.arch>
         <package.rpm.arch>x86_64</package.rpm.arch>
+        <ui.build.name>cdap-prod-build</ui.build.name>
       </properties>
       <build>
         <plugins>
@@ -243,7 +244,16 @@
                   <goal>yarn</goal>
                 </goals>
                 <configuration>
-                  <arguments>run cdap-full-build</arguments>
+                  <arguments>run ${ui.build.name}</arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>build-ui-angular</id>
+                <goals>
+                  <goal>yarn</goal>
+                </goals>
+                <configuration>
+                  <arguments>run distribute</arguments>
                 </configuration>
               </execution>
               <execution>
