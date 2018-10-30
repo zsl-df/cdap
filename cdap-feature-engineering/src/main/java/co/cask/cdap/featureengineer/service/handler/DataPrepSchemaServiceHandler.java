@@ -72,7 +72,6 @@ public class DataPrepSchemaServiceHandler extends BaseServiceHandler {
 		try {
 			PersistWranglerRequest wranglerRequest = new RequestExtractor(request).getContent("UTF-8",
 					PersistWranglerRequest.class);
-			
 			LOG.debug("Passed pluginConfig is " + wranglerRequest.getPluginConfig());
 			dataSchemaTable.write(workspaceId, wranglerRequest.getSchema());
 			pluginConfigTable.write(workspaceId + "_" + configType, wranglerRequest.getPluginConfig());

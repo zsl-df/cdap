@@ -36,13 +36,12 @@ import co.cask.cdap.featureengineer.request.pojo.MultiFieldAggregationInput;
 import co.cask.cdap.featureengineer.request.pojo.MultiSchemaColumn;
 import co.cask.cdap.featureengineer.request.pojo.Relation;
 import co.cask.cdap.featureengineer.request.pojo.SchemaColumn;
-import co.cask.cdap.test.TestBase;
 
 /**
  * @author bhupesh.goel
  *
  */
-public class AutoFeatureGenerationServiceTest extends TestBase {
+public class AutoFeatureGenerationEndPointTest {
 
 	private static final String USER_AGENT = "Mozilla/5.0";
 	static final Gson gsonObj = new GsonBuilder().setPrettyPrinting().create();
@@ -50,7 +49,7 @@ public class AutoFeatureGenerationServiceTest extends TestBase {
 	static final String ACCOUNT_TABLE = "accounts";
 
 	public static void main(String args[]) throws ClientProtocolException, IOException {
-		String url = "http://bhupesh-goel.local:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/AutoFeatureGenerationService/methods/featureengineering/features/create";
+		String url = "http://bhupesh-goel.local:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/AutoFeatureEngineeringService/methods/featureengineering/InputX1ErrorTestPipeline/features/create";
 		System.out.println("url = " + url);
 		HttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(url);
@@ -75,7 +74,7 @@ public class AutoFeatureGenerationServiceTest extends TestBase {
 
 	private static FeatureGenerationRequest createNewRequest() {
 		FeatureGenerationRequest request = new FeatureGenerationRequest();
-		request.setPipelineRunName("InputX1ErrorTestPipeline2");
+		request.setPipelineRunName("InputX1ErrorTestPipeline");
 		List<SchemaColumn> timeIndexColumns = new LinkedList<SchemaColumn>();
 		timeIndexColumns.add(new SchemaColumn(ERROR_TABLE, "ets_timestamp"));
 		request.setTimeIndexColumns(timeIndexColumns);

@@ -27,7 +27,7 @@ import co.cask.cdap.featureengineer.pipeline.pojo.NullableSchema;
  */
 public class JSONInputParser {
 
-	private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+	private static final Gson gson = new GsonBuilder().create();
 
 	private static final String SCHEMA = "\"schema\":";
 
@@ -56,5 +56,9 @@ public class JSONInputParser {
 		CDAPPipelineInfo pipeline = parseWranglerPlugin(pluginConfig);
 		String dataSchema = "[{\"name\": \"etlSchemaBody\",\"schema\": {\"type\": \"record\",\"name\": \"etlSchemaBody\",\"fields\": [{\"name\": \"body_1\",\"type\": [\"string\",\"null\"]},{\"name\": \"body_2\",\"type\": [\"string\",\"null\"]},{\"name\": \"body_3\",\"type\": [\"string\",\"null\"]},{\"name\": \"body_4\",\"type\": [\"string\",\"null\"]}]}}]";
 		NullableSchema schema = parseDataSchemaJSON(dataSchema);
+	}
+
+	public static Object convertToObject(String data, Class<?> class1) {
+		return gson.fromJson(data, class1);
 	}
 }

@@ -131,7 +131,7 @@ public class AutoFeatureGenerator {
 
 		List<PluginSummary> pluginSummariesBatchAggregator = new LinkedList<PluginSummary>();
 		List<PluginSummary> pluginSummariesTransform = new LinkedList<PluginSummary>();
-		getCDAPPluginSummaryFromClient(pluginSummariesBatchAggregator, pluginSummariesTransform, clientConfig);
+		getCDAPPluginSummary(pluginSummariesBatchAggregator, pluginSummariesTransform, clientConfig);
 
 		List<String> aggregatePrimitives = getPrimitives(pluginSummariesBatchAggregator, typeSet,
 				aggregatePluginFunctionMap, featureGenerationRequest.getCategoricalColumns(),
@@ -166,7 +166,7 @@ public class AutoFeatureGenerator {
 				multiInputAggregatePluginFunctionMap, multiInputTransformPluginFunctionMap,
 				appliedAggFunctionsWithArguments, appliedTransFunctionsWithArguments,
 				featureGenerationRequest.getIndexes());
-		CDAPPipelineInfo pipelineInfo = pipelineGenerator.generateCDAPPipeline(featureEngineeringDag, dataSchemaList,
+		CDAPPipelineInfo pipelineInfo = pipelineGenerator.generateCDAPPipeline(featureEngineeringDag,
 				inputDataschemaMap, wranglerPluginConfigMap, featureGenerationRequest.getPipelineRunName());
 		File cdapPipelineFile = writeDataToTempFile(gsonObj.toJson(pipelineInfo), "cdap-pipeline");
 		String cdapPipelineFileName = cdapPipelineFile.getAbsolutePath();
@@ -184,7 +184,7 @@ public class AutoFeatureGenerator {
 		}
 	}
 
-	Map<String, Map<String, List<String>>> findMatchingMultiInputPrimitives(Object multiFieldColumnsCombinationObject,
+	public Map<String, Map<String, List<String>>> findMatchingMultiInputPrimitives(Object multiFieldColumnsCombinationObject,
 			Map<String, PluginSummary> multiInputPluginFunctionMap) {
 		List multiFieldColumnsCombination = (List) multiFieldColumnsCombinationObject;
 		Map<String, Map<String, List<String>>> matchingFunctionWithArguments = new HashMap<>();
@@ -297,7 +297,7 @@ public class AutoFeatureGenerator {
 		return columnWiseTableSchemaType;
 	}
 
-	void uploadPipelineFileToCDAP(String cdapPipelineFileName, ClientConfig clientConfig, String pipelineName)
+	public void uploadPipelineFileToCDAP(String cdapPipelineFileName, ClientConfig clientConfig, String pipelineName)
 			throws UnauthenticatedException, IOException {
 		ApplicationClient applicationClient = new ApplicationClient(clientConfig);
 		ApplicationId appId = new ApplicationId("default", pipelineName);
@@ -341,7 +341,7 @@ public class AutoFeatureGenerator {
 		return executor.getCommandOutput();
 	}
 
-	void parseDataSchemaInJson(Set<String> typeSet, List<String> entityNames, List<NullableSchema> dataSchemaList) {
+	public void parseDataSchemaInJson(Set<String> typeSet, List<String> entityNames, List<NullableSchema> dataSchemaList) {
 
 		for (Map.Entry<String, NullableSchema> entry : inputDataschemaMap.entrySet()) {
 			NullableSchema dataSchema = entry.getValue();
@@ -359,7 +359,7 @@ public class AutoFeatureGenerator {
 		return tmpFile;
 	}
 
-	List<String> getPrimitives(List<PluginSummary> pluginSummaries, Set<String> typeSet,
+	public List<String> getPrimitives(List<PluginSummary> pluginSummaries, Set<String> typeSet,
 			Map<String, PluginSummary> pluginFunctionMap, List<SchemaColumn> CategoricalColumns,
 			Map<String, PluginSummary> multiInputPluginFunctionMap, boolean getDynamicPrimitives) {
 		Set<String> primitives = new HashSet<String>();
@@ -428,7 +428,7 @@ public class AutoFeatureGenerator {
 		return new LinkedList<String>(inputTypeTokenSet).toArray(new String[0]);
 	}
 
-	void getCDAPPluginSummaryFromClient(List<PluginSummary> pluginSummariesBatchAggregator,
+	public void getCDAPPluginSummary(List<PluginSummary> pluginSummariesBatchAggregator,
 			List<PluginSummary> pluginSummariesTransform, ClientConfig clientConfig)
 			throws UnauthenticatedException, ArtifactNotFoundException, IOException, UnauthorizedException {
 		// Interact with the CDAP instance located at example.com, port 11015
@@ -444,35 +444,6 @@ public class AutoFeatureGenerator {
 		pluginSummariesBatchAggregator.addAll(pluginSummariesBatchAggregatorTmp);
 		pluginSummariesTransform.addAll(pluginSummariesTransformTmp);
 	}
-
-	// void getCDAPPluginSummary(List<PluginSummary> pluginSummariesBatchAggregator,
-	// List<PluginSummary> pluginSummariesTransform)
-	// throws UnauthenticatedException, ArtifactNotFoundException, IOException,
-	// UnauthorizedException {
-	// List<ArtifactInfo> artifacts = artifactManager.listArtifacts();
-	// for (ArtifactInfo artifact : artifacts) {
-	// if (artifact.getScope().equals(ArtifactScope.SYSTEM)
-	// && artifact.getName().equalsIgnoreCase("cdap-data-pipeline")
-	// && artifact.getVersion().equals("5.0.0")) {
-	// Set<PluginClass> plugins = artifact.getClasses().getPlugins();
-	// for (PluginClass pluginClass : plugins) {
-	// if (pluginClass.getType().equalsIgnoreCase("batchaggregator")) {
-	// pluginSummariesBatchAggregator.add(new PluginSummary(pluginClass.getName(),
-	// pluginClass.getType(), pluginClass.getDescription(),
-	// pluginClass.getPluginInput(),
-	// pluginClass.getPluginOutput(), pluginClass.getPluginFunction(),
-	// pluginClass.getClassName(), null));
-	// } else if (pluginClass.getType().equalsIgnoreCase("transform")) {
-	// pluginSummariesTransform.add(new PluginSummary(pluginClass.getName(),
-	// pluginClass.getType(),
-	// pluginClass.getDescription(), pluginClass.getPluginInput(),
-	// pluginClass.getPluginOutput(), pluginClass.getPluginFunction(),
-	// pluginClass.getClassName(), null));
-	// }
-	// }
-	// }
-	// }
-	// }
 
 	void populateTypeSet(final NullableSchema dataSchema, final Set<String> typeSet) {
 		for (SchemaFieldName field : dataSchema.getFields()) {

@@ -19,25 +19,26 @@ import java.net.HttpURLConnection;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.google.gson.JsonObject;
 
+import co.cask.cdap.api.dataset.lib.KeyValueTable;
 import co.cask.cdap.api.service.http.AbstractHttpServiceHandler;
 import co.cask.cdap.api.service.http.HttpServiceContext;
+import co.cask.cdap.api.service.http.HttpServiceRequest;
 import co.cask.cdap.api.service.http.HttpServiceResponder;
+import co.cask.cdap.featureengineer.pipeline.pojo.CDAPPipelineInfo;
+import co.cask.cdap.featureengineer.pipeline.pojo.NullableSchema;
+import co.cask.cdap.featureengineer.utils.JSONInputParser;
 
 /**
  * @author bhupesh.goel
  *
  */
 public class BaseServiceHandler extends AbstractHttpServiceHandler {
-
-	/**
-	 * 
-	 */
-	public BaseServiceHandler() {
-	}
-
+	
 	/**
 	 * Sends the error response back to client.
 	 *
@@ -46,7 +47,7 @@ public class BaseServiceHandler extends AbstractHttpServiceHandler {
 	 * @param message
 	 *            to be included as part of the error
 	 */
-	public static final void error(HttpServiceResponder responder, String message) {
+	protected final void error(HttpServiceResponder responder, String message) {
 		JsonObject error = new JsonObject();
 		error.addProperty("status", HttpURLConnection.HTTP_INTERNAL_ERROR);
 		error.addProperty("message", message);
@@ -61,7 +62,7 @@ public class BaseServiceHandler extends AbstractHttpServiceHandler {
 	 * @param message
 	 *            to be included as part of the error
 	 */
-	public static final void error(HttpServiceResponder responder, int status, String message) {
+	protected final void error(HttpServiceResponder responder, int status, String message) {
 		JsonObject error = new JsonObject();
 		error.addProperty("status", status);
 		error.addProperty("message", message);
@@ -78,7 +79,7 @@ public class BaseServiceHandler extends AbstractHttpServiceHandler {
 	 * @param body
 	 *            to be sent back to client.
 	 */
-	public static final void sendJson(HttpServiceResponder responder, int status, String body) {
+	protected final void sendJson(HttpServiceResponder responder, int status, String body) {
 		responder.send(status, ByteBuffer.wrap(body.getBytes(StandardCharsets.UTF_8)), "application/json",
 				new HashMap<String, String>());
 	}
@@ -91,7 +92,7 @@ public class BaseServiceHandler extends AbstractHttpServiceHandler {
 	 * @param message
 	 *            to be included as part of the error
 	 */
-	public static final void success(HttpServiceResponder responder, String message) {
+	protected final void success(HttpServiceResponder responder, String message) {
 		JsonObject error = new JsonObject();
 		error.addProperty("status", HttpURLConnection.HTTP_OK);
 		error.addProperty("message", message);
@@ -101,4 +102,34 @@ public class BaseServiceHandler extends AbstractHttpServiceHandler {
 	public void initialize(HttpServiceContext context) throws Exception {
 		super.initialize(context);
 	}
+	
+	protected String readCDAPKeyValueTable(final KeyValueTable table, final String key) {
+		byte[] value = table.read(key);
+		return new String(value, StandardCharsets.UTF_8);
+	}
+	
+	protected String[] getHostAndPort(HttpServiceRequest request) {
+		return request.getHeader("Host").split(":");
+	}
+
+	protected Map<String, CDAPPipelineInfo> getWranglerPluginConfigMap(List<String> dataSchemaNames, KeyValueTable pluginConfigTable) {
+		Map<String, CDAPPipelineInfo> wranglerPluginConfigMap = new HashMap<String, CDAPPipelineInfo>();
+		for (String schemaName : dataSchemaNames) {
+			byte[] pluginConfigBytes = pluginConfigTable.read(schemaName + "_batch");
+			String pluginConfig = new String(pluginConfigBytes, StandardCharsets.UTF_8);
+			wranglerPluginConfigMap.put(schemaName, JSONInputParser.parseWranglerPlugin(pluginConfig));
+		}
+		return wranglerPluginConfigMap;
+	}
+
+	protected Map<String, NullableSchema> getSchemaMap(final List<String> dataSchemaNames, KeyValueTable dataSchemaTable) {
+		Map<String, NullableSchema> schemaMap = new HashMap<String, NullableSchema>();
+		for (String schemaName : dataSchemaNames) {
+			byte[] schemaBytes = dataSchemaTable.read(schemaName);
+			String schema = new String(schemaBytes, StandardCharsets.UTF_8);
+			schemaMap.put(schemaName, JSONInputParser.parseDataSchemaJSON(schema));
+		}
+		return schemaMap;
+	}
+
 }
