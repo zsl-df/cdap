@@ -25,85 +25,122 @@ import co.cask.cdap.internal.app.runtime.plugin.PluginInstantiator;
 import co.cask.cdap.proto.id.ProgramId;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 
 /**
- * An implementation of {@link PluginContext} that uses {@link PluginInstantiator}.
+ * An implementation of {@link PluginContext} that uses
+ * {@link PluginInstantiator}.
  */
 public class DefaultPluginContext implements PluginContext {
 
-  @Nullable
-  private final PluginInstantiator pluginInstantiator;
-  private final ProgramId programId;
-  private final Map<String, Plugin> plugins;
+	@Nullable
+	private PluginInstantiator pluginInstantiator;
+	private final ProgramId programId;
+	private Map<String, Plugin> plugins;
 
-  public DefaultPluginContext(@Nullable PluginInstantiator pluginInstantiator,
-                              ProgramId programId, Map<String, Plugin> plugins) {
-    this.pluginInstantiator = pluginInstantiator;
-    this.programId = programId;
-    this.plugins = plugins;
-  }
+	/**
+	 * Miraj - added to set the plugins in runtime context
+	 * 
+	 * @return
+	 */
+	public Map<String, Plugin> getPlugins() {
+		return plugins;
+	}
 
-  @Override
-  public PluginProperties getPluginProperties(String pluginId) {
-    return getPlugin(pluginId).getProperties();
-  }
+	/**
+	 * Miraj - added to set the plugins in runtime context
+	 * 
+	 * @param plugins
+	 */
+	public void setPlugins(Map<String, Plugin> plugins) {
+		this.plugins = plugins;
+	}
 
-  @Override
-  public PluginProperties getPluginProperties(String pluginId, MacroEvaluator evaluator) {
-    Plugin plugin = getPlugin(pluginId);
-    if (pluginInstantiator == null) {
-      throw new UnsupportedOperationException("Plugin is not supported");
-    }
-    return pluginInstantiator.substituteMacros(plugin, evaluator);
-  }
+	public DefaultPluginContext(@Nullable PluginInstantiator pluginInstantiator, ProgramId programId,
+			Map<String, Plugin> plugins) {
+		this.pluginInstantiator = pluginInstantiator;
+		this.programId = programId;
+		this.plugins = plugins;
+	}
 
-  @Override
-  public <T> Class<T> loadPluginClass(String pluginId) {
-    try {
-      if (pluginInstantiator == null) {
-        throw new UnsupportedOperationException("Plugin is not supported");
-      }
-      Plugin plugin = getPlugin(pluginId);
-      return pluginInstantiator.loadClass(plugin);
-    } catch (ClassNotFoundException e) {
-      // Shouldn't happen, unless there is bug in file localization
-      throw new IllegalArgumentException("Plugin class not found", e);
-    } catch (IOException e) {
-      // This is fatal, since jar cannot be expanded.
-      throw Throwables.propagate(e);
-    }
-  }
+	/**
+	 * Miraj - Adding plugins for runtimecontext from
+	 * DefaultSprkHTTTPServiceContext.usePlugin
+	 * 
+	 * @param pluginId
+	 * @param plugin
+	 */
+	public void setPlugin(String pluginId, Plugin plugin) {
+		plugins.put(pluginId, plugin);
+	}
 
-  @Override
-  public <T> T newPluginInstance(String pluginId) throws InstantiationException {
-    return newPluginInstance(pluginId, null);
-  }
+	public void setPluginInstantiator(PluginInstantiator pluginInstantiator) {
+		if (this.pluginInstantiator == null)
+			this.pluginInstantiator = pluginInstantiator;
+	}
 
-  @Override
-  public <T> T newPluginInstance(String pluginId, @Nullable MacroEvaluator evaluator) throws InstantiationException {
-    try {
-      Plugin plugin = getPlugin(pluginId);
-      if (pluginInstantiator == null) {
-        throw new UnsupportedOperationException("Plugin is not supported");
-      }
-      return pluginInstantiator.newInstance(plugin, evaluator);
-    } catch (ClassNotFoundException e) {
-      // Shouldn't happen, unless there is bug in file localization
-      throw new IllegalArgumentException("Plugin class not found", e);
-    } catch (IOException e) {
-      // This is fatal, since jar cannot be expanded.
-      throw Throwables.propagate(e);
-    }
-  }
+	@Override
+	public PluginProperties getPluginProperties(String pluginId) {
+		return getPlugin(pluginId).getProperties();
+	}
 
-  private Plugin getPlugin(String pluginId) {
-    Plugin plugin = plugins.get(pluginId);
-    Preconditions.checkArgument(plugin != null, "Plugin with id %s does not exist in program %s of application %s.",
-                                pluginId, programId.getProgram(), programId.getApplication());
-    return plugin;
-  }
+	@Override
+	public PluginProperties getPluginProperties(String pluginId, MacroEvaluator evaluator) {
+		Plugin plugin = getPlugin(pluginId);
+		if (pluginInstantiator == null) {
+			throw new UnsupportedOperationException("Plugin is not supported");
+		}
+		return pluginInstantiator.substituteMacros(plugin, evaluator);
+	}
+
+	@Override
+	public <T> Class<T> loadPluginClass(String pluginId) {
+		try {
+			if (pluginInstantiator == null) {
+				throw new UnsupportedOperationException("Plugin is not supported");
+			}
+			Plugin plugin = getPlugin(pluginId);
+			return pluginInstantiator.loadClass(plugin);
+		} catch (ClassNotFoundException e) {
+			// Shouldn't happen, unless there is bug in file localization
+			throw new IllegalArgumentException("Plugin class not found", e);
+		} catch (IOException e) {
+			// This is fatal, since jar cannot be expanded.
+			throw Throwables.propagate(e);
+		}
+	}
+
+	@Override
+	public <T> T newPluginInstance(String pluginId) throws InstantiationException {
+		return newPluginInstance(pluginId, null);
+	}
+
+	@Override
+	public <T> T newPluginInstance(String pluginId, @Nullable MacroEvaluator evaluator) throws InstantiationException {
+		try {
+			Plugin plugin = getPlugin(pluginId);
+			if (pluginInstantiator == null) {
+				throw new UnsupportedOperationException("Plugin is not supported");
+			}
+			return pluginInstantiator.newInstance(plugin, evaluator);
+		} catch (ClassNotFoundException e) {
+			// Shouldn't happen, unless there is bug in file localization
+			throw new IllegalArgumentException("Plugin class not found", e);
+		} catch (IOException e) {
+			// This is fatal, since jar cannot be expanded.
+			throw Throwables.propagate(e);
+		}
+	}
+
+	private Plugin getPlugin(String pluginId) {
+		Plugin plugin = plugins.get(pluginId);
+		Preconditions.checkArgument(plugin != null, "Plugin with id %s does not exist in program %s of application %s.",
+				pluginId, programId.getProgram(), programId.getApplication());
+		return plugin;
+	}
 }

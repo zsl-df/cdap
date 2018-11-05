@@ -44,14 +44,22 @@ import static java.lang.Thread.currentThread;
  * A POJO class for storing source information being set from {@link SparkBatchSourceContext} and used in
  * {@link BatchSparkPipelineDriver}.
  */
-final class SparkBatchSourceFactory {
+/**
+ * Miraj - Made the class pubic as its object was required outside in MMDS
+ * @author miraj.godha
+ *
+ */
+final public class SparkBatchSourceFactory {
 
   private final Map<String, Input.StreamInput> streams;
   private final Map<String, InputFormatProvider> inputFormatProviders;
   private final Map<String, DatasetInfo> datasetInfos;
   private final Map<String, Set<String>> sourceInputs;
 
-  SparkBatchSourceFactory() {
+  /**
+   * Miraj - Made the constractor pubic as its object was required outside in MMDS
+   */
+  public SparkBatchSourceFactory() {
     this.streams = new HashMap<>();
     this.inputFormatProviders = new HashMap<>();
     this.datasetInfos = new HashMap<>();

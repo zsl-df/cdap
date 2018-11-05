@@ -22,6 +22,12 @@ build/
 .stickyStorage
 .build/
 target/
+/target/
+*.classpath
+/*.project
+*.settings
+/*.springBeans
+*.project
 
 # Node log
 npm-*.log

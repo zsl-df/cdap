@@ -50,6 +50,8 @@ import com.google.common.collect.SetMultimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.SparkContext;
+import java.io.File;
 
 import java.io.BufferedReader;
 import java.nio.charset.StandardCharsets;
@@ -109,7 +111,9 @@ public class BatchSparkPipelineDriver extends SparkPipelineRunner implements Jav
 
   @Override
   public void run(JavaSparkExecutionContext sec) throws Exception {
-    this.jsc = new JavaSparkContext();
+	  System.out.println("----------------------------BatchSparkPipelineDriver not creating a new context------------------");
+//    this.jsc = new JavaSparkContext();
+	  this.jsc = new JavaSparkContext(SparkContext.getOrCreate());
     this.sec = sec;
 
     // Execution the whole pipeline in one long transaction. This is because the Spark execution
@@ -122,15 +126,47 @@ public class BatchSparkPipelineDriver extends SparkPipelineRunner implements Jav
   public void run(DatasetContext context) throws Exception {
     BatchPhaseSpec phaseSpec = GSON.fromJson(sec.getSpecification().getProperty(Constants.PIPELINEID),
                                              BatchPhaseSpec.class);
+    
+    System.out.println("----------------------------BatchSparkPipelineDriver------------------");
+    System.out.println("----------------------------phaseSpec ---- Start ------------------");
+    System.out.println(sec.getSpecification().getProperty(Constants.PIPELINEID));
+    System.out.println("----------------------------phaseSpec ---- End ------------------");
 
-    Path configFile = sec.getLocalizationContext().getLocalFile("HydratorSpark.config").toPath();
-    try (BufferedReader reader = Files.newBufferedReader(configFile, StandardCharsets.UTF_8)) {
-      String object = reader.readLine();
-      SparkBatchSourceSinkFactoryInfo sourceSinkInfo = GSON.fromJson(object, SparkBatchSourceSinkFactoryInfo.class);
-      sourceFactory = sourceSinkInfo.getSparkBatchSourceFactory();
-      sinkFactory = sourceSinkInfo.getSparkBatchSinkFactory();
-      stagePartitions = sourceSinkInfo.getStagePartitions();
-    }
+    Path configFile = null;
+    String hydratorSpark = null;
+		try {
+			configFile = sec.getLocalizationContext().getLocalFile("HydratorSpark.config").toPath();
+			System.out.println("Hydrator file path: " + configFile);
+
+		} catch (Exception ex) {
+			try {
+				System.out.println("----------------------------Try Reading HydratorSpark.config created in MMDS------------------");
+				hydratorSpark = sec.getSpecification().getProperty("HydratorSpark.config");
+				System.out.println("---------------------------- Read HydratorSpark.config created in MMDS------------------");
+				System.out.println("Hydrator file path: " + hydratorSpark);
+			} catch (Exception exInn) {
+				System.out.println("----------------------------Try Reading HydratorSpark.config default one from system------------------");
+				configFile = new File("/Users/miraj.godha/Downloads/cdap-sandbox-5.0.0/HydratorSpark.config").toPath();
+			}
+		}
+   
+	if(hydratorSpark != null ) {
+			SparkBatchSourceSinkFactoryInfo sourceSinkInfo = GSON.fromJson(hydratorSpark, SparkBatchSourceSinkFactoryInfo.class);
+			sourceFactory = sourceSinkInfo.getSparkBatchSourceFactory();
+			sinkFactory = sourceSinkInfo.getSparkBatchSinkFactory();
+			stagePartitions = sourceSinkInfo.getStagePartitions();
+	}else {
+		try (BufferedReader reader = Files.newBufferedReader(configFile, StandardCharsets.UTF_8)) {
+			String object = reader.readLine();
+			SparkBatchSourceSinkFactoryInfo sourceSinkInfo = GSON.fromJson(object, SparkBatchSourceSinkFactoryInfo.class);
+			sourceFactory = sourceSinkInfo.getSparkBatchSourceFactory();
+			sinkFactory = sourceSinkInfo.getSparkBatchSinkFactory();
+			stagePartitions = sourceSinkInfo.getStagePartitions();
+		}
+		
+	}
+	
+	
     datasetContext = context;
     numOfRecordsPreview = phaseSpec.getNumOfRecordsPreview();
     PipelinePluginContext pluginContext = new PipelinePluginContext(sec.getPluginContext(), sec.getMetrics(),

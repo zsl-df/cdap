@@ -152,7 +152,7 @@ public abstract class AbstractContext extends AbstractServiceDiscoverer
   private final MetricsContext programMetrics;
   private final DiscoveryServiceClient discoveryServiceClient;
   private final PluginInstantiator pluginInstantiator;
-  private final PluginContext pluginContext;
+  private PluginContext pluginContext;
   private final Admin admin;
   private final long logicalStartTime;
   private final SecureStore secureStore;
@@ -236,6 +236,26 @@ public abstract class AbstractContext extends AbstractServiceDiscoverer
     this.fieldLineageOperations = new HashSet<>();
   }
 
+  /**
+   * Miraj - added this method to be called form DefaultSparkHTTPServicePluginContext.usePlugin
+   * so that plugins created in usePluing are also available in PluginContext
+   * other wise they are just added to pluginConfigurer.
+   * @return
+   */
+  public DefaultPluginContext getPluginContext() {
+	  return (DefaultPluginContext) pluginContext;
+  }
+  
+  /**
+   * Miraj - added this method as usign using getPluginContext in DefaultSparkHTTPServicePluginContext.usePlugin creates issue.
+   * so that plugins created in usePluing are also available in PluginContext
+   * other wise they are just added to pluginConfigurer.
+   * @return
+   */
+  public void setPluginContext(PluginContext pluginContext) {
+	  this.pluginContext= pluginContext;
+  }
+  
   private MetricsCollectionService getMetricsService(CConfiguration cConf, MetricsCollectionService metricsService,
                                                      Map<String, String> runtimeArgs) {
     boolean  emitMetrics =

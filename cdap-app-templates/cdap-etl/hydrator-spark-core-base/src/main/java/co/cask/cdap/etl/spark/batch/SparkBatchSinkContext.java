@@ -19,6 +19,7 @@ package co.cask.cdap.etl.spark.batch;
 import co.cask.cdap.api.data.DatasetContext;
 import co.cask.cdap.api.data.batch.Output;
 import co.cask.cdap.api.spark.JavaSparkExecutionContext;
+import co.cask.cdap.api.spark.service.SparkHttpServiceContext;
 import co.cask.cdap.api.spark.SparkClientContext;
 import co.cask.cdap.etl.api.batch.BatchSinkContext;
 import co.cask.cdap.etl.batch.AbstractBatchContext;
@@ -44,6 +45,17 @@ public class SparkBatchSinkContext extends AbstractBatchContext implements Batch
     super(pipelineRuntime, stageSpec, datasetContext, sparkContext.getAdmin());
     this.sinkFactory = sinkFactory;
     this.isPreviewEnabled = sparkContext.getDataTracer(stageSpec.getName()).isEnabled();
+  }
+  
+  /**
+   * Miraj -- Added this constructor with SparkHttpServiceContext, because SparkClientContext is not available in MMDS
+   * 
+   */
+  public SparkBatchSinkContext(SparkBatchSinkFactory sinkFactory, SparkHttpServiceContext sparkContext,
+          PipelineRuntime pipelineRuntime, DatasetContext datasetContext, StageSpec stageSpec) {
+		super(pipelineRuntime, stageSpec, datasetContext, sparkContext.getAdmin());
+		this.sinkFactory = sinkFactory;
+		this.isPreviewEnabled = sparkContext.getDataTracer(stageSpec.getName()).isEnabled();
   }
 
   public SparkBatchSinkContext(SparkBatchSinkFactory sinkFactory, JavaSparkExecutionContext sec,
@@ -81,6 +93,6 @@ public class SparkBatchSinkContext extends AbstractBatchContext implements Batch
     if (isPreviewEnabled) {
       return Output.of(output.getName(), new NullOutputFormatProvider());
     }
-    return output;
-  }
+		return output;
+	}
 }

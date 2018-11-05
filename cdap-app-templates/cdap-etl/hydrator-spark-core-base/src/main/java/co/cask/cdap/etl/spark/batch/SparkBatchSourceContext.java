@@ -23,6 +23,7 @@ import co.cask.cdap.api.messaging.MessagePublisher;
 import co.cask.cdap.api.messaging.TopicAlreadyExistsException;
 import co.cask.cdap.api.messaging.TopicNotFoundException;
 import co.cask.cdap.api.spark.SparkClientContext;
+import co.cask.cdap.api.spark.service.SparkHttpServiceContext;
 import co.cask.cdap.etl.api.StageSubmitterContext;
 import co.cask.cdap.etl.api.batch.BatchSourceContext;
 import co.cask.cdap.etl.batch.AbstractBatchContext;
@@ -53,6 +54,17 @@ public class SparkBatchSourceContext extends AbstractBatchContext
     this.sourceFactory = sourceFactory;
     this.isPreviewEnabled = sparkContext.getDataTracer(stageSpec.getName()).isEnabled();
   }
+
+  /**
+   * Miraj - Added thsi constructor with SparkHttpServiceContext, as SparkClientContext is not available in MMDS
+   */
+  public SparkBatchSourceContext(SparkBatchSourceFactory sourceFactory, SparkHttpServiceContext sparkContext,
+			PipelineRuntime pipelineRuntime, DatasetContext datasetContext, StageSpec stageSpec) {
+		super(pipelineRuntime, stageSpec, datasetContext, sparkContext.getAdmin());
+		this.sparkContext = null;
+		this.sourceFactory = sourceFactory;
+		this.isPreviewEnabled = sparkContext.getDataTracer(stageSpec.getName()).isEnabled();
+	}
 
   @Override
   public void setInput(Input input) {

@@ -59,7 +59,8 @@ public final class SparkSpecification implements ProgramSpecification, PropertyP
     this.name = name;
     this.description = description;
     this.mainClassName = mainClassName;
-    this.properties = Collections.unmodifiableMap(new HashMap<>(properties));
+    //Miraj - changed to new HashMap
+    this.properties = new HashMap<>(properties);
     this.datasets = Collections.unmodifiableSet(new HashSet<>(datasets));
     this.clientResources = clientResources;
     this.driverResources = driverResources;
