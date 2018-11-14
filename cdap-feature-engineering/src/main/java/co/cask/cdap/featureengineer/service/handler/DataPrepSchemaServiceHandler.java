@@ -29,9 +29,7 @@ import co.cask.cdap.api.service.http.HttpServiceRequest;
 import co.cask.cdap.api.service.http.HttpServiceResponder;
 import co.cask.cdap.featureengineer.FeatureEngineeringApp.FeatureEngineeringConfig;
 import co.cask.cdap.featureengineer.RequestExtractor;
-import co.cask.cdap.featureengineer.pipeline.pojo.NullableSchema;
 import co.cask.cdap.featureengineer.proto.PersistWranglerRequest;
-import co.cask.cdap.featureengineer.utils.JSONInputParser;
 
 /**
  * @author bhupesh.goel

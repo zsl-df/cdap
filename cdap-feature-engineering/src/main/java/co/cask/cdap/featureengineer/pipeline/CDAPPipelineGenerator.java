@@ -455,8 +455,8 @@ public class CDAPPipelineGenerator {
 		pipelineNode.setName(stageName);
 		PluginNode pluginNode = new PluginNode();
 		pipelineNode.setPlugin(pluginNode);
-		pluginNode.setArtifact(this.pluginArtifact);
-		pluginNode.setName("Joiner");
+		pluginNode.setArtifact(this.featureEngineeringArtifact);
+		pluginNode.setName("JoinerFE");
 		pluginNode.setType("batchjoiner");
 		pluginNode.setLabel(stageName);
 		Map<String, Object> pluginProperties = new HashMap<String, Object>();
@@ -1060,8 +1060,8 @@ public class CDAPPipelineGenerator {
 		pipelineNode.setName(stageName);
 		PluginNode pluginNode = new PluginNode();
 		pipelineNode.setPlugin(pluginNode);
-		pluginNode.setArtifact(this.pluginArtifact);
-		pluginNode.setName("Joiner");
+		pluginNode.setArtifact(this.featureEngineeringArtifact);
+		pluginNode.setName("JoinerFE");
 		pluginNode.setType("batchjoiner");
 		pluginNode.setLabel(stageName);
 		Map<String, Object> pluginProperties = new HashMap<String, Object>();
@@ -1216,7 +1216,7 @@ public class CDAPPipelineGenerator {
 				pluginNode.setProperties(pluginProperties);
 				Schema currentSchema = new Schema();
 				Schema lastSchema = schemaMap.get(lastStageName);
-				if (pluginSummary.getName().equals("MultiInputGroupByCategoricalAggregate")) {
+				if (pluginSummary.getName().equals("GroupByCategoricalAggregate")) {
 					createGroupByMultiInputCategoricalAggregateStage(pipelineNode, pluginNode, currentSchema,
 							lastSchema, entry2.getValue(), pluginProperties, pluginSummary, lastStageName, tableName);
 				}
@@ -1415,19 +1415,21 @@ public class CDAPPipelineGenerator {
 					dictionary.retainAll(selectedDictionarySet);
 				System.out.println("Modified Dictionary for " + token[1] + " is dictionary=" + dictionary);
 				categoricalColumnsToBeChecked.put(token[1].toLowerCase(), dictionary);
+				
 				if (categoricalDictionaryIndex > 0) {
 					categoricalDictionary.append(",");
 					categoricalDictionaryIndex = 0;
 				}
+				categoricalDictionary.append(token[1].toLowerCase() + ":");
 				for (String dict : dictionary) {
 					currentSchemaField = new SchemaField();
-					currentSchemaField.setName(token[1] + "_" + dict.toLowerCase());
+					currentSchemaField.setName(token[1].toLowerCase() + "_" + dict.toLowerCase());
 					currentSchemaField.setType(outputType);
 					currentSchemaFieldList.add(currentSchemaField);
 					if (categoricalDictionaryIndex > 0) {
 						categoricalDictionary.append(";");
 					}
-					categoricalDictionary.append(dict);
+					categoricalDictionary.append(dict.toLowerCase());
 					categoricalDictionaryIndex++;
 				}
 				index++;
@@ -1592,8 +1594,8 @@ public class CDAPPipelineGenerator {
 		pipelineNode.setName(stageName);
 		PluginNode pluginNode = new PluginNode();
 		pipelineNode.setPlugin(pluginNode);
-		pluginNode.setArtifact(this.pluginArtifact);
-		pluginNode.setName("Joiner");
+		pluginNode.setArtifact(this.featureEngineeringArtifact);
+		pluginNode.setName("JoinerFE");
 		pluginNode.setType("batchjoiner");
 		pluginNode.setLabel(stageName);
 		Map<String, Object> pluginProperties = new HashMap<String, Object>();

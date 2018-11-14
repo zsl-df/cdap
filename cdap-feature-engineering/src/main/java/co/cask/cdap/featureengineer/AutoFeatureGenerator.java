@@ -369,10 +369,6 @@ public class AutoFeatureGenerator {
 			for (PluginSummary summary : pluginSummaries) {
 				if (summary == null || summary.getPluginFunction() == null || summary.getPluginFunction().length == 0)
 					continue;
-				if (getDynamicPrimitives && !summary.getName().contains("Dynamic"))
-					continue;
-				if (!getDynamicPrimitives && summary.getName().contains("Dynamic"))
-					continue;
 				for (int i = 0; i < summary.getPluginFunction().length; i++) {
 					String inputType = summary.getPluginInput()[i];
 					String outputType = summary.getPluginOutput()[i];

@@ -402,7 +402,6 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		pluginProperties.put("requiredInputs", sourceTableLastStage);
 		pluginProperties.put("selectedFields", ",");
 		pluginProperties.put("keysToBeAppended", generateKeysToBeAppended(keysToBeAppendedMap));
-		pluginProperties.put("categoricalColumnsToBeChecked", ",");
 
 		stageMap.put(stageName, pipelineNode);
 		putInConnection(sourceTableLastStage, stageName);
@@ -531,7 +530,8 @@ public class CDAPPipelineDynamicSchemaGenerator {
 					index++;
 				}
 				properties.put("primitives", sb.toString());
-
+				properties.put("isDynamicSchema", true);
+				
 				pluginNode.setProperties(properties);
 
 				putInConnection(lastStageMapForTable.get(tableName), currentStageName);
@@ -934,7 +934,6 @@ public class CDAPPipelineDynamicSchemaGenerator {
 				sourceTableLastStage + "." + sourceJoinKey + " = " + destTableLastStage + "." + destJoinKey);
 		pluginProperties.put("requiredInputs", sourceTableLastStage + ", " + destTableLastStage);
 		pluginProperties.put("selectedFields", ",");
-		pluginProperties.put("categoricalColumnsToBeChecked", ",");
 		pluginProperties.put("keysToBeAppended", ",");
 		if (enablePartitions)
 			pluginProperties.put("numPartitions", NUM_PARTITIONS);
@@ -955,13 +954,13 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		PluginNode pluginNode = new PluginNode();
 		pipelineNode.setPlugin(pluginNode);
 		pluginNode.setArtifact(this.featureEngineeringArtifact);
-		pluginNode.setName("RowTransformDynamic");
+		pluginNode.setName("RowTransform");
 		pluginNode.setType("transform");
 		pluginNode.setLabel(stageName);
 		Map<String, Object> pluginProperties = new HashMap<String, Object>();
 		pluginNode.setProperties(pluginProperties);
 		pluginProperties.put("primitives", "");
-		pluginProperties.put("categoricalColumnsToBeChecked", "");
+		pluginProperties.put("isDynamicSchema", true);
 		putInConnection(csvStageName, stageName);
 		isUsedStage.add(csvStageName);
 		isUsedStage.add(stageName);
@@ -1006,10 +1005,10 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		pluginNode.setLabel(stageName);
 		Map<String, Object> pluginProperties = new HashMap<String, Object>();
 		pluginNode.setProperties(pluginProperties);
-		if (pluginSummary.getName().equals("GroupByAggregateDynamic")) {
+		if (pluginSummary.getName().equals("GroupByAggregateFE")) {
 			createGroupByAggregateStage(pipelineNode, pluginNode, columnOperations, sourceJoinKey, pluginProperties,
 					pluginSummary, sourceTableLastStage);
-		} else if (pluginSummary.getName().equals("GroupByCategoricalAggregateDynamic")) {
+		} else if (pluginSummary.getName().equals("GroupByCategoricalAggregate")) {
 			createGroupByCategoricalAggregateStage(pipelineNode, pluginNode, columnOperations, sourceJoinKey,
 					pluginProperties, pluginSummary, sourceTableLastStage, sourceTable);
 		}
@@ -1056,7 +1055,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
 				pluginNode.setLabel(currentStageName);
 				Map<String, Object> pluginProperties = new HashMap<String, Object>();
 				pluginNode.setProperties(pluginProperties);
-				if (pluginSummary.getName().equals("MultiInputGroupByCategoricalAggregateDynamic")) {
+				if (pluginSummary.getName().equals("GroupByCategoricalAggregate")) {
 					createGroupByMultiInputCategoricalAggregateStage(pipelineNode, pluginNode, entry2.getValue(),
 							pluginProperties, pluginSummary, lastStageName, tableName);
 				}
@@ -1109,6 +1108,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		if (enablePartitions)
 			pluginProperties.put("numPartitions", NUM_PARTITIONS);
 		pluginProperties.put("groupByFields", sourceJoinKey);
+		pluginProperties.put("isDynamicSchema", true);
 	}
 
 	private void createGroupByCategoricalAggregateStage(PipelineNode pipelineNode, PluginNode pluginNode,
@@ -1139,6 +1139,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		if (enablePartitions)
 			pluginProperties.put("numPartitions", NUM_PARTITIONS);
 		pluginProperties.put("groupByFields", sourceJoinKey);
+		pluginProperties.put("isDynamicSchema", true);
 	}
 
 	private String getSchemaType(SchemaFieldName field) {
@@ -1173,7 +1174,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		}
 		pluginProperties.put("aggregates", aggregates.toString());
 		pluginProperties.put("groupByFields", sourceJoinKey);
-		pluginProperties.put("categoricalColumnsToBeChecked", toCDAPConfig(categoricalColumnsToBeChecked));
+		pluginProperties.put("isDynamicSchema", true);
 		if (enablePartitions)
 			pluginProperties.put("numPartitions", NUM_PARTITIONS);
 	}
@@ -1221,7 +1222,6 @@ public class CDAPPipelineDynamicSchemaGenerator {
 				sourceTableLastStage + "." + sourceJoinKey + " = " + destTableLastStage + "." + destJoinKey);
 		pluginProperties.put("requiredInputs", sourceTableLastStage + ", " + destTableLastStage);
 		pluginProperties.put("selectedFields", selectedFields.toString());
-		pluginProperties.put("categoricalColumnsToBeChecked", toCDAPConfig(categoricalColumnsToBeChecked));
 		pluginProperties.put("keysToBeAppended", ",");
 		if (enablePartitions)
 			pluginProperties.put("numPartitions", NUM_PARTITIONS);
@@ -1302,7 +1302,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		pluginNode.setLabel(stageName);
 		Map<String, Object> pluginProperties = new HashMap<String, Object>();
 		pluginNode.setProperties(pluginProperties);
-		if (pluginSummary.getName().equals("RowTransformDynamic")) {
+		if (pluginSummary.getName().equals("RowTransform")) {
 			StringBuilder primitives = new StringBuilder();
 			int index = 0;
 			for (String columnOperation : columnOperations) {
@@ -1316,7 +1316,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
 				index++;
 			}
 			pluginProperties.put("primitives", primitives.toString());
-			pluginProperties.put("categoricalColumnsToBeChecked", toCDAPConfig(categoricalColumnsToBeChecked));
+			pluginProperties.put("isDynamicSchema", true);
 			if (enablePartitions)
 				pluginProperties.put("numPartitions", NUM_PARTITIONS);
 		}
