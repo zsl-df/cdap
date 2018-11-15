@@ -306,6 +306,7 @@ public class CDAPSubDagGenerator {
 					if (index > 0)
 						sb.append(";");
 					dictionary = dictionary.replaceAll(":", "^");
+					dictionary = dictionary.replaceAll("\\s+", "^^");
 					sb.append(dictionary);
 					index++;
 				}
@@ -329,17 +330,17 @@ public class CDAPSubDagGenerator {
 		List<NullableSchema> dataSchemaList = new LinkedList<NullableSchema>();
 		autoFeatureGenerator.parseDataSchemaInJson(typeSet, entityNames, dataSchemaList);
 		
-		Set<SchemaColumn> timestampColumns = new HashSet<SchemaColumn>(this.featureGenerationRequest.getTimestampColumns());
+//		Set<SchemaColumn> timestampColumns = new HashSet<SchemaColumn>(this.featureGenerationRequest.getTimestampColumns());
 
 		List<PluginSummary> pluginSummariesBatchAggregator = new LinkedList<PluginSummary>();
 		List<PluginSummary> pluginSummariesTransform = new LinkedList<PluginSummary>();
 		autoFeatureGenerator.getCDAPPluginSummary(pluginSummariesBatchAggregator, pluginSummariesTransform,
 				clientConfig);
 
-		List<String> aggregatePrimitives = autoFeatureGenerator.getPrimitives(pluginSummariesBatchAggregator, typeSet,
+		autoFeatureGenerator.getPrimitives(pluginSummariesBatchAggregator, typeSet,
 				aggregatePluginFunctionMap, this.featureGenerationRequest.getCategoricalColumns(),
 				multiInputAggregatePluginFunctionMap, false);
-		List<String> transformPrimitives = autoFeatureGenerator.getPrimitives(pluginSummariesTransform, typeSet,
+		autoFeatureGenerator.getPrimitives(pluginSummariesTransform, typeSet,
 				transformPluginFunctionMap, null, multiInputTransformPluginFunctionMap, false);
 
 		Map<String, Map<String, List<String>>> appliedTransFunctionsWithArguments = autoFeatureGenerator
@@ -365,12 +366,15 @@ public class CDAPSubDagGenerator {
 		try {
 			autoFeatureGenerator.uploadPipelineFileToCDAP(cdapPipelineFileName, clientConfig, pipelineInfo.getName());
 			LOG.info("successfully uploaded cdap pipeline " + pipelineInfo.getName() + " to CDAP server. ");
-		} catch (Exception ex) {
+		} catch (Throwable ex) {
 			if (ex.getMessage().contains("duplicate key")) {
 				LOG.info("successfully uploaded cdap pipeline " + pipelineInfo.getName()
 						+ " to CDAP server with exeption message = " + ex.getMessage());
-			} else
+			} else {
+				LOG.error("Got error while generating subdag for selected features", ex);
 				throw ex;
+			}
+			
 		}
 
 	}
@@ -476,16 +480,7 @@ public class CDAPSubDagGenerator {
 		if (featureDag == null || featureDag.isEmpty())
 			return new HashMap<>();
 		System.out.println("Original Feature size = " + originalFeatureSet.size());
-		List<String> randomFeatureSet = generateRandomFeatureSet(originalFeatureSet);
-		System.out.println("Sampled Feature Size = " + randomFeatureSet.size());
-		StringBuilder sb = new StringBuilder();
-		for (String s : randomFeatureSet) {
-			sb.append(s);
-			sb.append("\n");
-		}
-		writeToFile(sb.toString(),
-				"/Users/bhupesh.goel/Documents/codebase/cdap-codebase/cdap-build-guavus/AutoFeatureSynthesis/resources/subdagGenerator/generatedRandomFeatureSet");
-		Map<String, Set<String>> trainingWiseFeatureSet = breakRandomFeatureSetTrainingWindowWise(randomFeatureSet);
+		Map<String, Set<String>> trainingWiseFeatureSet = breakRandomFeatureSetTrainingWindowWise(originalFeatureSet);
 		Map<String, CDAPSubDagGeneratorOutput> dagGeneratorOutputMap = new HashMap<>();
 		for (Map.Entry<String, Set<String>> entry : trainingWiseFeatureSet.entrySet()) {
 			String filteredFeatureDag = getFilteredFeatureDag(featureDag, entry.getValue(), manualMultiInputFeatures);
@@ -493,8 +488,8 @@ public class CDAPSubDagGenerator {
 			dagGeneratorOutputMap.put(entry.getKey(), output);
 		}
 
-		System.out.println("Single column dictionary = " + columnDictionarySet);
-		System.out.println("Multi Input Column Dictionary = " + multiColumnDictionarySet
+		LOG.debug("Single column dictionary = " + columnDictionarySet);
+		LOG.debug("Multi Input Column Dictionary = " + multiColumnDictionarySet
 				+ "\nfeatureDagEntryDictionaryMap=" + featureDagEntryDictionaryMap);
 		return dagGeneratorOutputMap;
 	}
@@ -585,12 +580,6 @@ public class CDAPSubDagGenerator {
 		return sb.toString();
 	}
 
-	private static void writeToFile(String fileContent, String fileName) throws IOException {
-		BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
-		bw.write(fileContent);
-		bw.close();
-	}
-
 	private boolean presentInSelectedFeatures(String featureDagEntry, Set<String> randomFeatureList, String sourceTable,
 			String sourceFeature, Set<String> manualMultiInputFeatures) {
 		int matchingCount = 0;
@@ -613,6 +602,7 @@ public class CDAPSubDagGenerator {
 		String dictionaryPartOfFeature = feature.substring(index + featureDagEntry.length());
 		String dictionaryPartOnly = trimByChar(dictionaryPartOfFeature, '_');
 		dictionaryPartOnly = dictionaryPartOnly.replaceAll(":", "^");
+		dictionaryPartOnly = dictionaryPartOnly.replaceAll("\\s+", "^^");
 		String[] dictionary = dictionaryPartOnly.trim().split("__");
 		if (dictionaryPartOnly.isEmpty())
 			dictionary = new String[0];

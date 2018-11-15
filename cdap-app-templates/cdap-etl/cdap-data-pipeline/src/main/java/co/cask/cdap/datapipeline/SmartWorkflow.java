@@ -627,7 +627,9 @@ public class SmartWorkflow extends AbstractWorkflow {
     }
 
     if (!stageInvalids.isEmpty()) {
-      throw new InvalidLineageException(stageInvalids);
+      //throw new InvalidLineageException(stageInvalids);
+	LOG.debug(new InvalidLineageException(stageInvalids).getMessage());
+	return;
     }
 
     LineageOperationsProcessor processor = new LineageOperationsProcessor(spec.getConnections(), allStageOperations,

@@ -174,7 +174,7 @@ public class AutoFeatureGenerator {
 			uploadPipelineFileToCDAP(cdapPipelineFileName, clientConfig, pipelineInfo.getName());
 			LOG.info("successfully uploaded cdap pipeline " + pipelineInfo.getName() + " to CDAP server. ");
 			return new AutoFeatureGeneratorResult(featureEngineeringDag, pipelineInfo.name);
-		} catch (Exception ex) {
+		} catch (Throwable ex) {
 			if (ex.getMessage().contains("duplicate key")) {
 				LOG.debug("successfully uploaded cdap pipeline " + pipelineInfo.getName()
 						+ " to CDAP server with exeption message = " + ex.getMessage());
