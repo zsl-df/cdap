@@ -41,9 +41,9 @@ import co.cask.cdap.featureengineer.FeatureEngineeringApp.FeatureEngineeringConf
 import co.cask.cdap.featureengineer.RequestExtractor;
 import co.cask.cdap.featureengineer.pipeline.pojo.CDAPPipelineInfo;
 import co.cask.cdap.featureengineer.request.pojo.DataSchemaNameList;
-import co.cask.cdap.featureengineer.pipeline.pojo.FeatureStats;
+import co.cask.cdap.featureengineer.response.pojo.FeatureStats;
+import co.cask.cdap.featureengineer.response.pojo.SelectedFeatureStats;
 import co.cask.cdap.featureengineer.pipeline.pojo.NullableSchema;
-import co.cask.cdap.featureengineer.pipeline.pojo.SelectedFeatureStats;
 import co.cask.cdap.featureengineer.proto.FeatureGenerationRequest;
 import co.cask.cdap.featureengineer.proto.FeatureSelectionRequest;
 import co.cask.cdap.featureengineer.utils.JSONInputParser;

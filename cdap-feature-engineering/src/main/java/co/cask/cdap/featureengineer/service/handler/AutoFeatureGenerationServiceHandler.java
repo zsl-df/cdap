@@ -15,33 +15,35 @@
  */
 package co.cask.cdap.featureengineer.service.handler;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import co.cask.cdap.api.annotation.Property;
 import co.cask.cdap.api.dataset.lib.KeyValueTable;
-import co.cask.cdap.api.dataset.table.Table;
 import co.cask.cdap.api.service.http.HttpServiceContext;
 import co.cask.cdap.api.service.http.HttpServiceRequest;
 import co.cask.cdap.api.service.http.HttpServiceResponder;
-import co.cask.cdap.feature.selection.CDAPSubDagGenerator;
 import co.cask.cdap.featureengineer.AutoFeatureGenerator;
 import co.cask.cdap.featureengineer.AutoFeatureGenerator.AutoFeatureGeneratorResult;
 import co.cask.cdap.featureengineer.FeatureEngineeringApp.FeatureEngineeringConfig;
 import co.cask.cdap.featureengineer.RequestExtractor;
+import co.cask.cdap.featureengineer.enums.FeatureGenerationConfigParams;
 import co.cask.cdap.featureengineer.pipeline.pojo.CDAPPipelineInfo;
 import co.cask.cdap.featureengineer.pipeline.pojo.NullableSchema;
 import co.cask.cdap.featureengineer.proto.FeatureGenerationRequest;
 import co.cask.cdap.featureengineer.request.pojo.DataSchemaNameList;
+import co.cask.cdap.featureengineer.response.pojo.FeatureGenerationConfigParam;
+import co.cask.cdap.featureengineer.response.pojo.FeatureGenerationConfigParamList;
 import co.cask.cdap.featureengineer.utils.JSONInputParser;
 
 /**
@@ -123,4 +125,17 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
 		}
 	}
 	
+	@GET
+	@Path("featureengineering/feature/generation/configparams/get")
+	public void getFeatureGenerationConfigParameters(HttpServiceRequest request, HttpServiceResponder responder,
+			@QueryParam("getSchemaParams") Boolean getSchemaParams) {
+		
+		FeatureGenerationConfigParamList configParamList = new FeatureGenerationConfigParamList();
+		for(FeatureGenerationConfigParams configParam : FeatureGenerationConfigParams.values()) {
+			if(getSchemaParams.equals(configParam.isSchemaSpecific())) {
+				configParamList.addConfigParam(new FeatureGenerationConfigParam(configParam.getName(), configParam.getDescription()));
+			}
+		}
+		responder.sendJson(configParamList);
+	}
 }

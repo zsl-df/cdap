@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package co.cask.cdap.featureengineer.request.pojo;
+package co.cask.cdap.featureengineer.response.pojo;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -22,37 +22,41 @@ import java.util.List;
  * @author bhupesh.goel
  *
  */
-public class DataSchemaList {
+public class SelectedFeatureStats {
 
-	private List<DataSchema> dataSchemaList;
+	private List<FeatureStats> featureStatsList;
 
-	/**
-	 * @return the dataSchemaList
-	 */
-	public List<DataSchema> getDataSchemaList() {
-		return dataSchemaList;
+	public SelectedFeatureStats() {
+		this.featureStatsList = new LinkedList<>();
 	}
 
 	/**
-	 * @param dataSchemaList
-	 *            the dataSchemaList to set
+	 * @return the featureStatsList
 	 */
-	public void setDataSchemaList(List<DataSchema> dataSchemaList) {
-		this.dataSchemaList = dataSchemaList;
+	public List<FeatureStats> getFeatureStatsList() {
+		return featureStatsList;
 	}
 
-	public void addDataSchema(DataSchema schema) {
-		if(dataSchemaList==null) {
-			this.dataSchemaList = new LinkedList<>();
+	/**
+	 * @param featureStatsList
+	 *            the featureStatsList to set
+	 */
+	public void setFeatureStatsList(List<FeatureStats> featureStatsList) {
+		this.featureStatsList = featureStatsList;
+	}
+
+	public void addFeatureStat(FeatureStats featureStat) {
+		if (featureStatsList == null) {
+			featureStatsList = new LinkedList<>();
 		}
-		this.dataSchemaList.add(schema);
+		featureStatsList.add(featureStat);
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((dataSchemaList == null) ? 0 : dataSchemaList.hashCode());
+		result = prime * result + ((featureStatsList == null) ? 0 : featureStatsList.hashCode());
 		return result;
 	}
 
@@ -64,18 +68,18 @@ public class DataSchemaList {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		DataSchemaList other = (DataSchemaList) obj;
-		if (dataSchemaList == null) {
-			if (other.dataSchemaList != null)
+		SelectedFeatureStats other = (SelectedFeatureStats) obj;
+		if (featureStatsList == null) {
+			if (other.featureStatsList != null)
 				return false;
-		} else if (!dataSchemaList.equals(other.dataSchemaList))
+		} else if (!featureStatsList.equals(other.featureStatsList))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "DataSchemaList [dataSchemaList=" + dataSchemaList + "]";
+		return "SelectedFeatureStats [featureStatsList=" + featureStatsList + "]";
 	}
 
 }

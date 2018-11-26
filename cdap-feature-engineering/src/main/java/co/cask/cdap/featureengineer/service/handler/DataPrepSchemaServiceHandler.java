@@ -38,8 +38,8 @@ import co.cask.cdap.featureengineer.pipeline.pojo.NullableSchema;
 import co.cask.cdap.featureengineer.pipeline.pojo.NullableSchemaField;
 import co.cask.cdap.featureengineer.proto.PersistWranglerRequest;
 import co.cask.cdap.featureengineer.request.pojo.Column;
-import co.cask.cdap.featureengineer.request.pojo.DataSchema;
-import co.cask.cdap.featureengineer.request.pojo.DataSchemaList;
+import co.cask.cdap.featureengineer.response.pojo.DataSchema;
+import co.cask.cdap.featureengineer.response.pojo.DataSchemaList;
 import co.cask.cdap.featureengineer.utils.JSONInputParser;
 
 /**

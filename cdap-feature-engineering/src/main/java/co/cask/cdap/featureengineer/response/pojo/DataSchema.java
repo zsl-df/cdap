@@ -13,10 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package co.cask.cdap.featureengineer.request.pojo;
+package co.cask.cdap.featureengineer.response.pojo;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import co.cask.cdap.featureengineer.request.pojo.Column;
 
 /**
  * @author bhupesh.goel
