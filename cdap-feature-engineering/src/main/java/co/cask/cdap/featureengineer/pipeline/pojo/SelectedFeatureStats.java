@@ -22,29 +22,41 @@ import java.util.List;
  * @author bhupesh.goel
  *
  */
-public class NullableSchemaField extends SchemaFieldName {
+public class SelectedFeatureStats {
 
-	List<String> type;
+	private List<FeatureStats> featureStatsList;
 
-	public List<String> getType() {
-		return type;
+	public SelectedFeatureStats() {
+		this.featureStatsList = new LinkedList<>();
 	}
 
-	public void setType(List<String> type) {
-		this.type = type;
+	/**
+	 * @return the featureStatsList
+	 */
+	public List<FeatureStats> getFeatureStatsList() {
+		return featureStatsList;
 	}
 
-	public void setNullType(String type) {
-		this.type = new LinkedList<String>();
-		this.type.add(type);
-		this.type.add("null");
+	/**
+	 * @param featureStatsList
+	 *            the featureStatsList to set
+	 */
+	public void setFeatureStatsList(List<FeatureStats> featureStatsList) {
+		this.featureStatsList = featureStatsList;
 	}
-	
+
+	public void addFeatureStat(FeatureStats featureStat) {
+		if (featureStatsList == null) {
+			featureStatsList = new LinkedList<>();
+		}
+		featureStatsList.add(featureStat);
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		int result = 1;
+		result = prime * result + ((featureStatsList == null) ? 0 : featureStatsList.hashCode());
 		return result;
 	}
 
@@ -52,22 +64,22 @@ public class NullableSchemaField extends SchemaFieldName {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
+		if (obj == null)
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		NullableSchemaField other = (NullableSchemaField) obj;
-		if (type == null) {
-			if (other.type != null)
+		SelectedFeatureStats other = (SelectedFeatureStats) obj;
+		if (featureStatsList == null) {
+			if (other.featureStatsList != null)
 				return false;
-		} else if (!type.equals(other.type))
+		} else if (!featureStatsList.equals(other.featureStatsList))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "NullableSchemaField [type=" + type + "]";
+		return "SelectedFeatureStats [featureStatsList=" + featureStatsList + "]";
 	}
 
 }

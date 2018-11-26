@@ -13,46 +13,49 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package co.cask.cdap.featureengineer.pipeline.pojo;
+package co.cask.cdap.featureengineer.request.pojo;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
  * @author bhupesh.goel
  *
  */
-public class DataSchemaNameList {
+public class DataSchemaList {
+
+	private List<DataSchema> dataSchemaList;
+
+	/**
+	 * @return the dataSchemaList
+	 */
+	public List<DataSchema> getDataSchemaList() {
+		return dataSchemaList;
+	}
+
+	/**
+	 * @param dataSchemaList
+	 *            the dataSchemaList to set
+	 */
+	public void setDataSchemaList(List<DataSchema> dataSchemaList) {
+		this.dataSchemaList = dataSchemaList;
+	}
+
+	public void addDataSchema(DataSchema schema) {
+		if(dataSchemaList==null) {
+			this.dataSchemaList = new LinkedList<>();
+		}
+		this.dataSchemaList.add(schema);
+	}
 	
-	List<String> dataSchemaName;
-
-	/**
-	 * @return the dataSchemaName
-	 */
-	public List<String> getDataSchemaName() {
-		return dataSchemaName;
-	}
-
-	/**
-	 * @param dataSchemaName the dataSchemaName to set
-	 */
-	public void setDataSchemaName(List<String> dataSchemaName) {
-		this.dataSchemaName = dataSchemaName;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((dataSchemaName == null) ? 0 : dataSchemaName.hashCode());
+		result = prime * result + ((dataSchemaList == null) ? 0 : dataSchemaList.hashCode());
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -61,23 +64,18 @@ public class DataSchemaNameList {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		DataSchemaNameList other = (DataSchemaNameList) obj;
-		if (dataSchemaName == null) {
-			if (other.dataSchemaName != null)
+		DataSchemaList other = (DataSchemaList) obj;
+		if (dataSchemaList == null) {
+			if (other.dataSchemaList != null)
 				return false;
-		} else if (!dataSchemaName.equals(other.dataSchemaName))
+		} else if (!dataSchemaList.equals(other.dataSchemaList))
 			return false;
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
-		return "DataSchemaNameList [dataSchemaName=" + dataSchemaName + "]";
+		return "DataSchemaList [dataSchemaList=" + dataSchemaList + "]";
 	}
-	
-	
 
 }

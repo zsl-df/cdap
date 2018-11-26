@@ -27,7 +27,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -56,9 +56,9 @@ public class FeatureSubsetPipelineGenerationEndPointTest {
 		request.setFeatureSelectionPipeline("InputX1ErrorSelectionTestPipeline");
 		request.setFeatureEngineeringPipeline("InputX1ErrorTestPipeline");
 
-		String url = "http://bhupesh-goel.local:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/AutoFeatureEngineeringService/methods/featureengineering/InputX1ErrorTestPipeline/features/selected/create/pipeline";
+		String url = "http://bhupesh-goel.local:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/ManualFeatureSelectionService/methods/featureengineering/InputX1ErrorTestPipeline/features/selected/create/pipeline";
 		System.out.println("url = " + url);
-		HttpClient client = new DefaultHttpClient();
+		HttpClient client = HttpClientBuilder.create().build();
 		HttpPost post = new HttpPost(url);
 
 		// // add header

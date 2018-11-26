@@ -20,8 +20,9 @@ import co.cask.cdap.api.Config;
 import co.cask.cdap.api.app.AbstractApplication;
 import co.cask.cdap.api.dataset.DatasetProperties;
 import co.cask.cdap.api.dataset.lib.KeyValueTable;
-import co.cask.cdap.featureengineer.service.AutoFeatureEngineeringService;
+import co.cask.cdap.featureengineer.service.AutoFeatureGenerationService;
 import co.cask.cdap.featureengineer.service.DataPrepSchemaService;
+import co.cask.cdap.featureengineer.service.ManualFeatureSelectionService;
 
 /**
  * Feature Engineering Application.
@@ -108,6 +109,7 @@ public class FeatureEngineeringApp extends AbstractApplication<FeatureEngineerin
 		createDataset(config.getPipelineDataSchemasTable(), KeyValueTable.class,
 				DatasetProperties.builder().setDescription("Table to persist pipeline data schemas").build());
 		addService(new DataPrepSchemaService(config));
-		addService(new AutoFeatureEngineeringService(config));
+		addService(new AutoFeatureGenerationService(config));
+		addService(new ManualFeatureSelectionService(config));
 	}
 }

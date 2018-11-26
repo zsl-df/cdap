@@ -13,61 +13,71 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package co.cask.cdap.featureengineer.pipeline.pojo;
+package co.cask.cdap.featureengineer.request.pojo;
 
-import java.util.LinkedList;
 import java.util.List;
 
 /**
  * @author bhupesh.goel
  *
  */
-public class NullableSchemaField extends SchemaFieldName {
-
-	List<String> type;
-
-	public List<String> getType() {
-		return type;
-	}
-
-	public void setType(List<String> type) {
-		this.type = type;
-	}
-
-	public void setNullType(String type) {
-		this.type = new LinkedList<String>();
-		this.type.add(type);
-		this.type.add("null");
-	}
+public class DataSchemaNameList {
 	
+	List<String> dataSchemaName;
+
+	/**
+	 * @return the dataSchemaName
+	 */
+	public List<String> getDataSchemaName() {
+		return dataSchemaName;
+	}
+
+	/**
+	 * @param dataSchemaName the dataSchemaName to set
+	 */
+	public void setDataSchemaName(List<String> dataSchemaName) {
+		this.dataSchemaName = dataSchemaName;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		int result = 1;
+		result = prime * result + ((dataSchemaName == null) ? 0 : dataSchemaName.hashCode());
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
+		if (obj == null)
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		NullableSchemaField other = (NullableSchemaField) obj;
-		if (type == null) {
-			if (other.type != null)
+		DataSchemaNameList other = (DataSchemaNameList) obj;
+		if (dataSchemaName == null) {
+			if (other.dataSchemaName != null)
 				return false;
-		} else if (!type.equals(other.type))
+		} else if (!dataSchemaName.equals(other.dataSchemaName))
 			return false;
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
-		return "NullableSchemaField [type=" + type + "]";
+		return "DataSchemaNameList [dataSchemaName=" + dataSchemaName + "]";
 	}
+	
+	
 
 }

@@ -70,6 +70,7 @@ public class CDAPPipelineGenerator {
 	private final Artifact pluginArtifact;
 	private final Artifact featureEngineeringArtifact;
 	private final Set<String> specificPluginNames;
+	private final String featureSelectionPipeline;
 	Map<String, PluginSummary> aggregatePluginFunctionMap;
 	Map<String, PluginSummary> transformPluginFunctionMap;
 	Map<String, String> lastStageMapForTable;
@@ -126,7 +127,7 @@ public class CDAPPipelineGenerator {
 			Map<String, PluginSummary> multiInputTransformPluginFunctionMap,
 			Map<String, Map<String, List<String>>> appliedAggFunctionsWithArguments,
 			Map<String, Map<String, List<String>>> appliedTransFunctionsWithArguments, List<SchemaColumn> indexes,
-			Map<String, CDAPSubDagGeneratorOutput> dagGeneratorOutputMap) {
+			Map<String, CDAPSubDagGeneratorOutput> dagGeneratorOutputMap, String featureSelectionPipeline) {
 		this.stageMap = new LinkedHashMap<String, BasePipelineNode>();
 		this.connections = new LinkedHashMap<String, Set<String>>();
 		this.systemArtifact = new Artifact();
@@ -140,6 +141,7 @@ public class CDAPPipelineGenerator {
 		for (String entity : entityNames) {
 			lastStageMapForTable.put(entity, entity);
 		}
+		this.featureSelectionPipeline = featureSelectionPipeline;
 		this.dagGeneratorOutputMap = dagGeneratorOutputMap;
 		// this.featureDagEntryDictionaryMap = featureDagEntryDictionaryMap;
 		globalUniqueID = 0;
@@ -272,7 +274,7 @@ public class CDAPPipelineGenerator {
 	}
 
 	public CDAPPipelineInfo generateCDAPPipeline(Map<String, NullableSchema> dataSchema,
-			Map<String, CDAPPipelineInfo> wranglerPluginConfigMap, String featureSelectionPipeline) {
+			Map<String, CDAPPipelineInfo> wranglerPluginConfigMap) {
 		CDAPPipelineInfo pipelineInformation = new CDAPPipelineInfo();
 		if (StringUtils.isEmpty(featureSelectionPipeline))
 			pipelineInformation.setName("Pipeline_" + System.currentTimeMillis());
@@ -280,7 +282,7 @@ public class CDAPPipelineGenerator {
 			pipelineInformation.setName(featureSelectionPipeline);
 		
 		pipelineInformation.setArtifact(systemArtifact);
-		PipelineConfiguration config = generatePipelineConfiguration(dataSchema, wranglerPluginConfigMap);
+		PipelineConfiguration config = generatePipelineConfiguration(dataSchema, wranglerPluginConfigMap, featureSelectionPipeline);
 		pipelineInformation.setConfig(config);
 		System.out.println("generatedStageMap = \n");
 		for (Map.Entry<String, String> entry : generatedStageMap.entrySet()) {
@@ -290,7 +292,7 @@ public class CDAPPipelineGenerator {
 	}
 
 	private PipelineConfiguration generatePipelineConfiguration(Map<String, NullableSchema> dataSchema,
-			Map<String, CDAPPipelineInfo> wranglerPluginConfigMap) {
+			Map<String, CDAPPipelineInfo> wranglerPluginConfigMap, String featureSelectionPipeline) {
 		PipelineConfiguration pipeLineConfiguration = new PipelineConfiguration();
 		pipeLineConfiguration.setEngine("spark");
 		// pipeLineConfiguration.setEngine("mapreduce");
@@ -309,7 +311,7 @@ public class CDAPPipelineGenerator {
 		createSourceStages(dataSchema, wranglerPluginConfigMap, pipeLineConfiguration);
 		Map<String, String> lastStageMapForTableTillSource = new HashMap<>(lastStageMapForTable);
 		List<String> lastStagesForEachTrainingWindow = new LinkedList<String>();
-		List<String> statsStagesForEachTrainingWindow = new LinkedList<String>();
+//		List<String> statsStagesForEachTrainingWindow = new LinkedList<String>();
 		Map<String, Map<String, List<String>>> originalAppliedAggFunctionsWithArguments = getDeepCopy(
 				this.appliedAggFunctionsWithArguments);
 		Map<String, Map<String, List<String>>> originalAppliedTransFunctionsWithArguments = getDeepCopy(
@@ -342,14 +344,14 @@ public class CDAPPipelineGenerator {
 				}
 				populateStagesFromOperations(dagGeneratorOutput.getFeatureSubDag());
 				lastStagesForEachTrainingWindow.add(lastStageMapForTable.get(targetEntity));
-				String statsComputeStageName = createStatsComputeStage(lastStageMapForTable.get(targetEntity));
-				statsStagesForEachTrainingWindow.add(statsComputeStageName);
+//				String statsComputeStageName = createStatsComputeStage(lastStageMapForTable.get(targetEntity));
+//				statsStagesForEachTrainingWindow.add(statsComputeStageName);
 			}
 			String sourceTempTableName = takeOuterjoinOfAllTempTables(lastStagesForEachTrainingWindow,
 					targetEntityIdField);
-			String joinedStatsTableName = takeOuterjoinOfAllTempTables(statsStagesForEachTrainingWindow, "Statistic");
-			getElasticSearchSinkNode("StatsElasticsearch", "statsDataSink", "stats_index_" + System.currentTimeMillis(),
-					"stats", "Statistic", joinedStatsTableName);
+//			String joinedStatsTableName = takeOuterjoinOfAllTempTables(statsStagesForEachTrainingWindow, "Statistic");
+//			getElasticSearchSinkNode("StatsElasticsearch", "statsDataSink", "stats_index_" + System.currentTimeMillis(),
+//					"stats", "Statistic", joinedStatsTableName);
 			lastStageMapForTable.put(targetEntity, sourceTempTableName);
 			completePipelineAndSerializeIt(pipeLineConfiguration);
 
@@ -568,9 +570,10 @@ public class CDAPPipelineGenerator {
 	}
 
 	private void completePipelineAndSerializeIt(PipelineConfiguration pipeLineConfiguration) {
-		getElasticSearchSinkNode("Elasticsearch", "dataSink",
-				targetEntity.toLowerCase() + "_index_" + System.currentTimeMillis(), targetEntity.toLowerCase(),
-				targetEntityIdField, lastStageMapForTable.get(targetEntity));
+//		getElasticSearchSinkNode("Elasticsearch", "dataSink",
+//				targetEntity.toLowerCase() + "_index_" + System.currentTimeMillis(), targetEntity.toLowerCase(),
+//				targetEntityIdField, lastStageMapForTable.get(targetEntity));
+		getCDAPTableSinkNode("FeatureValues", lastStageMapForTable.get(targetEntity), targetEntityIdField);
 		markReachableNodesFromTargetEntity(targetEntity);
 		truncateIslandNodesFromDAG();
 		generateTrashSinkStage();
@@ -590,6 +593,28 @@ public class CDAPPipelineGenerator {
 		pipeLineConfiguration.setStages(new LinkedList<BasePipelineNode>(stageMap.values()));
 	}
 
+	private PipelineNode getCDAPTableSinkNode(final String stageName, final String lastStageName, final String targetEntityIdField) {
+		PipelineNode stageNode = new PipelineNode();
+		stageNode.setName(stageName);
+		PluginNode pluginNode = new PluginNode();
+		stageNode.setPlugin(pluginNode);
+		pluginNode.setLabel(stageName);
+		pluginNode.setName("Table");
+		pluginNode.setType("batchsink");
+		pluginNode.setArtifact(this.pluginArtifact);
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put("name", featureSelectionPipeline);
+		properties.put("schema.row.field", targetEntityIdField); // Test or make changes to make sure targetEntityIdField is coming in schema specifically with multiple time windows.
+		properties.put("schema", gsonObj.toJson(schemaMap.get(lastStageName)));
+		pluginNode.setProperties(properties);
+
+		putInConnection(lastStageName, stageName);
+		stageMap.put(stageName, stageNode);
+		isUsedStage.add(lastStageName);
+		isUsedStage.add(stageName);
+		return stageNode;
+	}
+	
 	private void populateStagesFromOperations(String featureDag) {
 		computeManualyProvidedVariables();
 		String featureList[] = featureDag.split("\n");
@@ -944,12 +969,19 @@ public class CDAPPipelineGenerator {
 	private void generateTrashSinkStage() {
 		Set<String> toBeTrashedStages = new HashSet<String>(stageMap.keySet());
 		for (String stageName : toBeTrashedStages) {
-			if (connections.containsKey(stageName) || stageName.endsWith("Elasticsearch"))
+			if (connections.containsKey(stageName) || isStageSinkType(stageName))
 				continue;
 			addTrashSinkForStage(stageName);
 		}
 	}
 
+	private boolean isStageSinkType(String stageName) {
+		BasePipelineNode node = stageMap.get(stageName);
+		if (node.getPlugin().getType().equals("batchsink"))
+			return true;
+		return false;
+	}
+	
 	private PipelineNode addTrashSinkForStage(String lastStageName) {
 		Schema lastStageSchema = schemaMap.get(lastStageName);
 		String currentStageName = "Trash_" + lastStageName;

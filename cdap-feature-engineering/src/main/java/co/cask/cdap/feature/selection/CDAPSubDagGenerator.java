@@ -15,10 +15,7 @@
  */
 package co.cask.cdap.feature.selection;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,7 +24,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -253,7 +249,7 @@ public class CDAPSubDagGenerator {
 			ArtifactNotFoundException, UnauthorizedException, InterruptedException {
 		Set<String> manualMultiInputFeatures = getManualMultiInputFeatures();
 		Map<String, CDAPSubDagGeneratorOutput> dagGeneratorOutputMap = generateFilteredFeatureDag(featureDag, features, manualMultiInputFeatures);
-		System.out.println(dagGeneratorOutputMap);
+		LOG.debug("Feature DAG Map = "+dagGeneratorOutputMap);
 		for (Map.Entry<String, CDAPSubDagGeneratorOutput> entry : dagGeneratorOutputMap.entrySet()) {
 			LOG.debug("Original Feature Dag length=" + featureDag.length() + "\nNew feature dag length="
 					+ entry.getValue().featureSubDag.length() + " for timewindow=" + entry.getKey());
@@ -271,7 +267,6 @@ public class CDAPSubDagGenerator {
 		Set<String> typeSet = new HashSet<String>();
 		List<String> entityNames = new LinkedList<String>();
 		List<NullableSchema> dataSchemaList = new LinkedList<NullableSchema>();
-		Map<String, Map<String, Object>> inputDataSourceInfoMap = new HashMap<String, Map<String, Object>>();
 		autoFeatureGenerator.parseDataSchemaInJson(typeSet, entityNames, dataSchemaList);
 
 		List<PluginSummary> pluginSummariesBatchAggregator = new LinkedList<PluginSummary>();
@@ -356,9 +351,9 @@ public class CDAPSubDagGenerator {
 				featureGenerationRequest.getTargetEntityFieldId(), featureGenerationRequest.getWindowEndTime(), 
 				featureGenerationRequest.getTrainingWindows(),featureGenerationRequest.getTimeIndexColumns(),
 				multiInputAggregatePluginFunctionMap, multiInputTransformPluginFunctionMap, appliedAggFunctionsWithArguments,
-				appliedTransFunctionsWithArguments, featureGenerationRequest.getIndexes(), dagGeneratorOutputMap);
+				appliedTransFunctionsWithArguments, featureGenerationRequest.getIndexes(), dagGeneratorOutputMap, featureSelectionPipeline);
 		
-		CDAPPipelineInfo pipelineInfo = pipelineGenerator.generateCDAPPipeline(this.dataSchema, wranglerPluginConfigMap, featureSelectionPipeline);
+		CDAPPipelineInfo pipelineInfo = pipelineGenerator.generateCDAPPipeline(this.dataSchema, wranglerPluginConfigMap);
 		
 		File cdapPipelineFile = writeDataToTempFile(gsonObj.toJson(pipelineInfo), "cdap-pipeline");
 		String cdapPipelineFileName = cdapPipelineFile.getAbsolutePath();
@@ -426,53 +421,6 @@ public class CDAPSubDagGenerator {
 			multiInputMap.put(sb.toString(), table);
 		}
 		return multiInputMap;
-	}
-
-	private static Map<String, List<String>> loadDataSchema(String schemaFile) throws IOException {
-		Map<String, List<String>> dataSchema = new HashMap<String, List<String>>();
-		File f = new File(schemaFile);
-		StringBuilder sb = new StringBuilder();
-		BufferedReader b = new BufferedReader(new FileReader(f));
-		String readLine = "";
-		while ((readLine = b.readLine()) != null) {
-			readLine = readLine.trim();
-			String[] token = readLine.split("\\.");
-			List<String> columns = dataSchema.get(token[0]);
-			if (columns == null) {
-				columns = new LinkedList<>();
-				dataSchema.put(token[0], columns);
-			}
-			columns.add(token[1]);
-		}
-		return dataSchema;
-	}
-
-	private static String loadFromFile(String featureDagFile) throws IOException {
-		File f = new File(featureDagFile);
-		StringBuilder sb = new StringBuilder();
-		BufferedReader b = new BufferedReader(new FileReader(f));
-		String readLine = "";
-		while ((readLine = b.readLine()) != null) {
-			readLine = readLine.trim();
-			sb.append(readLine);
-			sb.append("\n");
-		}
-		return sb.toString();
-	}
-
-	private static List<String> loadFeaturesFromFile(String featureFile) throws IOException {
-		List<String> features = new LinkedList<String>();
-		File f = new File(featureFile);
-		BufferedReader b = new BufferedReader(new FileReader(f));
-		String readLine = "";
-		while ((readLine = b.readLine()) != null) {
-			readLine = readLine.trim();
-			if (readLine.equals(""))
-				continue;
-			String feature = readLine.split("\": ")[0].substring(1);
-			features.add(feature);
-		}
-		return features;
 	}
 
 	public Map<String, CDAPSubDagGeneratorOutput> generateFilteredFeatureDag(final String featureDag,
@@ -747,18 +695,6 @@ public class CDAPSubDagGenerator {
 
 	private String normalizeString(final String input) {
 		return input.replaceAll("[\\.()]", "_").toLowerCase();
-	}
-
-	private List<String> generateRandomFeatureSet(List<String> originalFeatureSet) {
-		Random random = new Random();
-		List<String> featureSet = new LinkedList<String>();
-		for (String feature : originalFeatureSet) {
-			float f = random.nextFloat();
-			if (f > 0.90f) {
-				featureSet.add(feature);
-			}
-		}
-		return featureSet;
 	}
 
 	public Map<String, Set<String>> getColumnDictionarySet() {

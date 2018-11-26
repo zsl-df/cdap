@@ -15,7 +15,6 @@
  */
 package co.cask.cdap.featureengineer.service.handler;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import co.cask.cdap.api.annotation.Property;
 import co.cask.cdap.api.dataset.lib.KeyValueTable;
+import co.cask.cdap.api.dataset.table.Table;
 import co.cask.cdap.api.service.http.HttpServiceContext;
 import co.cask.cdap.api.service.http.HttpServiceRequest;
 import co.cask.cdap.api.service.http.HttpServiceResponder;
@@ -39,19 +39,18 @@ import co.cask.cdap.featureengineer.AutoFeatureGenerator.AutoFeatureGeneratorRes
 import co.cask.cdap.featureengineer.FeatureEngineeringApp.FeatureEngineeringConfig;
 import co.cask.cdap.featureengineer.RequestExtractor;
 import co.cask.cdap.featureengineer.pipeline.pojo.CDAPPipelineInfo;
-import co.cask.cdap.featureengineer.pipeline.pojo.DataSchemaNameList;
 import co.cask.cdap.featureengineer.pipeline.pojo.NullableSchema;
 import co.cask.cdap.featureengineer.proto.FeatureGenerationRequest;
-import co.cask.cdap.featureengineer.proto.FeatureSelectionRequest;
+import co.cask.cdap.featureengineer.request.pojo.DataSchemaNameList;
 import co.cask.cdap.featureengineer.utils.JSONInputParser;
 
 /**
  * @author bhupesh.goel
  *
  */
-public class AutoFeatureEngineeringServiceHandler extends BaseServiceHandler {
+public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
 
-	private static final Logger LOG = LoggerFactory.getLogger(AutoFeatureEngineeringServiceHandler.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AutoFeatureGenerationServiceHandler.class);
 
 	@Property
 	private final String dataSchemaTableName;
@@ -70,11 +69,13 @@ public class AutoFeatureEngineeringServiceHandler extends BaseServiceHandler {
 	private KeyValueTable featureEngineeringConfigTable;
 	private KeyValueTable pipelineDataSchemasTable;
 
+	private HttpServiceContext context;
+	
 	/**
 	 * @param config
 	 * 
 	 */
-	public AutoFeatureEngineeringServiceHandler(FeatureEngineeringConfig config) {
+	public AutoFeatureGenerationServiceHandler(FeatureEngineeringConfig config) {
 		this.dataSchemaTableName = config.getDataSchemaTable();
 		this.pluginConfigTableName = config.getPluginConfigTable();
 		this.featureDAGTableName = config.getFeatureDAGTable();
@@ -90,6 +91,7 @@ public class AutoFeatureEngineeringServiceHandler extends BaseServiceHandler {
 		this.featureDAGTable = context.getDataset(featureDAGTableName);
 		this.featureEngineeringConfigTable = context.getDataset(featureEngineeringConfigTableName);
 		this.pipelineDataSchemasTable = context.getDataset(pipelineDataSchemasTableName);
+		this.context = context;
 	}
 
 	@POST
@@ -106,12 +108,6 @@ public class AutoFeatureEngineeringServiceHandler extends BaseServiceHandler {
 			String hostAndPort[] = getHostAndPort(request);
 			AutoFeatureGeneratorResult result = new AutoFeatureGenerator(featureGenerationRequest, inputDataschemaMap,
 					wranglerPluginConfigMap).generateFeatures(hostAndPort);
-//			for (String dataSchema : inputDataschemaMap.keySet()) {
-//				dataSchemaTable.write("DataSchema_" + dataSchema + "_" + result.getPipelineName(),
-//						JSONInputParser.convertToJSON(inputDataschemaMap.get(dataSchema)));
-//				pluginConfigTable.write("PluginConfig_" + dataSchema + "_" + result.getPipelineName(),
-//						JSONInputParser.convertToJSON(wranglerPluginConfigMap.get(dataSchema)));
-//			}
 			featureDAGTable.write(result.getPipelineName(), result.getFeatureEngineeringDAG());
 			featureEngineeringConfigTable.write(result.getPipelineName(),
 					JSONInputParser.convertToJSON(featureGenerationRequest));
@@ -127,43 +123,4 @@ public class AutoFeatureEngineeringServiceHandler extends BaseServiceHandler {
 		}
 	}
 	
-	@POST
-	@Path("featureengineering/{pipelineName}/features/selected/create/pipeline")
-	public void generateSelectedFeaturesPipeline(HttpServiceRequest request, HttpServiceResponder responder,
-			@PathParam("pipelineName") String featureGenerationPipelineName) {
-		Map<String, NullableSchema> inputDataschemaMap = new HashMap<>();
-		Map<String, CDAPPipelineInfo> wranglerPluginConfigMap = new HashMap<>();
-		try {
-			String dataSchemaNames = readCDAPKeyValueTable(pipelineDataSchemasTable, featureGenerationPipelineName);
-			DataSchemaNameList schemaList = (DataSchemaNameList) JSONInputParser.convertToObject(dataSchemaNames,
-					DataSchemaNameList.class);
-
-			FeatureSelectionRequest featureSelectionRequest = new RequestExtractor(request).getContent("UTF-8",
-					FeatureSelectionRequest.class);
-			String featureEngineeringPipelineName = featureSelectionRequest.getFeatureEngineeringPipeline();
-
-			inputDataschemaMap = getSchemaMap(schemaList.getDataSchemaName(), dataSchemaTable);
-			wranglerPluginConfigMap = getWranglerPluginConfigMap(schemaList.getDataSchemaName(), pluginConfigTable);
-			String hostAndPort[] = getHostAndPort(request);
-			String featuresConfig = readCDAPKeyValueTable(featureEngineeringConfigTable,
-					featureEngineeringPipelineName);
-			FeatureGenerationRequest featureGenerationRequest = (FeatureGenerationRequest) JSONInputParser
-					.convertToObject(featuresConfig, FeatureGenerationRequest.class);
-			String featureDag = readCDAPKeyValueTable(featureDAGTable, featureEngineeringPipelineName);
-
-			new CDAPSubDagGenerator(featureDag, inputDataschemaMap, wranglerPluginConfigMap, featureGenerationRequest,
-					hostAndPort).triggerCDAPPipelineGeneration(featureSelectionRequest.getSelectedFeatures(),
-							featureSelectionRequest.getFeatureSelectionPipeline());
-
-			success(responder, "Successfully Generated CDAP Pipeline for selected Feature for data schemas "
-					+ inputDataschemaMap.keySet());
-			LOG.info("Successfully Generated CDAP Pipeline for selected Feature for data schemas "
-					+ inputDataschemaMap.keySet());
-		} catch (Exception e) {
-			error(responder, "Failed to generate cdap pipeline for selected features for data schemas "
-					+ inputDataschemaMap.keySet() + " with error message " + e.getMessage());
-			LOG.error("Failed to generate cdap pipeline for selected features for data schemas "
-					+ inputDataschemaMap.keySet(), e);
-		}
-	}
 }

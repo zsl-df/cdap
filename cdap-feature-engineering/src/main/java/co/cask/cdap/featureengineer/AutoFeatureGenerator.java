@@ -165,9 +165,9 @@ public class AutoFeatureGenerator {
 				featureGenerationRequest.getTrainingWindows(), featureGenerationRequest.getTimeIndexColumns(),
 				multiInputAggregatePluginFunctionMap, multiInputTransformPluginFunctionMap,
 				appliedAggFunctionsWithArguments, appliedTransFunctionsWithArguments,
-				featureGenerationRequest.getIndexes());
+				featureGenerationRequest.getIndexes(), featureGenerationRequest.getPipelineRunName());
 		CDAPPipelineInfo pipelineInfo = pipelineGenerator.generateCDAPPipeline(featureEngineeringDag,
-				inputDataschemaMap, wranglerPluginConfigMap, featureGenerationRequest.getPipelineRunName());
+				inputDataschemaMap, wranglerPluginConfigMap);
 		File cdapPipelineFile = writeDataToTempFile(gsonObj.toJson(pipelineInfo), "cdap-pipeline");
 		String cdapPipelineFileName = cdapPipelineFile.getAbsolutePath();
 		try {

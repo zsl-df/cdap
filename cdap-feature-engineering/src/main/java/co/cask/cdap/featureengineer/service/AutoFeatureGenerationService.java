@@ -17,18 +17,18 @@ package co.cask.cdap.featureengineer.service;
 
 import co.cask.cdap.api.service.AbstractService;
 import co.cask.cdap.featureengineer.FeatureEngineeringApp;
-import co.cask.cdap.featureengineer.service.handler.AutoFeatureEngineeringServiceHandler;
+import co.cask.cdap.featureengineer.service.handler.AutoFeatureGenerationServiceHandler;
 
 /**
  * @author bhupesh.goel
  *
  */
-public class AutoFeatureEngineeringService extends AbstractService {
+public class AutoFeatureGenerationService extends AbstractService {
 
-	public static final String SERVICE_NAME = "AutoFeatureEngineeringService";
+	public static final String SERVICE_NAME = "AutoFeatureGenerationService";
 	private final FeatureEngineeringApp.FeatureEngineeringConfig config;
 
-	public AutoFeatureEngineeringService(FeatureEngineeringApp.FeatureEngineeringConfig config) {
+	public AutoFeatureGenerationService(FeatureEngineeringApp.FeatureEngineeringConfig config) {
 		this.config = config;
 	}
 
@@ -36,7 +36,7 @@ public class AutoFeatureEngineeringService extends AbstractService {
 	protected void configure() {
 		setName(SERVICE_NAME);
 		setDescription("A service to trigger generation of features automatically.");
-		addHandler(new AutoFeatureEngineeringServiceHandler(config));
+		addHandler(new AutoFeatureGenerationServiceHandler(config));
 	}
 
 }
