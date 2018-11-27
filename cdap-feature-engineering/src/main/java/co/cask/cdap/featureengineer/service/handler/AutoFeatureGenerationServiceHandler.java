@@ -38,6 +38,7 @@ import co.cask.cdap.featureengineer.AutoFeatureGenerator.AutoFeatureGeneratorRes
 import co.cask.cdap.featureengineer.FeatureEngineeringApp.FeatureEngineeringConfig;
 import co.cask.cdap.featureengineer.RequestExtractor;
 import co.cask.cdap.featureengineer.enums.FeatureGenerationConfigParams;
+import co.cask.cdap.featureengineer.enums.PipelineType;
 import co.cask.cdap.featureengineer.pipeline.pojo.CDAPPipelineInfo;
 import co.cask.cdap.featureengineer.pipeline.pojo.NullableSchema;
 import co.cask.cdap.featureengineer.proto.FeatureGenerationRequest;
@@ -64,13 +65,16 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
 	private final String featureEngineeringConfigTableName;
 	@Property
 	private final String pipelineDataSchemasTableName;
-
+	@Property
+	private final String pipelineNameTableName;
+	
 	private KeyValueTable dataSchemaTable;
 	private KeyValueTable pluginConfigTable;
 	private KeyValueTable featureDAGTable;
 	private KeyValueTable featureEngineeringConfigTable;
 	private KeyValueTable pipelineDataSchemasTable;
-
+	private KeyValueTable pipelineNameTable;
+	
 	private HttpServiceContext context;
 	
 	/**
@@ -83,6 +87,7 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
 		this.featureDAGTableName = config.getFeatureDAGTable();
 		this.featureEngineeringConfigTableName = config.getFeatureEngineeringConfigTable();
 		this.pipelineDataSchemasTableName = config.getPipelineDataSchemasTable();
+		this.pipelineNameTableName = config.getPipelineNameTable();
 	}
 
 	@Override
@@ -93,6 +98,7 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
 		this.featureDAGTable = context.getDataset(featureDAGTableName);
 		this.featureEngineeringConfigTable = context.getDataset(featureEngineeringConfigTableName);
 		this.pipelineDataSchemasTable = context.getDataset(pipelineDataSchemasTableName);
+		this.pipelineNameTable = context.getDataset(pipelineNameTableName);
 		this.context = context;
 	}
 
@@ -117,6 +123,7 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
 			DataSchemaNameList schemaNameList = new DataSchemaNameList();
 			schemaNameList.setDataSchemaName(dataSchemaNames);
 			pipelineDataSchemasTable.write(result.getPipelineName(), JSONInputParser.convertToJSON(schemaNameList));
+			pipelineNameTable.write(result.getPipelineName(), PipelineType.FEATURE_GENERATION.getName());
 			success(responder, "Successfully Generated Features for data schemas " + inputDataschemaMap.keySet()
 					+ " with pipeline name = " + result.getPipelineName());
 		} catch (Exception e) {

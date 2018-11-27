@@ -22,6 +22,7 @@ import co.cask.cdap.api.dataset.DatasetProperties;
 import co.cask.cdap.api.dataset.lib.KeyValueTable;
 import co.cask.cdap.featureengineer.service.AutoFeatureGenerationService;
 import co.cask.cdap.featureengineer.service.DataPrepSchemaService;
+import co.cask.cdap.featureengineer.service.FeatureEngineeringPipelineService;
 import co.cask.cdap.featureengineer.service.ManualFeatureSelectionService;
 
 /**
@@ -41,6 +42,8 @@ public class FeatureEngineeringApp extends AbstractApplication<FeatureEngineerin
 		private String featureEngineeringConfigTable;
 		
 		private String pipelineDataSchemasTable;
+		
+		private String pipelineNameTable;
 
 		/**
 		 * Set default values for the configuration variables.
@@ -51,6 +54,7 @@ public class FeatureEngineeringApp extends AbstractApplication<FeatureEngineerin
 			this.featureDAGTable = "featureDAGDataSet";
 			this.featureEngineeringConfigTable = "featureEngineeringDataSet";
 			this.pipelineDataSchemasTable = "pipelineDataSchemasDataSet";
+			this.pipelineNameTable = "pipelineNameDataSet";
 		}
 
 		/**
@@ -91,6 +95,13 @@ public class FeatureEngineeringApp extends AbstractApplication<FeatureEngineerin
 			return pipelineDataSchemasTable;
 		}
 
+		/**
+		 * @return the pipelineNameTable
+		 */
+		public String getPipelineNameTable() {
+			return pipelineNameTable;
+		}
+
 	}
 
 	@Override
@@ -108,8 +119,11 @@ public class FeatureEngineeringApp extends AbstractApplication<FeatureEngineerin
 				DatasetProperties.builder().setDescription("Table to persist feature engineering config").build());
 		createDataset(config.getPipelineDataSchemasTable(), KeyValueTable.class,
 				DatasetProperties.builder().setDescription("Table to persist pipeline data schemas").build());
+		createDataset(config.getPipelineNameTable(), KeyValueTable.class,
+				DatasetProperties.builder().setDescription("Table to persist pipeline names").build());
 		addService(new DataPrepSchemaService(config));
 		addService(new AutoFeatureGenerationService(config));
 		addService(new ManualFeatureSelectionService(config));
+		addService(new FeatureEngineeringPipelineService(config));
 	}
 }

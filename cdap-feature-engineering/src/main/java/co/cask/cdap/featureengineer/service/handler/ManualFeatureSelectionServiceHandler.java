@@ -38,6 +38,7 @@ import co.cask.cdap.api.service.http.HttpServiceResponder;
 import co.cask.cdap.common.enums.FeatureSTATS;
 import co.cask.cdap.feature.selection.CDAPSubDagGenerator;
 import co.cask.cdap.featureengineer.FeatureEngineeringApp.FeatureEngineeringConfig;
+import co.cask.cdap.featureengineer.enums.PipelineType;
 import co.cask.cdap.featureengineer.RequestExtractor;
 import co.cask.cdap.featureengineer.pipeline.pojo.CDAPPipelineInfo;
 import co.cask.cdap.featureengineer.request.pojo.DataSchemaNameList;
@@ -66,13 +67,16 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
 	private final String featureEngineeringConfigTableName;
 	@Property
 	private final String pipelineDataSchemasTableName;
-
+	@Property
+	private final String pipelineNameTableName;
+	
 	private KeyValueTable dataSchemaTable;
 	private KeyValueTable pluginConfigTable;
 	private KeyValueTable featureDAGTable;
 	private KeyValueTable featureEngineeringConfigTable;
 	private KeyValueTable pipelineDataSchemasTable;
-
+	private KeyValueTable pipelineNameTable;
+	
 	private HttpServiceContext context;
 
 	/**
@@ -85,6 +89,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
 		this.featureDAGTableName = config.getFeatureDAGTable();
 		this.featureEngineeringConfigTableName = config.getFeatureEngineeringConfigTable();
 		this.pipelineDataSchemasTableName = config.getPipelineDataSchemasTable();
+		this.pipelineNameTableName = config.getPipelineNameTable();
 	}
 
 	@Override
@@ -95,6 +100,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
 		this.featureDAGTable = context.getDataset(featureDAGTableName);
 		this.featureEngineeringConfigTable = context.getDataset(featureEngineeringConfigTableName);
 		this.pipelineDataSchemasTable = context.getDataset(pipelineDataSchemasTableName);
+		this.pipelineNameTable = context.getDataset(pipelineNameTableName);
 		this.context = context;
 	}
 
@@ -125,7 +131,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
 			new CDAPSubDagGenerator(featureDag, inputDataschemaMap, wranglerPluginConfigMap, featureGenerationRequest,
 					hostAndPort).triggerCDAPPipelineGeneration(featureSelectionRequest.getSelectedFeatures(),
 							featureSelectionRequest.getFeatureSelectionPipeline());
-
+			pipelineNameTable.write(featureSelectionRequest.getFeatureSelectionPipeline(), PipelineType.FEATURE_SELECTION.getName());
 			success(responder, "Successfully Generated CDAP Pipeline for selected Feature for data schemas "
 					+ inputDataschemaMap.keySet());
 			LOG.info("Successfully Generated CDAP Pipeline for selected Feature for data schemas "
