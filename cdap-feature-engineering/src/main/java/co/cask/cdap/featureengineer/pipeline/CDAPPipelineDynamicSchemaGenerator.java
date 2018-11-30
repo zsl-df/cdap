@@ -80,7 +80,8 @@ public class CDAPPipelineDynamicSchemaGenerator {
 	Map<String, Map<String, List<String>>> appliedAggFunctionsWithArguments;
 	Map<String, Map<String, List<String>>> appliedTransFunctionsWithArguments;
 	Map<String, String> tableIndexMap;
-
+	private List<SchemaColumn> createEntites;
+	
 	private int globalUniqueID;
 	private static final String STAGE_NAME = "stage";
 	private final Map<String, String> generatedStageMap;
@@ -104,6 +105,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
 	 * @param multiInputAggregatePluginFunctionMap
 	 * @param indexes
 	 * @param pipelineName
+	 * @param createEntities 
 	 * 
 	 */
 	public CDAPPipelineDynamicSchemaGenerator(Map<String, PluginSummary> aggregatePluginFunctionMap,
@@ -114,7 +116,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
 			Map<String, PluginSummary> multiInputTransformPluginFunctionMap,
 			Map<String, Map<String, List<String>>> appliedAggFunctionsWithArguments,
 			Map<String, Map<String, List<String>>> appliedTransFunctionsWithArguments, List<SchemaColumn> indexes,
-			String pipelineName) {
+			String pipelineName, List<SchemaColumn> createEntities) {
 		this.stageMap = new LinkedHashMap<String, BasePipelineNode>();
 		this.connections = new LinkedHashMap<String, Set<String>>();
 		this.systemArtifact = new Artifact();
@@ -128,6 +130,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		for (String entity : entityNames) {
 			lastStageMapForTable.put(entity, entity);
 		}
+		this.createEntites = createEntities;
 		this.pipelineName = pipelineName;
 		globalUniqueID = 0;
 		this.generatedStageMap = new HashMap<String, String>();
@@ -227,6 +230,9 @@ public class CDAPPipelineDynamicSchemaGenerator {
 				if (tokens.length == 1) {
 					String[] tokens2 = inputTypes.split(":");
 					for (String input : tokens2) {
+						if(input.equals("datetime")) {
+							input = "string";
+						}
 						inputOutputMap.put(input, tokens[0]);
 					}
 				} else {
@@ -236,6 +242,9 @@ public class CDAPPipelineDynamicSchemaGenerator {
 						throw new IllegalStateException("Function Input Output types are not matching");
 					}
 					for (int j = 0; j < tokens.length; j++) {
+						if(tokens2[j].equals("datetime")) {
+							tokens2[j] = "string";
+						}
 						inputOutputMap.put(tokens2[j], tokens[j]);
 					}
 				}

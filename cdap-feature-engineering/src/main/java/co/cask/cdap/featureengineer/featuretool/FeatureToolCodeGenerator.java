@@ -26,6 +26,7 @@ import java.util.Set;
 import co.cask.cdap.featureengineer.pipeline.pojo.*;
 import co.cask.cdap.featureengineer.request.pojo.Relation;
 import co.cask.cdap.featureengineer.request.pojo.SchemaColumn;
+import co.cask.cdap.proto.artifact.PluginSummary;
 
 /**
  * @author bhupesh.goel
@@ -33,21 +34,83 @@ import co.cask.cdap.featureengineer.request.pojo.SchemaColumn;
  */
 public class FeatureToolCodeGenerator {
 
-//	public String generateFeatureToolCode(List<String> entityNames, List<NullableSchema> dataSchemaList,
-//			List<SchemaColumn> indexes, List<Relation> relationShips, List<String> aggregatePrimitives,
-//			List<String> transformPrimitives, Integer dfsDepth, String targetEntity,
-//			List<SchemaColumn> timestampColumns, List<SchemaColumn> categoricalColumns,
-//			List<SchemaColumn> ignoreColumns, Map<String, Map<String, List<String>>> appliedTransFunctionsWithArguments,
-//			Map<String, Map<String, List<String>>> appliedAggFunctionsWithArguments) {
-//		return null;
-//	}
+	private enum FeatureToolsTransformPrimitives {
+		IS_NULL("is_null"),
+		LOG("log"),
+		ABSOLUTE("absolute"),
+		TIME_SINCE_PREVIOUS("time_since_previous"),
+		DAY("day"),
+		DAYS("days"),
+		HOUR("hour"),
+		HOURS("hours"),
+		SECOND("second"),
+		SECONDS("seconds"),
+		MINUTE("minute"),
+		MINUTES("minutes"),
+		WEEK("week"),
+		WEEKS("weeks"),
+		MONTH("month"),
+		MONTHS("months"),
+		YEAR("year"),
+		YEARS("years"),
+		WEEKEND("weekend"),
+		WEEKDAY("weekday"),
+		NUMCHARACTERS("numcharacters"),
+		NUMWORDS("numwords"),
+		DAYS_SINCE("days_since"),
+		ISIN("isin"),
+		DIFF("diff"),
+		NOT("not"),
+		PERCENTILE("percentile"),
+		LATITUDE("latitude"),
+		LONGITUDE("longitude"), HAVERSINE("haversine");
+		
+		private String name;
+
+		private FeatureToolsTransformPrimitives(final String name) {
+			this.name = name;
+		}
+	}
+
+	private enum FeatureToolsAggregatePrimitives {
+		 COUNT("count"),
+		 SUM("sum"),
+		 VARIANCE("variance"),
+		 AVG("avg"),
+		 MODE("mode"),
+		 MIN("min"),
+		 MAX("max"),
+		 N_UNIQ("nuniq"),
+		 VALUE_COUNT("valuecount"),
+		 INDICATOR_COUNT("indicatorcount"),
+		 NUM_TRUE("num_true"),
+		 PERCENT_TRUE("percent_true"),
+		 N_MOST_COMMON("n_most_common"),
+		 AVG_TIME_BETWEEN("avg_time_between"),
+		 MEDIAN("median"), SKEW("skew"),
+		 STD_DEV("stddev"),
+		 LAST("last"),
+		 FIRST("first"),
+		 ANY("any"),
+		 ALL("all"),
+		 TIME_SINCE_LAST("time_since_last"),
+		 TREND("trend");
+
+		private String name;
+
+		private FeatureToolsAggregatePrimitives(final String name) {
+			this.name = name;
+		}
+	}
 
 	public String generateFeatureToolCode(final List<String> dataSourceName, final List<NullableSchema> dataSchema,
 			List<SchemaColumn> indexes, List<Relation> relations, List<String> aggPrimitives,
 			List<String> transPrimitives, int dfsDepth, String targetEntity, List<SchemaColumn> timestampColumnList,
 			List<SchemaColumn> categoricalColumns, List<SchemaColumn> ignoreColumns,
 			Map<String, Map<String, List<String>>> appliedTransFunctionsWithArguments,
-			Map<String, Map<String, List<String>>> appliedAggFunctionsWithArguments) {
+			Map<String, Map<String, List<String>>> appliedAggFunctionsWithArguments,
+			Map<String, PluginSummary> transformPluginFunctionMap,
+			Map<String, PluginSummary> aggregatePluginFunctionMap) {
 		Set<SchemaColumn> timestampColumns = new HashSet<SchemaColumn>(timestampColumnList);
 		Map<String, List<String>> entityStringColumnMap = new HashMap<String, List<String>>();
 		StringBuilder sb = new StringBuilder();
@@ -135,19 +198,35 @@ public class FeatureToolCodeGenerator {
 		}
 		sb.append("]\nes = es.add_relationships(rels)\n");
 
+		List<String> dynamicTransPrimitives = new LinkedList<String>();
+		List<String> dynamicAggPrimitives = new LinkedList<String>();
+
+		addCodeToLoadNewPrimitivesDynamically(transformPluginFunctionMap, aggregatePluginFunctionMap, sb,
+				dynamicTransPrimitives, dynamicAggPrimitives, transPrimitives, aggPrimitives);
 		addIgnoreVariablesCode(ignoreColumns, sb);
 		sb.append("feature_defs, all_feature, feature_tree = ft.dfs(entityset=es,target_entity=\"");
 		sb.append(targetEntity + "\",agg_primitives=[");
-		for (int i = 0; i < aggPrimitives.size(); i++) {
-			if (i > 0)
+		index = 0;
+		for (index = 0; index < aggPrimitives.size(); index++) {
+			if (index > 0)
 				sb.append(",");
-			sb.append("\"" + aggPrimitives.get(i) + "\"");
+			sb.append("\"" + aggPrimitives.get(index) + "\"");
+		}
+		for (String primitive : dynamicAggPrimitives) {
+			if (index > 0)
+				sb.append(",");
+			sb.append(primitive);
 		}
 		sb.append("],trans_primitives=[");
-		for (int i = 0; i < transPrimitives.size(); i++) {
-			if (i > 0)
+		for (index = 0; index < transPrimitives.size(); index++) {
+			if (index > 0)
 				sb.append(",");
-			sb.append("\"" + transPrimitives.get(i) + "\"");
+			sb.append("\"" + transPrimitives.get(index) + "\"");
+		}
+		for (String primitive : dynamicTransPrimitives) {
+			if (index > 0)
+				sb.append(",");
+			sb.append(primitive);
 		}
 		sb.append("],max_depth=" + dfsDepth);
 		if (ignoreColumns != null && !ignoreColumns.isEmpty()) {
@@ -157,6 +236,160 @@ public class FeatureToolCodeGenerator {
 		// sb.append("\nfeature_tree.table_feature_operations_mapping_dag\n");
 
 		return sb.toString();
+	}
+
+	private void addCodeToLoadNewPrimitivesDynamically(final Map<String, PluginSummary> transformPluginFunctionMap,
+			final Map<String, PluginSummary> aggregatePluginFunctionMap, StringBuilder sb,
+			List<String> dynamicTransPrimitives, List<String> dynamicAggPrimitives, List<String> transPrimitives,
+			List<String> aggPrimitives) {
+		Map<String, List<String>> transformFunctionIOMap = new HashMap<>();
+		Map<String, List<String>> aggregationFunctionIOMap = new HashMap<>();
+		Map<String, PluginSummary> transformPluginFunctionMapCopy = new HashMap<>(transformPluginFunctionMap);
+		Map<String, PluginSummary> aggregatePluginFunctionMapCopy = new HashMap<>(aggregatePluginFunctionMap);
+		transPrimitives.clear();
+		for (FeatureToolsTransformPrimitives primitive : FeatureToolsTransformPrimitives.values()) {
+			transPrimitives.add(primitive.name);
+			if (transformPluginFunctionMapCopy.containsKey(primitive.name)) {
+				transformPluginFunctionMapCopy.remove(primitive.name);
+			} else {
+				transPrimitives.remove(primitive.name);
+			}
+		}
+		aggPrimitives.clear();
+		for (FeatureToolsAggregatePrimitives primitive : FeatureToolsAggregatePrimitives.values()) {
+			aggPrimitives.add(primitive.name);
+			if (aggregatePluginFunctionMapCopy.containsKey(primitive.name)) {
+				aggregatePluginFunctionMapCopy.remove(primitive.name);
+			} else {
+				aggPrimitives.remove(primitive.name);
+			}
+		}
+		generateDynamicPrimitivesCode(transformPluginFunctionMapCopy, dynamicTransPrimitives, sb, "make_trans_primitive");
+		generateDynamicPrimitivesCode(aggregatePluginFunctionMapCopy, dynamicAggPrimitives, sb,"make_agg_primitive");
+
+	}
+
+	private void generateDynamicPrimitivesCode(Map<String, PluginSummary> pluginFunctionMapCopy,
+			List<String> dynamicPrimitives, StringBuilder sb, String primitiveFunction) {
+		Set<String> visitedPrimitive = new HashSet<>();
+		for (PluginSummary plugin : pluginFunctionMapCopy.values()) {
+			String[] functions = plugin.getPluginFunction();
+			String[] inputTypes = plugin.getPluginInput();
+			String[] outputTypes = plugin.getPluginOutput();
+			for (int i = 0; i < functions.length; i++) {
+				if (!pluginFunctionMapCopy.containsKey(functions[i])) {
+					continue;
+				}
+				if(visitedPrimitive.contains(functions[i].toLowerCase())) {
+					continue;
+				}
+				visitedPrimitive.add(functions[i].toLowerCase());
+				String featureToolsInputDataType = getFeatureToolsDataType(inputTypes[i]); 
+				String featureToolsOutputDataType = getFeatureToolsDataType(outputTypes[i]);
+				if(featureToolsOutputDataType==null)
+					featureToolsOutputDataType=featureToolsInputDataType;
+				
+				sb.append("\ndef pd_"+functions[i].toLowerCase()+"():\n\treturn \"\"\n\n");
+				sb.append("def "+functions[i].toLowerCase()+"_generate_name(self):\n\treturn u\""+functions[i].toUpperCase()+"(%s)\" % (self.base_features[0].get_name())\n\n");
+				sb.append("def get_"+functions[i].toLowerCase()+"_function_name(self):\n\treturn u\""+functions[i].toUpperCase()+"\"\n\n");
+				String dynamicFuncName = "pd_"+functions[i]+"_trans";
+				sb.append(dynamicFuncName+" = "+primitiveFunction+"(function=pd_"+functions[i].toLowerCase());
+				sb.append(",input_types=["+featureToolsInputDataType+"],return_type="+featureToolsOutputDataType);
+				sb.append(",name=\""+functions[i]+"\",description=\""+plugin.getDescription()+"\",cls_attributes={\"generate_name\": ");
+				sb.append(functions[i].toLowerCase()+"_generate_name,\"get_function_name\": get_"+functions[i].toLowerCase()+"_function_name})\n");
+				dynamicPrimitives.add(dynamicFuncName);
+			}
+		}
+	}
+
+	private String getFeatureToolsDataType(String cdapType) {
+		if (cdapType == null || cdapType.isEmpty())
+			return "";
+		cdapType = cdapType.trim().toLowerCase();
+		if (cdapType.contains(" ")) {
+			StringBuilder sb = new StringBuilder();
+			int index = 0;
+			for (String curType : cdapType.split("\\s+")) {
+				if (index > 0)
+					sb.append(" ,");
+				sb.append(getFeatureToolsDataType(curType));
+			}
+			return sb.toString();
+		}
+		if (cdapType.startsWith("list<") && cdapType.endsWith(">")) {
+			return getFeatureToolsDataType(cdapType.trim().substring(5, cdapType.length() - 1));
+		}
+		if (isAlphaBeticWord(cdapType)) {
+			return getFTSingleDataType(cdapType);
+		} else {
+			return getFTCombinedDataType(cdapType);
+		}
+	}
+
+	private String getFTCombinedDataType(String cdapType) {
+		String cdapSingleType = cdapType.split("\\s+")[0];
+		if (cdapSingleType.equals("*"))
+			return "Variable";
+		String[] types = cdapSingleType.split(":");
+		boolean isIntegral = false;
+		boolean isDecimal = false;
+		boolean isText = false;
+		boolean isBoolean = false;
+		for (String type : types) {
+			switch (type) {
+			case "int":
+			case "long":
+				isIntegral = true;
+				break;
+			case "double":
+			case "float":
+				isDecimal = true;
+				break;
+			case "string":
+				isText = true;
+				break;
+			case "boolean":
+				isBoolean = true;
+				break;
+			}
+		}
+		if ((isIntegral || isDecimal) && isBoolean && isText) {
+			return "Variable";
+		} else if (isText && (isIntegral || isBoolean) && !isDecimal) {
+			return "Discrete";
+		} else if ((isIntegral || isDecimal) && !isBoolean && !isText) {
+			return "Numeric";
+		} else if (isBoolean && !isIntegral && !isDecimal && !isText) {
+			return "Boolean";
+		} else if (!isBoolean && !isIntegral && !isDecimal && isText) {
+			return "Text";
+		}
+		return "Variable";
+	}
+
+	private String getFTSingleDataType(String cdapType) {
+		switch (cdapType) {
+		case "int":
+		case "long":
+		case "float":
+		case "double":
+			return "Numeric";
+		case "string":
+			return "Text";
+		case "boolean":
+			return "Boolean";
+		case "datetime":
+			return "Datetime";
+		}
+		return null;
+	}
+
+	private boolean isAlphaBeticWord(final String cdapType) {
+		for (int i = 0; i < cdapType.length(); i++) {
+			if (!Character.isAlphabetic(cdapType.charAt(i)))
+				return false;
+		}
+		return true;
 	}
 
 	private Map<String, StringBuilder> addAggFunctionColumns(

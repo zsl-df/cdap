@@ -78,6 +78,9 @@ public class AutoFeatureGenerationEndPointTest {
 		List<SchemaColumn> timeIndexColumns = new LinkedList<SchemaColumn>();
 		timeIndexColumns.add(new SchemaColumn(ERROR_TABLE, "ets_timestamp"));
 		request.setTimeIndexColumns(timeIndexColumns);
+		List<SchemaColumn> createEntities = new LinkedList<SchemaColumn>();
+		createEntities.add(new SchemaColumn(ACCOUNT_TABLE, "account_id"));
+		request.setCreateEntities(createEntities );
 		// errors.device_video_firmware,errors.event_cause_category,errors.event_cause_id,errors.device_video_model,errors.hour
 		List<SchemaColumn> categoricalColumns = new LinkedList<SchemaColumn>();
 		categoricalColumns.add(new SchemaColumn(ERROR_TABLE, "device_video_firmware"));

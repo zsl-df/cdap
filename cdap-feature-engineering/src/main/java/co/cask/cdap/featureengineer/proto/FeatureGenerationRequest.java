@@ -32,6 +32,7 @@ public class FeatureGenerationRequest {
 	private List<String> dataSchemaNames;
 	private List<SchemaColumn> indexes;
 	private List<Relation> relationShips;
+	private List<SchemaColumn> createEntities;
 	private List<SchemaColumn> timestampColumns;
 	private List<SchemaColumn> timeIndexColumns;
 	private List<SchemaColumn> categoricalColumns;
@@ -45,200 +46,267 @@ public class FeatureGenerationRequest {
 	private String targetEntity;
 	private String targetEntityFieldId;
 	private String pipelineRunName;
+
 	/**
 	 * @return the dataSchemaNames
 	 */
 	public List<String> getDataSchemaNames() {
 		return dataSchemaNames;
 	}
+
 	/**
-	 * @param dataSchemaNames the dataSchemaNames to set
+	 * @param dataSchemaNames
+	 *            the dataSchemaNames to set
 	 */
 	public void setDataSchemaNames(List<String> dataSchemaNames) {
 		this.dataSchemaNames = dataSchemaNames;
 	}
+
 	/**
 	 * @return the indexes
 	 */
 	public List<SchemaColumn> getIndexes() {
 		return indexes;
 	}
+
 	/**
-	 * @param indexes the indexes to set
+	 * @param indexes
+	 *            the indexes to set
 	 */
 	public void setIndexes(List<SchemaColumn> indexes) {
 		this.indexes = indexes;
 	}
+
 	/**
 	 * @return the relationShips
 	 */
 	public List<Relation> getRelationShips() {
 		return relationShips;
 	}
+
 	/**
-	 * @param relationShips the relationShips to set
+	 * @param relationShips
+	 *            the relationShips to set
 	 */
 	public void setRelationShips(List<Relation> relationShips) {
 		this.relationShips = relationShips;
 	}
+
+	/**
+	 * @return the createEntities
+	 */
+	public List<SchemaColumn> getCreateEntities() {
+		return createEntities;
+	}
+
+	/**
+	 * @param createEntities
+	 *            the createEntities to set
+	 */
+	public void setCreateEntities(List<SchemaColumn> createEntities) {
+		this.createEntities = createEntities;
+	}
+
 	/**
 	 * @return the timestampColumns
 	 */
 	public List<SchemaColumn> getTimestampColumns() {
 		return timestampColumns;
 	}
+
 	/**
-	 * @param timestampColumns the timestampColumns to set
+	 * @param timestampColumns
+	 *            the timestampColumns to set
 	 */
 	public void setTimestampColumns(List<SchemaColumn> timestampColumns) {
 		this.timestampColumns = timestampColumns;
 	}
+
 	/**
 	 * @return the timeIndexColumns
 	 */
 	public List<SchemaColumn> getTimeIndexColumns() {
 		return timeIndexColumns;
 	}
+
 	/**
-	 * @param timeIndexColumns the timeIndexColumns to set
+	 * @param timeIndexColumns
+	 *            the timeIndexColumns to set
 	 */
 	public void setTimeIndexColumns(List<SchemaColumn> timeIndexColumns) {
 		this.timeIndexColumns = timeIndexColumns;
 	}
+
 	/**
 	 * @return the categoricalColumns
 	 */
 	public List<SchemaColumn> getCategoricalColumns() {
 		return categoricalColumns;
 	}
+
 	/**
-	 * @param categoricalColumns the categoricalColumns to set
+	 * @param categoricalColumns
+	 *            the categoricalColumns to set
 	 */
 	public void setCategoricalColumns(List<SchemaColumn> categoricalColumns) {
 		this.categoricalColumns = categoricalColumns;
 	}
+
 	/**
 	 * @return the ignoreColumns
 	 */
 	public List<SchemaColumn> getIgnoreColumns() {
 		return ignoreColumns;
 	}
+
 	/**
-	 * @param ignoreColumns the ignoreColumns to set
+	 * @param ignoreColumns
+	 *            the ignoreColumns to set
 	 */
 	public void setIgnoreColumns(List<SchemaColumn> ignoreColumns) {
 		this.ignoreColumns = ignoreColumns;
 	}
+
 	/**
 	 * @return the categoricalColumnDictionary
 	 */
 	public List<ColumnDictionary> getCategoricalColumnDictionary() {
 		return categoricalColumnDictionary;
 	}
+
 	/**
-	 * @param categoricalColumnDictionary the categoricalColumnDictionary to set
+	 * @param categoricalColumnDictionary
+	 *            the categoricalColumnDictionary to set
 	 */
 	public void setCategoricalColumnDictionary(List<ColumnDictionary> categoricalColumnDictionary) {
 		this.categoricalColumnDictionary = categoricalColumnDictionary;
 	}
+
 	/**
 	 * @return the multiFieldTransformationFunctionInputs
 	 */
 	public List<MultiSchemaColumn> getMultiFieldTransformationFunctionInputs() {
 		return multiFieldTransformationFunctionInputs;
 	}
+
 	/**
-	 * @param multiFieldTransformationFunctionInputs the multiFieldTransformationFunctionInputs to set
+	 * @param multiFieldTransformationFunctionInputs
+	 *            the multiFieldTransformationFunctionInputs to set
 	 */
-	public void setMultiFieldTransformationFunctionInputs(List<MultiSchemaColumn> multiFieldTransformationFunctionInputs) {
+	public void setMultiFieldTransformationFunctionInputs(
+			List<MultiSchemaColumn> multiFieldTransformationFunctionInputs) {
 		this.multiFieldTransformationFunctionInputs = multiFieldTransformationFunctionInputs;
 	}
+
 	/**
 	 * @return the multiFieldAggregationFunctionInputs
 	 */
 	public List<MultiFieldAggregationInput> getMultiFieldAggregationFunctionInputs() {
 		return multiFieldAggregationFunctionInputs;
 	}
+
 	/**
-	 * @param multiFieldAggregationFunctionInputs the multiFieldAggregationFunctionInputs to set
+	 * @param multiFieldAggregationFunctionInputs
+	 *            the multiFieldAggregationFunctionInputs to set
 	 */
 	public void setMultiFieldAggregationFunctionInputs(
 			List<MultiFieldAggregationInput> multiFieldAggregationFunctionInputs) {
 		this.multiFieldAggregationFunctionInputs = multiFieldAggregationFunctionInputs;
 	}
+
 	/**
 	 * @return the dfsDepth
 	 */
 	public Integer getDfsDepth() {
 		return dfsDepth;
 	}
+
 	/**
-	 * @param dfsDepth the dfsDepth to set
+	 * @param dfsDepth
+	 *            the dfsDepth to set
 	 */
 	public void setDfsDepth(Integer dfsDepth) {
 		this.dfsDepth = dfsDepth;
 	}
+
 	/**
 	 * @return the trainingWindows
 	 */
 	public List<Integer> getTrainingWindows() {
 		return trainingWindows;
 	}
+
 	/**
-	 * @param trainingWindows the trainingWindows to set
+	 * @param trainingWindows
+	 *            the trainingWindows to set
 	 */
 	public void setTrainingWindows(List<Integer> trainingWindows) {
 		this.trainingWindows = trainingWindows;
 	}
+
 	/**
 	 * @return the windowEndTime
 	 */
 	public String getWindowEndTime() {
 		return windowEndTime;
 	}
+
 	/**
-	 * @param windowEndTime the windowEndTime to set
+	 * @param windowEndTime
+	 *            the windowEndTime to set
 	 */
 	public void setWindowEndTime(String windowEndTime) {
 		this.windowEndTime = windowEndTime;
 	}
+
 	/**
 	 * @return the targetEntity
 	 */
 	public String getTargetEntity() {
 		return targetEntity;
 	}
+
 	/**
-	 * @param targetEntity the targetEntity to set
+	 * @param targetEntity
+	 *            the targetEntity to set
 	 */
 	public void setTargetEntity(String targetEntity) {
 		this.targetEntity = targetEntity;
 	}
+
 	/**
 	 * @return the targetEntityFieldId
 	 */
 	public String getTargetEntityFieldId() {
 		return targetEntityFieldId;
 	}
+
 	/**
-	 * @param targetEntityFieldId the targetEntityFieldId to set
+	 * @param targetEntityFieldId
+	 *            the targetEntityFieldId to set
 	 */
 	public void setTargetEntityFieldId(String targetEntityFieldId) {
 		this.targetEntityFieldId = targetEntityFieldId;
 	}
+
 	/**
 	 * @return the pipelineRunName
 	 */
 	public String getPipelineRunName() {
 		return pipelineRunName;
 	}
+
 	/**
-	 * @param pipelineRunName the pipelineRunName to set
+	 * @param pipelineRunName
+	 *            the pipelineRunName to set
 	 */
 	public void setPipelineRunName(String pipelineRunName) {
 		this.pipelineRunName = pipelineRunName;
 	}
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -247,6 +315,7 @@ public class FeatureGenerationRequest {
 		int result = 1;
 		result = prime * result + ((categoricalColumnDictionary == null) ? 0 : categoricalColumnDictionary.hashCode());
 		result = prime * result + ((categoricalColumns == null) ? 0 : categoricalColumns.hashCode());
+		result = prime * result + ((createEntities == null) ? 0 : createEntities.hashCode());
 		result = prime * result + ((dataSchemaNames == null) ? 0 : dataSchemaNames.hashCode());
 		result = prime * result + ((dfsDepth == null) ? 0 : dfsDepth.hashCode());
 		result = prime * result + ((ignoreColumns == null) ? 0 : ignoreColumns.hashCode());
@@ -265,7 +334,10 @@ public class FeatureGenerationRequest {
 		result = prime * result + ((windowEndTime == null) ? 0 : windowEndTime.hashCode());
 		return result;
 	}
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -286,6 +358,11 @@ public class FeatureGenerationRequest {
 			if (other.categoricalColumns != null)
 				return false;
 		} else if (!categoricalColumns.equals(other.categoricalColumns))
+			return false;
+		if (createEntities == null) {
+			if (other.createEntities != null)
+				return false;
+		} else if (!createEntities.equals(other.createEntities))
 			return false;
 		if (dataSchemaNames == null) {
 			if (other.dataSchemaNames != null)
@@ -359,21 +436,23 @@ public class FeatureGenerationRequest {
 			return false;
 		return true;
 	}
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
 		return "FeatureGenerationRequest [dataSchemaNames=" + dataSchemaNames + ", indexes=" + indexes
-				+ ", relationShips=" + relationShips + ", timestampColumns=" + timestampColumns + ", timeIndexColumns="
-				+ timeIndexColumns + ", categoricalColumns=" + categoricalColumns + ", ignoreColumns=" + ignoreColumns
-				+ ", categoricalColumnDictionary=" + categoricalColumnDictionary
-				+ ", multiFieldTransformationFunctionInputs=" + multiFieldTransformationFunctionInputs
-				+ ", multiFieldAggregationFunctionInputs=" + multiFieldAggregationFunctionInputs + ", dfsDepth="
-				+ dfsDepth + ", trainingWindows=" + trainingWindows + ", windowEndTime=" + windowEndTime
-				+ ", targetEntity=" + targetEntity + ", targetEntityFieldId=" + targetEntityFieldId
-				+ ", pipelineRunName=" + pipelineRunName + "]";
+				+ ", relationShips=" + relationShips + ", createEntities=" + createEntities + ", timestampColumns="
+				+ timestampColumns + ", timeIndexColumns=" + timeIndexColumns + ", categoricalColumns="
+				+ categoricalColumns + ", ignoreColumns=" + ignoreColumns + ", categoricalColumnDictionary="
+				+ categoricalColumnDictionary + ", multiFieldTransformationFunctionInputs="
+				+ multiFieldTransformationFunctionInputs + ", multiFieldAggregationFunctionInputs="
+				+ multiFieldAggregationFunctionInputs + ", dfsDepth=" + dfsDepth + ", trainingWindows="
+				+ trainingWindows + ", windowEndTime=" + windowEndTime + ", targetEntity=" + targetEntity
+				+ ", targetEntityFieldId=" + targetEntityFieldId + ", pipelineRunName=" + pipelineRunName + "]";
 	}
 
-	
 }

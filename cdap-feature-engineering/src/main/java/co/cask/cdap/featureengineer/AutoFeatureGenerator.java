@@ -151,7 +151,7 @@ public class AutoFeatureGenerator {
 				transformPrimitives, featureGenerationRequest.getDfsDepth(), featureGenerationRequest.getTargetEntity(),
 				timestampColumns, featureGenerationRequest.getCategoricalColumns(),
 				featureGenerationRequest.getIgnoreColumns(), appliedTransFunctionsWithArguments,
-				appliedAggFunctionsWithArguments);
+				appliedAggFunctionsWithArguments, transformPluginFunctionMap, aggregatePluginFunctionMap);
 
 		LOG.debug("Generated Python Script = " + pythonScript);
 		File pythonScriptFile = writeDataToTempFile(pythonScript, "python");
@@ -165,7 +165,7 @@ public class AutoFeatureGenerator {
 				featureGenerationRequest.getTrainingWindows(), featureGenerationRequest.getTimeIndexColumns(),
 				multiInputAggregatePluginFunctionMap, multiInputTransformPluginFunctionMap,
 				appliedAggFunctionsWithArguments, appliedTransFunctionsWithArguments,
-				featureGenerationRequest.getIndexes(), featureGenerationRequest.getPipelineRunName());
+				featureGenerationRequest.getIndexes(), featureGenerationRequest.getPipelineRunName(), featureGenerationRequest.getCreateEntities());
 		CDAPPipelineInfo pipelineInfo = pipelineGenerator.generateCDAPPipeline(featureEngineeringDag,
 				inputDataschemaMap, wranglerPluginConfigMap);
 		File cdapPipelineFile = writeDataToTempFile(gsonObj.toJson(pipelineInfo), "cdap-pipeline");
@@ -275,7 +275,7 @@ public class AutoFeatureGenerator {
 	int containsType(String columnType, String[] columnTypes) {
 		int index = 0;
 		for (String type : columnTypes) {
-			if (type.equalsIgnoreCase(columnType))
+			if (type.equalsIgnoreCase(columnType) || (type.equals("datetime") && columnType.equals("string")))
 				return index;
 			index++;
 		}
@@ -394,7 +394,7 @@ public class AutoFeatureGenerator {
 						String[] inputTypeToken = inputType.split(":");
 						inputTypeToken = addInferiorDataTypes(inputTypeToken);
 						for (String token : inputTypeToken) {
-							if (typeSet.contains(token.toLowerCase())) {
+							if (typeSet.contains(token.toLowerCase()) || (token.equals("datetime") && typeSet.contains("string"))) {
 								primitives.add(summary.getPluginFunction()[i]);
 								pluginFunctionMap.put(summary.getPluginFunction()[i].toLowerCase(), summary);
 								break;

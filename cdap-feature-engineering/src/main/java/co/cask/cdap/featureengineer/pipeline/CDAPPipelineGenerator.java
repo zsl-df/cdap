@@ -251,6 +251,9 @@ public class CDAPPipelineGenerator {
 				if (tokens.length == 1) {
 					String[] tokens2 = inputTypes.split(":");
 					for (String input : tokens2) {
+						if(input.equals("datetime")) {
+							input = "string";
+						}
 						inputOutputMap.put(input, tokens[0]);
 					}
 				} else {
@@ -260,6 +263,9 @@ public class CDAPPipelineGenerator {
 						throw new IllegalStateException("Function Input Output types are not matching");
 					}
 					for (int j = 0; j < tokens.length; j++) {
+						if(tokens2[j].equals("datetime")) {
+							tokens2[j] = "string";
+						}
 						inputOutputMap.put(tokens2[j], tokens[j]);
 					}
 				}
