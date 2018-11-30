@@ -30,12 +30,28 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import co.cask.cdap.common.enums.FeatureSTATS;
-import co.cask.cdap.featureengineer.pipeline.pojo.*;
+import co.cask.cdap.featureengineer.pipeline.pojo.Artifact;
+import co.cask.cdap.featureengineer.pipeline.pojo.BasePipelineNode;
+import co.cask.cdap.featureengineer.pipeline.pojo.CDAPPipelineInfo;
+import co.cask.cdap.featureengineer.pipeline.pojo.Connection;
+import co.cask.cdap.featureengineer.pipeline.pojo.InOutSchema;
+import co.cask.cdap.featureengineer.pipeline.pojo.NullableSchema;
+import co.cask.cdap.featureengineer.pipeline.pojo.NullableSchemaField;
+import co.cask.cdap.featureengineer.pipeline.pojo.PipelineConfiguration;
+import co.cask.cdap.featureengineer.pipeline.pojo.PipelineNode;
+import co.cask.cdap.featureengineer.pipeline.pojo.PluginNode;
+import co.cask.cdap.featureengineer.pipeline.pojo.Schema;
+import co.cask.cdap.featureengineer.pipeline.pojo.SchemaField;
+import co.cask.cdap.featureengineer.pipeline.pojo.SchemaFieldName;
+import co.cask.cdap.featureengineer.pipeline.pojo.StagePipelineNode;
+import co.cask.cdap.featureengineer.request.pojo.Relation;
 import co.cask.cdap.featureengineer.request.pojo.SchemaColumn;
 import co.cask.cdap.proto.artifact.PluginSummary;
 
@@ -45,6 +61,7 @@ import co.cask.cdap.proto.artifact.PluginSummary;
  */
 public class CDAPPipelineDynamicSchemaGenerator {
 
+	private static final Logger LOG = LoggerFactory.getLogger(CDAPPipelineDynamicSchemaGenerator.class);
 	private static DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZoneUTC();
 
 	private static final Gson gsonObj = new GsonBuilder().setPrettyPrinting().create();
@@ -80,8 +97,10 @@ public class CDAPPipelineDynamicSchemaGenerator {
 	Map<String, Map<String, List<String>>> appliedAggFunctionsWithArguments;
 	Map<String, Map<String, List<String>>> appliedTransFunctionsWithArguments;
 	Map<String, String> tableIndexMap;
-	private List<SchemaColumn> createEntites;
-	
+	private List<Relation> relationShips;
+	private List<SchemaColumn> createEntities;
+	private Map<String, String> createEntitiesMap;
+
 	private int globalUniqueID;
 	private static final String STAGE_NAME = "stage";
 	private final Map<String, String> generatedStageMap;
@@ -105,7 +124,9 @@ public class CDAPPipelineDynamicSchemaGenerator {
 	 * @param multiInputAggregatePluginFunctionMap
 	 * @param indexes
 	 * @param pipelineName
-	 * @param createEntities 
+	 * @param createEntities
+	 * @param relationShips
+	 * @param createEntities
 	 * 
 	 */
 	public CDAPPipelineDynamicSchemaGenerator(Map<String, PluginSummary> aggregatePluginFunctionMap,
@@ -116,7 +137,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
 			Map<String, PluginSummary> multiInputTransformPluginFunctionMap,
 			Map<String, Map<String, List<String>>> appliedAggFunctionsWithArguments,
 			Map<String, Map<String, List<String>>> appliedTransFunctionsWithArguments, List<SchemaColumn> indexes,
-			String pipelineName, List<SchemaColumn> createEntities) {
+			String pipelineName, List<Relation> relationShips, List<SchemaColumn> createEntities) {
 		this.stageMap = new LinkedHashMap<String, BasePipelineNode>();
 		this.connections = new LinkedHashMap<String, Set<String>>();
 		this.systemArtifact = new Artifact();
@@ -130,7 +151,13 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		for (String entity : entityNames) {
 			lastStageMapForTable.put(entity, entity);
 		}
-		this.createEntites = createEntities;
+		this.relationShips = relationShips;
+		this.createEntities = createEntities;
+		this.createEntitiesMap = new HashMap<>();
+		if (this.createEntities != null)
+			for (SchemaColumn col : createEntities) {
+				createEntitiesMap.put(col.getTable(), col.getColumn());
+			}
 		this.pipelineName = pipelineName;
 		globalUniqueID = 0;
 		this.generatedStageMap = new HashMap<String, String>();
@@ -230,7 +257,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
 				if (tokens.length == 1) {
 					String[] tokens2 = inputTypes.split(":");
 					for (String input : tokens2) {
-						if(input.equals("datetime")) {
+						if (input.equals("datetime")) {
 							input = "string";
 						}
 						inputOutputMap.put(input, tokens[0]);
@@ -242,7 +269,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
 						throw new IllegalStateException("Function Input Output types are not matching");
 					}
 					for (int j = 0; j < tokens.length; j++) {
-						if(tokens2[j].equals("datetime")) {
+						if (tokens2[j].equals("datetime")) {
 							tokens2[j] = "string";
 						}
 						inputOutputMap.put(tokens2[j], tokens[j]);
@@ -269,9 +296,9 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		PipelineConfiguration config = generatePipelineConfiguration(featureDag, inputDataSourceInfoMap,
 				wranglerPluginConfigMap);
 		pipelineInformation.setConfig(config);
-		System.out.println("generatedStageMap = \n");
+		LOG.debug("generatedStageMap = \n");
 		for (Map.Entry<String, String> entry : generatedStageMap.entrySet()) {
-			System.out.println(entry.getKey() + " = " + entry.getValue());
+			LOG.debug(entry.getKey() + " = " + entry.getValue());
 		}
 		return pipelineInformation;
 	}
@@ -294,9 +321,10 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		pipeLineConfiguration.setResources(resources);
 
 		createSourceStages(inputDataSourceInfoMap, wranglerPluginConfigMap, pipeLineConfiguration);
+		createMissingEntityTables(wranglerPluginConfigMap, this.relationShips, this.entityNames);
 		Map<String, String> lastStageMapForTableTillSource = new HashMap<>(lastStageMapForTable);
 		List<String> lastStagesForEachTrainingWindow = new LinkedList<String>();
-		List<String> statsStagesForEachTrainingWindow = new LinkedList<String>();
+		// List<String> statsStagesForEachTrainingWindow = new LinkedList<String>();
 		if (this.trainingWindows != null && !this.trainingWindows.isEmpty()) {
 			for (Integer trainingTime : this.trainingWindows) {
 				categoricalColumnsToBeChecked.clear();
@@ -307,12 +335,15 @@ public class CDAPPipelineDynamicSchemaGenerator {
 				}
 				populateStagesFromOperations(featureDag);
 				lastStagesForEachTrainingWindow.add(lastStageMapForTable.get(targetEntity));
-				//String statsComputeStageName = createStatsComputeStage(lastStageMapForTable.get(targetEntity));
-				//statsStagesForEachTrainingWindow.add(statsComputeStageName);
+				// String statsComputeStageName =
+				// createStatsComputeStage(lastStageMapForTable.get(targetEntity));
+				// statsStagesForEachTrainingWindow.add(statsComputeStageName);
 			}
-			 String sourceTempTableName = takeOuterjoinOfAllTempTables(lastStagesForEachTrainingWindow, targetEntityIdField);
-			 String statsComputeStageName = createStatsComputeStage(sourceTempTableName);
-//			String joinedStatsTableName = takeOuterjoinOfAllTempTables(statsStagesForEachTrainingWindow, "Statistic");
+			String sourceTempTableName = takeOuterjoinOfAllTempTables(lastStagesForEachTrainingWindow,
+					targetEntityIdField);
+			String statsComputeStageName = createStatsComputeStage(sourceTempTableName);
+			// String joinedStatsTableName =
+			// takeOuterjoinOfAllTempTables(statsStagesForEachTrainingWindow, "Statistic");
 			// getElasticSearchSinkNode("StatsElasticsearch", "statsDataSink",
 			// "stats_index_" + System.currentTimeMillis(),
 			// "stats", "Statistic", joinedStatsTableName);
@@ -325,6 +356,25 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		} else
 			generatePipelineStagesAndCreateConnections(pipeLineConfiguration, featureDag);
 		return pipeLineConfiguration;
+	}
+
+	private void createMissingEntityTables(Map<String, CDAPPipelineInfo> wranglerPluginConfigMap,
+			List<Relation> relationShips, List<String> entityNames) {
+		for (SchemaColumn missingTable : this.createEntities) {
+			String tableIndex = missingTable.getColumn();
+			String entityTable = missingTable.getTable();
+			for (Relation relation : relationShips) {
+				SchemaColumn col1 = relation.getColumn1();
+				SchemaColumn col2 = relation.getColumn2();
+				if (col1.getTable().equals(entityTable) && col1.getColumn().equals(tableIndex)) {
+					createSourceDedupedTable(entityTable, tableIndex, relation.getColumn2());
+					break;
+				} else if (col2.getTable().equals(entityTable) && col2.getColumn().equals(tableIndex)) {
+					createSourceDedupedTable(entityTable, tableIndex, relation.getColumn1());
+					break;
+				}
+			}
+		}
 	}
 
 	private String createStatsComputeStage(String lastStageName) {
@@ -621,6 +671,8 @@ public class CDAPPipelineDynamicSchemaGenerator {
 			Map<String, CDAPPipelineInfo> wranglerPluginConfigMap, PipelineConfiguration pipeLineConfiguration) {
 		for (Map.Entry<String, CDAPPipelineInfo> wranglerPluginEntry : wranglerPluginConfigMap.entrySet()) {
 			String tableName = wranglerPluginEntry.getKey();
+			if (this.createEntitiesMap.containsKey(tableName))
+				continue;
 			for (BasePipelineNode stage : wranglerPluginEntry.getValue().getConfig().getStages()) {
 				String stageName = tableName + "_" + stage.getName();
 				stage.setName(stageName);
@@ -638,6 +690,58 @@ public class CDAPPipelineDynamicSchemaGenerator {
 				isUsedStage.add(destinationConnectionName);
 			}
 		}
+	}
+
+	private void createSourceDedupedTable(String entityTable, String tableIndex, SchemaColumn sourceColumn) {
+		String currentStageName = entityTable + "_RowDeduper";
+
+		PipelineNode pipelineNode = new PipelineNode();
+		PluginNode pluginNode = new PluginNode();
+		pipelineNode.setPlugin(pluginNode);
+		pipelineNode.setName(currentStageName);
+		pluginNode.setName("RowDeduper");
+		pluginNode.setType("sparkcompute");
+		pluginNode.setLabel(currentStageName);
+		pluginNode.setArtifact(this.featureEngineeringArtifact);
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put("columnToBeDeduped", sourceColumn.getColumn());
+		pluginNode.setProperties(properties);
+		Schema schema = schemaMap.get(sourceColumn.getTable());
+		Schema destSchema = getColumnSchema(schema, sourceColumn.getColumn(), tableIndex);
+		stageMap.put(currentStageName, pipelineNode);
+		schemaMap.put(currentStageName, destSchema);
+		lastStageMapForTable.put(entityTable, currentStageName);
+		putInConnection(lastStageMapForTable.get(sourceColumn.getTable()), currentStageName);
+		isUsedStage.add(currentStageName);
+		isUsedStage.add(lastStageMapForTable.get(sourceColumn.getTable()));
+	}
+
+	private Schema getColumnSchema(Schema schema, String sourceColumn, String destinationColumn) {
+		Schema resSchema = new Schema();
+		resSchema.setName(schema.getName());
+		resSchema.setType(schema.getType());
+		SchemaFieldName destField = null;
+		for (SchemaFieldName field : schema.getFields()) {
+			if (field.getName().equals(sourceColumn)) {
+				if (field instanceof SchemaField) {
+					SchemaField schemaField = new SchemaField();
+					schemaField.setName(destinationColumn);
+					schemaField.setType(((SchemaField) field).getType());
+					destField = schemaField;
+				} else if (field instanceof NullableSchemaField) {
+					NullableSchemaField schemaField = new NullableSchemaField();
+					NullableSchemaField sourceField = (NullableSchemaField) field;
+					schemaField.setName(sourceField.getName());
+					schemaField.setType(sourceField.getType());
+					destField = schemaField;
+				}
+			}
+		}
+		SchemaFieldName[] destFields = new SchemaFieldName[1];
+		destFields[0] = destField;
+		resSchema.setFields(destFields);
+
+		return resSchema;
 	}
 
 	private Schema getSchemaObjectFromNullable(NullableSchema nullableSchema) {
