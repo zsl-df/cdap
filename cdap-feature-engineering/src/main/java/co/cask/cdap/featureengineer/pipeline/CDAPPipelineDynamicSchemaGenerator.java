@@ -384,7 +384,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		PluginNode pluginNode = new PluginNode();
 		stageNode.setPlugin(pluginNode);
 		pluginNode.setLabel(stageName);
-		pluginNode.setName("StatsComputeInMemory");
+		pluginNode.setName("SparkStatsCompute");
 		pluginNode.setType("sparkcompute");
 		Artifact esArtifact = new Artifact();
 		esArtifact.setName("feature-engineering-plugin");
@@ -392,7 +392,6 @@ public class CDAPPipelineDynamicSchemaGenerator {
 		esArtifact.setScope("SYSTEM");
 		pluginNode.setArtifact(esArtifact);
 		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put("parallelThreads", "20");
 		pluginNode.setProperties(properties);
 
 		putInConnection(lastStageName, stageName);

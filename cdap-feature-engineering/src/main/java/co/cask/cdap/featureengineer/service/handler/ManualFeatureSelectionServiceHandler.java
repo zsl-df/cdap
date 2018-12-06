@@ -47,6 +47,7 @@ import co.cask.cdap.featureengineer.response.pojo.SelectedFeatureStats;
 import co.cask.cdap.featureengineer.pipeline.pojo.NullableSchema;
 import co.cask.cdap.featureengineer.proto.FeatureGenerationRequest;
 import co.cask.cdap.featureengineer.proto.FeatureSelectionRequest;
+import co.cask.cdap.featureengineer.proto.FilterFeaturesByStatsRequest;
 import co.cask.cdap.featureengineer.utils.JSONInputParser;
 
 /**
@@ -168,6 +169,17 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
 		responder.sendJson(featureStatsObj);
 	}
 
+	@POST
+	@Path("featureengineering/{pipelineName}/features/selected/create/pipeline")
+	public void filterFeaturesByStats(HttpServiceRequest request, HttpServiceResponder responder,
+			@PathParam("pipelineName") String featureGenerationPipelineName) {
+		FilterFeaturesByStatsRequest filterFeaturesByStatsRequest = new RequestExtractor(request).getContent("UTF-8",
+				FilterFeaturesByStatsRequest.class); 
+		Table featureStatsDataSet = context.getDataset(featureGenerationPipelineName);
+		
+	}
+	
+	
 	private Object getStatColumnValue(FeatureSTATS stat, Row row) {
 		switch (stat.getType()) {
 		case "long":
