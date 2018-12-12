@@ -337,7 +337,7 @@ public class AutoFeatureGenerator {
 
 	String executeFeatureToolsAndGetFeatureDag(File pythonScriptFile) throws IOException, InterruptedException {
 		CommandExecutor executor = new CommandExecutor();
-		executor.executeCommand("/anaconda2/bin/python", pythonScriptFile.getAbsolutePath());
+		executor.executeCommand("python", pythonScriptFile.getAbsolutePath());
 		return executor.getCommandOutput();
 	}
 
