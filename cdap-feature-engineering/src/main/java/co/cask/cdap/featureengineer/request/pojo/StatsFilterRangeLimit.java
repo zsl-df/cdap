@@ -15,20 +15,37 @@
  */
 package co.cask.cdap.featureengineer.request.pojo;
 
+import javax.management.RuntimeOperationsException;
+import javax.naming.OperationNotSupportedException;
+
 /**
  * @author bhupesh.goel
  *
  */
-public class StatsFilterRangeLimit extends StatsFilter {
+public class StatsFilterRangeLimit {
 
 	private Object lowerLimit;
 	private Object upperLimit;
 
 	public StatsFilterRangeLimit(final Object lowerLimit, final Object upperLimit) {
+//		super.setFilterType(StatsFilterType.Range);
 		this.lowerLimit = lowerLimit;
 		this.upperLimit = upperLimit;
 	}
-
+	
+	public StatsFilterRangeLimit() {
+//		super.setFilterType(StatsFilterType.Range);
+	}
+	
+	/**
+	 * @param filterType
+	 *            the filterType to set
+	 * @throws OperationNotSupportedException 
+	 */
+	public void setFilterType(StatsFilterType filterType) {
+		throw new RuntimeException("StatsFilterRangeLimit doesn't support setting filter type. By Default it will always be Range");
+	}
+	
 	/**
 	 * @return the lowerLimit
 	 */

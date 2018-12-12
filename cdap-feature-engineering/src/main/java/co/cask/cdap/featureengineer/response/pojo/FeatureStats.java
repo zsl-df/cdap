@@ -62,6 +62,15 @@ public class FeatureStats {
 	}
 
 	/**
+	 * 
+	 * @param statName
+	 * @return
+	 */
+	public Object getFeatureStatisticValue(final String statName) {
+		return featureStatistics.get(statName);
+	}
+	
+	/**
 	 * @param featureStatistics
 	 *            the featureStatistics to set
 	 */

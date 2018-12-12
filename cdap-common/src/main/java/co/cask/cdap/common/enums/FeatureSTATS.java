@@ -50,6 +50,101 @@ public enum FeatureSTATS {
 		this.inputType = inputType;
 	}
 
+	public boolean liesInBetween(Object value, Object minValue, Object maxValue) {
+		if(value == null || minValue == null || maxValue == null) 
+			return false;
+		switch(type) {
+		case "double":
+			Double doubleValue = getDoubleValue(value);
+			Double doubleMinValue = getDoubleValue(minValue);
+			Double doubleMaxValue = getDoubleValue(maxValue);
+			if(doubleValue.compareTo(doubleMinValue)<0 || doubleValue.compareTo(doubleMaxValue)>0)
+				return false;
+			break;
+		case "long": 
+			Long longValue = getLongValue(value);
+			Long longMinValue = getLongValue(minValue);
+			Long longMaxValue = getLongValue(maxValue);
+			if(longValue.compareTo(longMinValue)<0 || longValue.compareTo(longMaxValue)>0)
+				return false;
+			break;
+		case "string":
+			if(value.toString().compareTo(minValue.toString())<0 || value.toString().compareTo(maxValue.toString())>0)
+				return false;
+			break;
+		case "boolean":
+			Boolean boolValue = getBooleanValue(value);
+			Boolean boolMinValue = getBooleanValue(value);
+			Boolean boolMaxValue = getBooleanValue(maxValue);
+			if(boolValue.compareTo(boolMinValue)<0 || boolValue.compareTo(boolMaxValue)>0)
+				return false;
+			break;
+		}
+		return true;
+	}
+	
+	private Long getLongValue(Object value) {
+		if(value == null)
+			return null;
+		if(value instanceof Double) {
+			return ((Double) value).longValue();
+		}
+		if(value instanceof Long) {
+			return (Long) value;
+		}
+		if(value instanceof String) {
+			return Long.parseLong(value.toString());
+		}
+		return (Long) value;
+	}
+	
+	private Boolean getBooleanValue(Object value) {
+		if(value == null)
+			return null;
+		if(value.toString().equalsIgnoreCase("true")) {
+			return true;
+		} else if(value.toString().equalsIgnoreCase("false")) {
+			return false;
+		}
+		return null;
+	}
+	
+	private Double getDoubleValue(Object value) {
+		if(value == null)
+			return null;
+		if(value instanceof Double)
+			return (Double) value;
+		if(value instanceof Long)
+			return ((Long) value).longValue()*1.0;
+		if(value instanceof String) 
+			return Double.parseDouble((String) value);
+		return (Double) value;
+	}
+	
+	public int compare(Object value1, Object value2) {
+		if(value1 == null) 
+			return -1;
+		else if(value2 == null)
+			return 1;
+		switch(type) {
+		case "double":
+			Double doubleValue1 = getDoubleValue(value1);
+			Double doubleValue2 = getDoubleValue(value2);
+			return doubleValue1.compareTo(doubleValue2);
+		case "long": 
+			Long longValue1 = getLongValue(value1);
+			Long longValue2 = getLongValue(value2);
+			return longValue1.compareTo(longValue2);
+		case "boolean":
+			Boolean boolValue1 = getBooleanValue(value1);
+			Boolean boolValue2 = getBooleanValue(value2);
+			return boolValue1.compareTo(boolValue2);
+		default:
+			return value1.toString().compareTo(value2.toString());	
+		}
+		
+	}
+	
 	/**
 	 * @return the name
 	 */

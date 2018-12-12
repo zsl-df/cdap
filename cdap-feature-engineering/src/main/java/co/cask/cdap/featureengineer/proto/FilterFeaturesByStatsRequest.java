@@ -17,6 +17,7 @@ package co.cask.cdap.featureengineer.proto;
 
 import java.util.List;
 
+import co.cask.cdap.common.enums.FeatureSTATS;
 import co.cask.cdap.featureengineer.request.pojo.CompositeType;
 import co.cask.cdap.featureengineer.request.pojo.StatsFilter;
 
@@ -26,18 +27,17 @@ import co.cask.cdap.featureengineer.request.pojo.StatsFilter;
  */
 public class FilterFeaturesByStatsRequest {
 
-	private String orderByStat;
-	private int startPosition;
-	private int endPosition;
-	private boolean isComposite;
+	private FeatureSTATS orderByStat;
+	private int startPosition = 0;
+	private int endPosition = Integer.MAX_VALUE;
+	private boolean isComposite = false;
 	private CompositeType compositeType;
-
 	private List<StatsFilter> filterList;
 
 	/**
 	 * @return the orderByStat
 	 */
-	public String getOrderByStat() {
+	public FeatureSTATS getOrderByStat() {
 		return orderByStat;
 	}
 
@@ -45,7 +45,7 @@ public class FilterFeaturesByStatsRequest {
 	 * @param orderByStat
 	 *            the orderByStat to set
 	 */
-	public void setOrderByStat(String orderByStat) {
+	public void setOrderByStat(FeatureSTATS orderByStat) {
 		this.orderByStat = orderByStat;
 	}
 
