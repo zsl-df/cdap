@@ -33,6 +33,7 @@ import org.joda.time.format.DateTimeFormatter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 
 import co.cask.cdap.feature.selection.CDAPSubDagGenerator.CDAPSubDagGeneratorOutput;
 import co.cask.cdap.featureengineer.pipeline.pojo.Artifact;
@@ -430,7 +431,7 @@ public class CDAPPipelineGenerator {
 		inSchema.setName(lastStageName);
 		inSchema.setSchema(gsonObj.toJson(lastStageSchema));
 		pipelineNode.setInputSchema(inputSchema);
-
+		schemaMap.put(currentStageName, curStageSchema);
 		stageMap.put(currentStageName, pipelineNode);
 		lastStageMapForTable.put(entityTable, currentStageName);
 		putInConnection(lastStageName, currentStageName);
@@ -713,7 +714,7 @@ public class CDAPPipelineGenerator {
 		properties.put("schema.row.field", targetEntityIdField); // Test or make changes to make sure
 																	// targetEntityIdField is coming in schema
 																	// specifically with multiple time windows.
-		properties.put("schema", gsonObj.toJson(schemaMap.get(lastStageName)));
+		properties.put("schema", gsonObj.toJson(getNullableSchema(schemaMap.get(lastStageName))));
 		pluginNode.setProperties(properties);
 
 		putInConnection(lastStageName, stageName);
@@ -721,6 +722,19 @@ public class CDAPPipelineGenerator {
 		isUsedStage.add(lastStageName);
 		isUsedStage.add(stageName);
 		return stageNode;
+	}
+
+	private Schema getNullableSchema(Schema schema) {
+		Schema resultSchema = new Schema();
+		resultSchema.setName(schema.getName());
+		resultSchema.setType(schema.getType());
+		SchemaFieldName[] fields = new SchemaFieldName[schema.getFields().length];
+		int index = 0;
+		for(SchemaFieldName field : schema.getFields()) {
+			fields[index++] = getNullableSchema(field);
+		}
+		resultSchema.setFields(fields);
+		return resultSchema;
 	}
 
 	private void populateStagesFromOperations(String featureDag) {
