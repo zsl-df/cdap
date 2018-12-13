@@ -20,5 +20,5 @@ package co.cask.cdap.featureengineer.request.pojo;
  *
  */
 public enum CompositeType {
-	AND, OR
+    AND, OR
 }

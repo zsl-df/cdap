@@ -21,48 +21,52 @@ package co.cask.cdap.featureengineer.request.pojo;
  */
 public class StatsFilterSingleLimit {
 
-	private int limit;
+    private int limit;
 
-	/**
-	 * @return the lowerLimit
-	 */
-	public int getLimit() {
-		return limit;
-	}
+    /**
+     * @return the lowerLimit
+     */
+    public int getLimit() {
+        return limit;
+    }
 
-	/**
-	 * @param lowerLimit
-	 *            the lowerLimit to set
-	 */
-	public void setLimit(int limit) {
-		this.limit = limit;
-	}
+    /**
+     * @param limit
+     *            the lowerLimit to set
+     */
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + limit;
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + limit;
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		StatsFilterSingleLimit other = (StatsFilterSingleLimit) obj;
-		if (limit != other.limit)
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        StatsFilterSingleLimit other = (StatsFilterSingleLimit) obj;
+        if (limit != other.limit) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "StatsFilterSingleLimit [limit=" + limit + "]";
-	}
+    @Override
+    public String toString() {
+        return "StatsFilterSingleLimit [limit=" + limit + "]";
+    }
 
 }

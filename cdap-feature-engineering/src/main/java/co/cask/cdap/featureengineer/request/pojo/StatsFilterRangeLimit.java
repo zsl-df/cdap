@@ -15,7 +15,6 @@
  */
 package co.cask.cdap.featureengineer.request.pojo;
 
-import javax.management.RuntimeOperationsException;
 import javax.naming.OperationNotSupportedException;
 
 /**
@@ -24,92 +23,98 @@ import javax.naming.OperationNotSupportedException;
  */
 public class StatsFilterRangeLimit {
 
-	private Object lowerLimit;
-	private Object upperLimit;
+    private Object lowerLimit;
+    private Object upperLimit;
 
-	public StatsFilterRangeLimit(final Object lowerLimit, final Object upperLimit) {
-//		super.setFilterType(StatsFilterType.Range);
-		this.lowerLimit = lowerLimit;
-		this.upperLimit = upperLimit;
-	}
-	
-	public StatsFilterRangeLimit() {
-//		super.setFilterType(StatsFilterType.Range);
-	}
-	
-	/**
-	 * @param filterType
-	 *            the filterType to set
-	 * @throws OperationNotSupportedException 
-	 */
-	public void setFilterType(StatsFilterType filterType) {
-		throw new RuntimeException("StatsFilterRangeLimit doesn't support setting filter type. By Default it will always be Range");
-	}
-	
-	/**
-	 * @return the lowerLimit
-	 */
-	public Object getLowerLimit() {
-		return lowerLimit;
-	}
+    public StatsFilterRangeLimit(final Object lowerLimit, final Object upperLimit) {
+        this.lowerLimit = lowerLimit;
+        this.upperLimit = upperLimit;
+    }
 
-	/**
-	 * @param lowerLimit
-	 *            the lowerLimit to set
-	 */
-	public void setLowerLimit(Object lowerLimit) {
-		this.lowerLimit = lowerLimit;
-	}
+    public StatsFilterRangeLimit() {
+    }
 
-	/**
-	 * @return the upperLimit
-	 */
-	public Object getUpperLimit() {
-		return upperLimit;
-	}
+    /**
+     * @param filterType
+     *            the filterType to set
+     * @throws OperationNotSupportedException
+     */
+    public void setFilterType(StatsFilterType filterType) {
+        throw new RuntimeException(
+                "StatsFilterRangeLimit doesn't support setting filter type. By Default it will always be Range");
+    }
 
-	/**
-	 * @param upperLimit
-	 *            the upperLimit to set
-	 */
-	public void setUpperLimit(Object upperLimit) {
-		this.upperLimit = upperLimit;
-	}
+    /**
+     * @return the lowerLimit
+     */
+    public Object getLowerLimit() {
+        return lowerLimit;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((lowerLimit == null) ? 0 : lowerLimit.hashCode());
-		result = prime * result + ((upperLimit == null) ? 0 : upperLimit.hashCode());
-		return result;
-	}
+    /**
+     * @param lowerLimit
+     *            the lowerLimit to set
+     */
+    public void setLowerLimit(Object lowerLimit) {
+        this.lowerLimit = lowerLimit;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		StatsFilterRangeLimit other = (StatsFilterRangeLimit) obj;
-		if (lowerLimit == null) {
-			if (other.lowerLimit != null)
-				return false;
-		} else if (!lowerLimit.equals(other.lowerLimit))
-			return false;
-		if (upperLimit == null) {
-			if (other.upperLimit != null)
-				return false;
-		} else if (!upperLimit.equals(other.upperLimit))
-			return false;
-		return true;
-	}
+    /**
+     * @return the upperLimit
+     */
+    public Object getUpperLimit() {
+        return upperLimit;
+    }
 
-	@Override
-	public String toString() {
-		return "StatsFilterRangeLimit [lowerLimit=" + lowerLimit + ", upperLimit=" + upperLimit + "]";
-	}
+    /**
+     * @param upperLimit
+     *            the upperLimit to set
+     */
+    public void setUpperLimit(Object upperLimit) {
+        this.upperLimit = upperLimit;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((lowerLimit == null) ? 0 : lowerLimit.hashCode());
+        result = prime * result + ((upperLimit == null) ? 0 : upperLimit.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        StatsFilterRangeLimit other = (StatsFilterRangeLimit) obj;
+        if (lowerLimit == null) {
+            if (other.lowerLimit != null) {
+                return false;
+            }
+        } else if (!lowerLimit.equals(other.lowerLimit)) {
+            return false;
+        }
+        if (upperLimit == null) {
+            if (other.upperLimit != null) {
+                return false;
+            }
+        } else if (!upperLimit.equals(other.upperLimit)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "StatsFilterRangeLimit [lowerLimit=" + lowerLimit + ", upperLimit=" + upperLimit + "]";
+    }
 
 }

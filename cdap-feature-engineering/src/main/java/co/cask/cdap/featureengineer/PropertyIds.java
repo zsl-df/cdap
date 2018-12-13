@@ -21,9 +21,9 @@ package co.cask.cdap.featureengineer;
  */
 public interface PropertyIds {
 
-	// Content Type of content being stored.
-	public static final String CONTENT_TYPE = "Content-Type";
+    // Content Type of content being stored.
+    String CONTENT_TYPE = "Content-Type";
 
-	// Charset of the content.
-	public static final String CHARSET = "charset";
+    // Charset of the content.
+    String CHARSET = "charset";
 }

@@ -21,17 +21,17 @@ package co.cask.cdap.featureengineer.enums;
  */
 public enum PipelineType {
 
-	FEATURE_GENERATION("featureGeneration"), 
-	FEATURE_SELECTION("featureSelection");
+    FEATURE_GENERATION("featureGeneration"), 
+    FEATURE_SELECTION("featureSelection");
 
-	private final String name;
+    private final String name;
 
-	private PipelineType(final String name) {
-		this.name = name;
-	}
+    PipelineType(final String name) {
+        this.name = name;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
 }

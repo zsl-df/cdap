@@ -21,50 +21,49 @@ package co.cask.cdap.featureengineer.enums;
  */
 public enum FeatureGenerationConfigParams {
 
-	INDEXES("Indexes", true, ""),
-	RELATIONSHIPS("Relationships", true, ""),
-	TIMESTAMP_COLUMNS("TimestampColumns", true, ""),
-	TIME_INDEX_COLUMNS("TimeIndexColumns", true, ""),
-	CATEGORICAL_COLUMNS("CategoricalColumns", true, ""),
-	IGNORE_COLUMNS("IgnoreColumns", true, ""),
-	MULTI_FIELD_TRANS_FUNCTION_INPUT_COLUMNS("multiFieldTransFunctionInputColumns", true, ""),
-	MULTI_FIELD_AGG_FUNCTION_INPUT_COLUMNS("multiFieldAggFunctionInputColumns", true, ""),
-	TARGET_ENTITY("TargetEntity", true, ""),
-	TARGET_ENTITY_PRIMARY_FIELD("TargetEntityPrimaryField", true, ""),
-	DFS_DEPTH("DFSDepth", false, ""),
-	TRAINING_WINDOWS("TrainingWindows", false, ""),
-	WINDOW_END_TIME("WindowEndTime", false, "");
-	
-	final String name;
-	final Boolean isSchemaSpecific;
-	final String description;
-	
-	private FeatureGenerationConfigParams(final String name, final boolean isSchemaSpecific, final String description) {
-		this.name = name;
-		this.isSchemaSpecific = isSchemaSpecific;
-		this.description = description;
-	}
+    INDEXES("Indexes", true, ""),
+    RELATIONSHIPS("Relationships", true, ""),
+    TIMESTAMP_COLUMNS("TimestampColumns", true, ""),
+    TIME_INDEX_COLUMNS("TimeIndexColumns", true, ""),
+    CATEGORICAL_COLUMNS("CategoricalColumns", true, ""), 
+    IGNORE_COLUMNS("IgnoreColumns", true, ""),
+    MULTI_FIELD_TRANS_FUNCTION_INPUT_COLUMNS("multiFieldTransFunctionInputColumns", true, ""),  
+    MULTI_FIELD_AGG_FUNCTION_INPUT_COLUMNS("multiFieldAggFunctionInputColumns", true, ""), 
+    TARGET_ENTITY("TargetEntity", true, ""), 
+    TARGET_ENTITY_PRIMARY_FIELD("TargetEntityPrimaryField", true, ""),  
+    DFS_DEPTH("DFSDepth", false, ""), 
+    TRAINING_WINDOWS("TrainingWindows", false, ""),  
+    WINDOW_END_TIME("WindowEndTime", false, "");
 
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
+    final String name;
+    final Boolean isSchemaSpecific;
+    final String description;
 
-	/**
-	 * @return the isSchemaSpecific
-	 */
-	public Boolean isSchemaSpecific() {
-		return isSchemaSpecific;
-	}
+    FeatureGenerationConfigParams(final String name, final boolean isSchemaSpecific, final String description) {
+        this.name = name;
+        this.isSchemaSpecific = isSchemaSpecific;
+        this.description = description;
+    }
 
-	/**
-	 * @return the description
-	 */
-	public String getDescription() {
-		return description;
-	}
-	
-	
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @return the isSchemaSpecific
+     */
+    public Boolean isSchemaSpecific() {
+        return isSchemaSpecific;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
 }

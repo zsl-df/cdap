@@ -21,59 +21,66 @@ package co.cask.cdap.featureengineer.request.pojo;
  */
 public class Relation {
 
-	private SchemaColumn column1;
-	private SchemaColumn column2;
+    private SchemaColumn column1;
+    private SchemaColumn column2;
 
-	public SchemaColumn getColumn1() {
-		return column1;
-	}
+    public SchemaColumn getColumn1() {
+        return column1;
+    }
 
-	public void setColumn1(SchemaColumn column1) {
-		this.column1 = column1;
-	}
+    public void setColumn1(SchemaColumn column1) {
+        this.column1 = column1;
+    }
 
-	public SchemaColumn getColumn2() {
-		return column2;
-	}
+    public SchemaColumn getColumn2() {
+        return column2;
+    }
 
-	public void setColumn2(SchemaColumn column2) {
-		this.column2 = column2;
-	}
+    public void setColumn2(SchemaColumn column2) {
+        this.column2 = column2;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((column1 == null) ? 0 : column1.hashCode());
-		result = prime * result + ((column2 == null) ? 0 : column2.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((column1 == null) ? 0 : column1.hashCode());
+        result = prime * result + ((column2 == null) ? 0 : column2.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Relation other = (Relation) obj;
-		if (column1 == null) {
-			if (other.column1 != null)
-				return false;
-		} else if (!column1.equals(other.column1))
-			return false;
-		if (column2 == null) {
-			if (other.column2 != null)
-				return false;
-		} else if (!column2.equals(other.column2))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Relation other = (Relation) obj;
+        if (column1 == null) {
+            if (other.column1 != null) {
+                return false;
+            }
+        } else if (!column1.equals(other.column1)) {
+            return false;
+        }
+        if (column2 == null) {
+            if (other.column2 != null) {
+                return false;
+            }
+        } else if (!column2.equals(other.column2)) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "Relation [column1=" + column1 + ", column2=" + column2 + "]";
-	}
+    @Override
+    public String toString() {
+        return "Relation [column1=" + column1 + ", column2=" + column2 + "]";
+    }
 
 }

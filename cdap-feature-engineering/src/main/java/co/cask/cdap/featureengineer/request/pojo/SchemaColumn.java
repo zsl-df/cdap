@@ -18,66 +18,79 @@ package co.cask.cdap.featureengineer.request.pojo;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * 
+ * @author bhupesh.goel
+ *
+ */
 public class SchemaColumn {
 
-	private String table;
-	private String column;
+    private String table;
+    private String column;
 
-	public SchemaColumn(String table, String column) {
-		this.table = table;
-		this.column = column;
-	}
-	
-	public String getTable() {
-		return table;
-	}
+    public SchemaColumn(String table, String column) {
+        this.table = table;
+        this.column = column;
+    }
 
-	public void setTable(String table) {
-		this.table = table;
-	}
+    public String getTable() {
+        return table;
+    }
 
-	public String getColumn() {
-		return column;
-	}
+    public void setTable(String table) {
+        this.table = table;
+    }
 
-	public void setColumn(String column) {
-		this.column = column;
-	}
+    public String getColumn() {
+        return column;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((column == null) ? 0 : column.hashCode());
-		result = prime * result + ((table == null) ? 0 : table.hashCode());
-		return result;
-	}
+    public void setColumn(String column) {
+        this.column = column;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		SchemaColumn other = (SchemaColumn) obj;
-		if (column == null) {
-			if (other.column != null)
-				return false;
-		} else if (!column.equals(other.column))
-			return false;
-		if (table == null) {
-			if (other.table != null)
-				return false;
-		} else if (!table.equals(other.table))
-			return false;
-		return true;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((column == null) ? 0 : column.hashCode());
+        result = prime * result + ((table == null) ? 0 : table.hashCode());
+        return result;
+    }
 
-	@Override
-	public String toString() {
-		return "SchemaColumn [table=" + table + ", column=" + column + "]";
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        SchemaColumn other = (SchemaColumn) obj;
+        if (column == null) {
+            if (other.column != null) {
+                return false;
+            }
+        } else if (!column.equals(other.column)) {
+            return false;
+        }
+        if (table == null) {
+            if (other.table != null) {
+                return false;
+            }
+        } else if (!table.equals(other.table)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "SchemaColumn [table=" + table + ", column=" + column + "]";
+    }
 
 }

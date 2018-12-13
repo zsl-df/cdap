@@ -24,58 +24,63 @@ import java.util.List;
  */
 public class DataSchemaList {
 
-	private List<DataSchema> dataSchemaList;
+    private List<DataSchema> dataSchemaList;
 
-	/**
-	 * @return the dataSchemaList
-	 */
-	public List<DataSchema> getDataSchemaList() {
-		return dataSchemaList;
-	}
+    /**
+     * @return the dataSchemaList
+     */
+    public List<DataSchema> getDataSchemaList() {
+        return dataSchemaList;
+    }
 
-	/**
-	 * @param dataSchemaList
-	 *            the dataSchemaList to set
-	 */
-	public void setDataSchemaList(List<DataSchema> dataSchemaList) {
-		this.dataSchemaList = dataSchemaList;
-	}
+    /**
+     * @param dataSchemaList
+     *            the dataSchemaList to set
+     */
+    public void setDataSchemaList(List<DataSchema> dataSchemaList) {
+        this.dataSchemaList = dataSchemaList;
+    }
 
-	public void addDataSchema(DataSchema schema) {
-		if(dataSchemaList==null) {
-			this.dataSchemaList = new LinkedList<>();
-		}
-		this.dataSchemaList.add(schema);
-	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((dataSchemaList == null) ? 0 : dataSchemaList.hashCode());
-		return result;
-	}
+    public void addDataSchema(DataSchema schema) {
+        if (dataSchemaList == null) {
+            this.dataSchemaList = new LinkedList<>();
+        }
+        this.dataSchemaList.add(schema);
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		DataSchemaList other = (DataSchemaList) obj;
-		if (dataSchemaList == null) {
-			if (other.dataSchemaList != null)
-				return false;
-		} else if (!dataSchemaList.equals(other.dataSchemaList))
-			return false;
-		return true;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((dataSchemaList == null) ? 0 : dataSchemaList.hashCode());
+        return result;
+    }
 
-	@Override
-	public String toString() {
-		return "DataSchemaList [dataSchemaList=" + dataSchemaList + "]";
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        DataSchemaList other = (DataSchemaList) obj;
+        if (dataSchemaList == null) {
+            if (other.dataSchemaList != null) {
+                return false;
+            }
+        } else if (!dataSchemaList.equals(other.dataSchemaList)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "DataSchemaList [dataSchemaList=" + dataSchemaList + "]";
+    }
 
 }

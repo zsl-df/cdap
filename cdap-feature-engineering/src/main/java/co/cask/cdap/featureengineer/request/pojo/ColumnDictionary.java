@@ -23,59 +23,66 @@ import java.util.List;
  */
 public class ColumnDictionary {
 
-	private SchemaColumn column;
-	private List<String> dictionary;
+    private SchemaColumn column;
+    private List<String> dictionary;
 
-	public SchemaColumn getColumn() {
-		return column;
-	}
+    public SchemaColumn getColumn() {
+        return column;
+    }
 
-	public void setColumn(SchemaColumn column) {
-		this.column = column;
-	}
+    public void setColumn(SchemaColumn column) {
+        this.column = column;
+    }
 
-	public List<String> getDictionary() {
-		return dictionary;
-	}
+    public List<String> getDictionary() {
+        return dictionary;
+    }
 
-	public void setDictionary(List<String> dictionary) {
-		this.dictionary = dictionary;
-	}
+    public void setDictionary(List<String> dictionary) {
+        this.dictionary = dictionary;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((column == null) ? 0 : column.hashCode());
-		result = prime * result + ((dictionary == null) ? 0 : dictionary.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((column == null) ? 0 : column.hashCode());
+        result = prime * result + ((dictionary == null) ? 0 : dictionary.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ColumnDictionary other = (ColumnDictionary) obj;
-		if (column == null) {
-			if (other.column != null)
-				return false;
-		} else if (!column.equals(other.column))
-			return false;
-		if (dictionary == null) {
-			if (other.dictionary != null)
-				return false;
-		} else if (!dictionary.equals(other.dictionary))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ColumnDictionary other = (ColumnDictionary) obj;
+        if (column == null) {
+            if (other.column != null) {
+                return false;
+            }
+        } else if (!column.equals(other.column)) {
+            return false;
+        }
+        if (dictionary == null) {
+            if (other.dictionary != null) {
+                return false;
+            }
+        } else if (!dictionary.equals(other.dictionary)) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "ColumnDictionary [column=" + column + ", dictionary=" + dictionary + "]";
-	}
+    @Override
+    public String toString() {
+        return "ColumnDictionary [column=" + column + ", dictionary=" + dictionary + "]";
+    }
 
 }

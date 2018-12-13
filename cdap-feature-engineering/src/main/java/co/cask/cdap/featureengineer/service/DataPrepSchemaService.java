@@ -25,18 +25,18 @@ import co.cask.cdap.featureengineer.service.handler.DataPrepSchemaServiceHandler
  */
 public class DataPrepSchemaService extends AbstractService {
 
-	public static final String SERVICE_NAME = "DataPrepSchemaService";
-	private final FeatureEngineeringApp.FeatureEngineeringConfig config;
+    public static final String SERVICE_NAME = "DataPrepSchemaService";
+    private final FeatureEngineeringApp.FeatureEngineeringConfig config;
 
-	public DataPrepSchemaService(FeatureEngineeringApp.FeatureEngineeringConfig config) {
-		this.config = config;
-	}
+    public DataPrepSchemaService(FeatureEngineeringApp.FeatureEngineeringConfig config) {
+        this.config = config;
+    }
 
-	@Override
-	protected void configure() {
-		setName(SERVICE_NAME);
-		setDescription("A service to retrieve statistics, word counts, and associations.");
-		addHandler(new DataPrepSchemaServiceHandler(config));
-	}
+    @Override
+    protected void configure() {
+        setName(SERVICE_NAME);
+        setDescription("A service to retrieve statistics, word counts, and associations.");
+        addHandler(new DataPrepSchemaServiceHandler(config));
+    }
 
 }

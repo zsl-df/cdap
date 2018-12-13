@@ -21,93 +21,100 @@ package co.cask.cdap.featureengineer.response.pojo;
  */
 public class FeatureGenerationConfigParam {
 
-	private String paramName;
-	private String description;
+    private String paramName;
+    private String description;
 
-	public FeatureGenerationConfigParam(final String paramName, final String description) {
-		this.paramName = paramName;
-		this.description = description;
-	}
-	
-	/**
-	 * @return the paramName
-	 */
-	public String getParamName() {
-		return paramName;
-	}
+    public FeatureGenerationConfigParam(final String paramName, final String description) {
+        this.paramName = paramName;
+        this.description = description;
+    }
 
-	/**
-	 * @param paramName
-	 *            the paramName to set
-	 */
-	public void setParamName(String paramName) {
-		this.paramName = paramName;
-	}
+    /**
+     * @return the paramName
+     */
+    public String getParamName() {
+        return paramName;
+    }
 
-	/**
-	 * @return the description
-	 */
-	public String getDescription() {
-		return description;
-	}
+    /**
+     * @param paramName
+     *            the paramName to set
+     */
+    public void setParamName(String paramName) {
+        this.paramName = paramName;
+    }
 
-	/**
-	 * @param description
-	 *            the description to set
-	 */
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((paramName == null) ? 0 : paramName.hashCode());
-		return result;
-	}
+    /**
+     * @param description
+     *            the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		FeatureGenerationConfigParam other = (FeatureGenerationConfigParam) obj;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
-			return false;
-		if (paramName == null) {
-			if (other.paramName != null)
-				return false;
-		} else if (!paramName.equals(other.paramName))
-			return false;
-		return true;
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((description == null) ? 0 : description.hashCode());
+        result = prime * result + ((paramName == null) ? 0 : paramName.hashCode());
+        return result;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "FeatureGenerationConfigParam [paramName=" + paramName + ", description=" + description + "]";
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        FeatureGenerationConfigParam other = (FeatureGenerationConfigParam) obj;
+        if (description == null) {
+            if (other.description != null) {
+                return false;
+            }
+        } else if (!description.equals(other.description)) {
+            return false;
+        }
+        if (paramName == null) {
+            if (other.paramName != null) {
+                return false;
+            }
+        } else if (!paramName.equals(other.paramName)) {
+            return false;
+        }
+        return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "FeatureGenerationConfigParam [paramName=" + paramName + ", description=" + description + "]";
+    }
 
 }

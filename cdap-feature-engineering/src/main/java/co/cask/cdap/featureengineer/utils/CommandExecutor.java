@@ -26,71 +26,71 @@ import java.io.InputStreamReader;
  */
 public class CommandExecutor {
 
-	private static class StreamGobbler extends Thread {
-		private InputStream is;
-		private String output;
+    private static class StreamGobbler extends Thread {
+        private InputStream is;
+        private String output;
 
-		StreamGobbler(InputStream is) {
-			this.is = is;
-			this.output = "";
-		}
+        StreamGobbler(InputStream is) {
+            this.is = is;
+            this.output = "";
+        }
 
-		public void run() {
-			try {
-				StringBuilder sb = new StringBuilder();
-				InputStreamReader isr = new InputStreamReader(is);
-				BufferedReader br = new BufferedReader(isr);
-				String line = null;
-				while ((line = br.readLine()) != null) {
-					sb.append(line);
-					sb.append("\n");
-				}
-				br.close();
-				output = sb.toString();
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-			}
-		}
-	}
+        public void run() {
+            try {
+                StringBuilder sb = new StringBuilder();
+                InputStreamReader isr = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(isr);
+                String line = null;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                    sb.append("\n");
+                }
+                br.close();
+                output = sb.toString();
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
+    }
 
-	private String commandOutput;
-	private String errorOutput;
+    private String commandOutput;
+    private String errorOutput;
 
-	public int executeCommand(final String command, final String arg) throws IOException, InterruptedException {
-		ProcessBuilder pb = new ProcessBuilder(command, arg);
-		Process process = pb.start();
+    public int executeCommand(final String command, final String arg) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder(command, arg);
+        Process process = pb.start();
 
-		// any error message?
-		StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream());
+        // any error message?
+        StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream());
 
-		// any output?
-		StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream());
+        // any output?
+        StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream());
 
-		// kick them off
-		errorGobbler.start();
-		outputGobbler.start();
+        // kick them off
+        errorGobbler.start();
+        outputGobbler.start();
 
-		int errCode = process.waitFor();
-		errorGobbler.join();
-		outputGobbler.join();
-		commandOutput = outputGobbler.output;
-		errorOutput = errorGobbler.output;
-		return errCode;
-	}
+        int errCode = process.waitFor();
+        errorGobbler.join();
+        outputGobbler.join();
+        commandOutput = outputGobbler.output;
+        errorOutput = errorGobbler.output;
+        return errCode;
+    }
 
-	public String getCommandOutput() {
-		return commandOutput;
-	}
+    public String getCommandOutput() {
+        return commandOutput;
+    }
 
-	public String getErrorOutput() {
-		return errorOutput;
-	}
+    public String getErrorOutput() {
+        return errorOutput;
+    }
 
-	public static void main(String args[]) throws IOException, InterruptedException {
-		CommandExecutor executor = new CommandExecutor();
-		int errCode = executor.executeCommand("/anaconda2/bin/python",
-				"/var/folders/dn/8y9zxh4n0vv3c4njqjkhqdq9pn3s7z/T/temp-feature-engineering-python9215664053409143847.tmp");
-		System.out.println("Error code = " + errCode);
-		System.out.println("Output = " + executor.commandOutput);
-	}
+    public static void main(String args[]) throws IOException, InterruptedException {
+        CommandExecutor executor = new CommandExecutor();
+        int errCode = executor.executeCommand("/anaconda2/bin/python", "/var/folders/dn/8y9zxh4n0vv3c4njqjkhqdq9pn3s7z"
+                + "/T/temp-feature-engineering-python9215664053409143847.tmp");
+        System.out.println("Error code = " + errCode);
+        System.out.println("Output = " + executor.commandOutput);
+    }
 }

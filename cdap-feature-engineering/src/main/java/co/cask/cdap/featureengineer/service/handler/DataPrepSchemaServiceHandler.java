@@ -15,14 +15,6 @@
  */
 package co.cask.cdap.featureengineer.service.handler;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import co.cask.cdap.api.annotation.Property;
 import co.cask.cdap.api.common.Bytes;
 import co.cask.cdap.api.dataset.lib.CloseableIterator;
@@ -42,91 +34,99 @@ import co.cask.cdap.featureengineer.response.pojo.DataSchema;
 import co.cask.cdap.featureengineer.response.pojo.DataSchemaList;
 import co.cask.cdap.featureengineer.utils.JSONInputParser;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+
 /**
  * @author bhupesh.goel
  *
  */
 public class DataPrepSchemaServiceHandler extends BaseServiceHandler {
 
-	private static final Logger LOG = LoggerFactory.getLogger(DataPrepSchemaServiceHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DataPrepSchemaServiceHandler.class);
 
-	@Property
-	private final String dataSchemaTableName;
-	@Property
-	private final String pluginConfigTableName;
+    @Property
+    private final String dataSchemaTableName;
+    @Property
+    private final String pluginConfigTableName;
 
-	private KeyValueTable dataSchemaTable;
-	private KeyValueTable pluginConfigTable;
+    private KeyValueTable dataSchemaTable;
+    private KeyValueTable pluginConfigTable;
 
-	/**
-	 * @param config
-	 * 
-	 */
-	public DataPrepSchemaServiceHandler(FeatureEngineeringConfig config) {
-		this.dataSchemaTableName = config.getDataSchemaTable();
-		this.pluginConfigTableName = config.getPluginConfigTable();
-	}
+    /**
+     * @param config
+     * 
+     */
+    public DataPrepSchemaServiceHandler(FeatureEngineeringConfig config) {
+        this.dataSchemaTableName = config.getDataSchemaTable();
+        this.pluginConfigTableName = config.getPluginConfigTable();
+    }
 
-	@Override
-	public void initialize(HttpServiceContext context) throws Exception {
-		super.initialize(context);
-		dataSchemaTable = context.getDataset(dataSchemaTableName);
-		pluginConfigTable = context.getDataset(pluginConfigTableName);
-	}
+    @Override
+    public void initialize(HttpServiceContext context) throws Exception {
+        super.initialize(context);
+        dataSchemaTable = context.getDataset(dataSchemaTableName);
+        pluginConfigTable = context.getDataset(pluginConfigTableName);
+    }
 
-	@POST
-	@Path("featureengineering/{dataSchemaName}/wrangler/{configType}/config")
-	public void persistWranglerPluginConfig(HttpServiceRequest request, HttpServiceResponder responder,
-			@PathParam("dataSchemaName") String dataSchemaName, @PathParam("configType") String configType) {
-		try {
-			PersistWranglerRequest wranglerRequest = new RequestExtractor(request).getContent("UTF-8",
-					PersistWranglerRequest.class);
-			LOG.debug("Passed pluginConfig is " + wranglerRequest.getPluginConfig());
-			NullableSchema schema = JSONInputParser.parseDataSchemaJSON(wranglerRequest.getSchema());
-			if (schema.getFields().length == 1) {
-				dataSchemaName = "accounts";
-			} else {
-				dataSchemaName = "errors";
-			}
-			dataSchemaTable.write(dataSchemaName, wranglerRequest.getSchema());
-			pluginConfigTable.write(dataSchemaName + "_" + configType, wranglerRequest.getPluginConfig());
-			success(responder, "Successfully persisted wrangler plugin config");
-		} catch (Exception e) {
-			error(responder, e.getMessage());
-		}
-	}
+    @POST
+    @Path("featureengineering/{dataSchemaName}/wrangler/{configType}/config")
+    public void persistWranglerPluginConfig(HttpServiceRequest request, HttpServiceResponder responder,
+            @PathParam("dataSchemaName") String dataSchemaName, @PathParam("configType") String configType) {
+        try {
+            PersistWranglerRequest wranglerRequest = new RequestExtractor(request).getContent("UTF-8",
+                    PersistWranglerRequest.class);
+            LOG.debug("Passed pluginConfig is " + wranglerRequest.getPluginConfig());
+            NullableSchema schema = JSONInputParser.parseDataSchemaJSON(wranglerRequest.getSchema());
+            if (schema.getFields().length == 1) {
+                dataSchemaName = "accounts";
+            } else {
+                dataSchemaName = "errors";
+            }
+            dataSchemaTable.write(dataSchemaName, wranglerRequest.getSchema());
+            pluginConfigTable.write(dataSchemaName + "_" + configType, wranglerRequest.getPluginConfig());
+            success(responder, "Successfully persisted wrangler plugin config");
+        } catch (Exception e) {
+            error(responder, e.getMessage());
+        }
+    }
 
-	@GET
-	@Path("featureengineering/dataschema/getall")
-	public void getAllDataSchemas(HttpServiceRequest request, HttpServiceResponder responder) {
-		CloseableIterator<KeyValue<byte[], byte[]>> iterator = dataSchemaTable.scan(null, null);
-		DataSchemaList schemaList = new DataSchemaList();
-		while (iterator.hasNext()) {
-			KeyValue<byte[], byte[]> keyValue = iterator.next();
-			String schemaName = Bytes.toString(keyValue.getKey());
-			String schema = Bytes.toString(keyValue.getValue());
-			NullableSchema nullableSchema = JSONInputParser.parseDataSchemaJSON(schema);
-			DataSchema dataSchema = createDataSchemaFromNullableSchema(nullableSchema, schemaName);
-			schemaList.addDataSchema(dataSchema);
-		}
-		responder.sendJson(schemaList);
-	}
+    @GET
+    @Path("featureengineering/dataschema/getall")
+    public void getAllDataSchemas(HttpServiceRequest request, HttpServiceResponder responder) {
+        CloseableIterator<KeyValue<byte[], byte[]>> iterator = dataSchemaTable.scan(null, null);
+        DataSchemaList schemaList = new DataSchemaList();
+        while (iterator.hasNext()) {
+            KeyValue<byte[], byte[]> keyValue = iterator.next();
+            String schemaName = Bytes.toString(keyValue.getKey());
+            String schema = Bytes.toString(keyValue.getValue());
+            NullableSchema nullableSchema = JSONInputParser.parseDataSchemaJSON(schema);
+            DataSchema dataSchema = createDataSchemaFromNullableSchema(nullableSchema, schemaName);
+            schemaList.addDataSchema(dataSchema);
+        }
+        responder.sendJson(schemaList);
+    }
 
-	private DataSchema createDataSchemaFromNullableSchema(NullableSchema nullableSchema, String schemaName) {
-		DataSchema dataSchema = new DataSchema();
-		dataSchema.setSchemaName(schemaName);
-		for (NullableSchemaField field : nullableSchema.getFields()) {
-			Column column = new Column();
-			column.setColumnName(field.getName());
-			try {
-				column.setColumnType(field.getType().get(0));
-			} catch (Throwable th) {
-				throw new DataSchemaReadException(
-						"Unable to read Column Type for column " + field.getName() + " of schema " + schemaName + " ");
-			}
-			
-			dataSchema.addSchemaColumn(column);
-		}
-		return dataSchema;
-	}
+    private DataSchema createDataSchemaFromNullableSchema(NullableSchema nullableSchema, String schemaName) {
+        DataSchema dataSchema = new DataSchema();
+        dataSchema.setSchemaName(schemaName);
+        for (NullableSchemaField field : nullableSchema.getFields()) {
+            Column column = new Column();
+            column.setColumnName(field.getName());
+            try {
+                column.setColumnType(field.getType().get(0));
+            } catch (Throwable th) {
+                throw new DataSchemaReadException(
+                        "Unable to read Column Type for column " + field.getName() + " of schema " + schemaName + " ");
+            }
+
+            dataSchema.addSchemaColumn(column);
+        }
+        return dataSchema;
+    }
 }

@@ -25,18 +25,18 @@ import co.cask.cdap.featureengineer.service.handler.ManualFeatureSelectionServic
  */
 public class ManualFeatureSelectionService extends AbstractService {
 
-	public static final String SERVICE_NAME = "ManualFeatureSelectionService";
-	private final FeatureEngineeringApp.FeatureEngineeringConfig config;
+    public static final String SERVICE_NAME = "ManualFeatureSelectionService";
+    private final FeatureEngineeringApp.FeatureEngineeringConfig config;
 
-	public ManualFeatureSelectionService(FeatureEngineeringApp.FeatureEngineeringConfig config) {
-		this.config = config;
-	}
+    public ManualFeatureSelectionService(FeatureEngineeringApp.FeatureEngineeringConfig config) {
+        this.config = config;
+    }
 
-	@Override
-	protected void configure() {
-		setName(SERVICE_NAME);
-		setDescription("A service to manage selection of features manually.");
-		addHandler(new ManualFeatureSelectionServiceHandler(config));
-	}
+    @Override
+    protected void configure() {
+        setName(SERVICE_NAME);
+        setDescription("A service to manage selection of features manually.");
+        addHandler(new ManualFeatureSelectionServiceHandler(config));
+    }
 
 }

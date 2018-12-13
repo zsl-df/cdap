@@ -24,54 +24,54 @@ import co.cask.cdap.featureengineer.response.pojo.FeatureStats;
  */
 public class FeatureStatsPriorityNode<T extends Comparable> implements Comparable<FeatureStatsPriorityNode> {
 
-	private final T value;
-	private final FeatureStats featureStats;
-	private final boolean ascending;
+    private final T value;
+    private final FeatureStats featureStats;
+    private final boolean ascending;
 
-	public FeatureStatsPriorityNode(T value, FeatureStats featureStats, boolean ascending) {
-		this.value = value;
-		this.featureStats = featureStats;
-		this.ascending = ascending;
-	}
+    public FeatureStatsPriorityNode(T value, FeatureStats featureStats, boolean ascending) {
+        this.value = value;
+        this.featureStats = featureStats;
+        this.ascending = ascending;
+    }
 
-	@Override
-	public int compareTo(FeatureStatsPriorityNode otherValue) {
-		if (ascending) {
-			if (value == null) {
-				return -1;
-			} else if (otherValue.value == null) {
-				return 1;
-			}
-			return value.compareTo(otherValue.value);
-		} else {
-			if (value == null) {
-				return 1;
-			} else if (otherValue.value == null) {
-				return -1;
-			}
-			return -value.compareTo(otherValue.value);	
-		}
-	}
+    @Override
+    public int compareTo(FeatureStatsPriorityNode otherValue) {
+        if (ascending) {
+            if (value == null) {
+                return -1;
+            } else if (otherValue.value == null) {
+                return 1;
+            }
+            return value.compareTo(otherValue.value);
+        } else {
+            if (value == null) {
+                return 1;
+            } else if (otherValue.value == null) {
+                return -1;
+            }
+            return -value.compareTo(otherValue.value);
+        }
+    }
 
-	/**
-	 * @return the value
-	 */
-	public T getValue() {
-		return value;
-	}
+    /**
+     * @return the value
+     */
+    public T getValue() {
+        return value;
+    }
 
-	/**
-	 * @return the featureStats
-	 */
-	public FeatureStats getFeatureStats() {
-		return featureStats;
-	}
+    /**
+     * @return the featureStats
+     */
+    public FeatureStats getFeatureStats() {
+        return featureStats;
+    }
 
-	/**
-	 * @return the ascending
-	 */
-	public boolean isAscending() {
-		return ascending;
-	}
+    /**
+     * @return the ascending
+     */
+    public boolean isAscending() {
+        return ascending;
+    }
 
 }

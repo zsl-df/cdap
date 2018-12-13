@@ -31,99 +31,105 @@ import co.cask.cdap.featureengineer.service.ManualFeatureSelectionService;
  */
 public class FeatureEngineeringApp extends AbstractApplication<FeatureEngineeringApp.FeatureEngineeringConfig> {
 
-	public static class FeatureEngineeringConfig extends Config {
+    /**
+     * 
+     * @author bhupesh.goel
+     *
+     */
+    public static class FeatureEngineeringConfig extends Config {
 
-		private String dataSchemaTable;
+        private String dataSchemaTable;
 
-		private String pluginConfigTable;
+        private String pluginConfigTable;
 
-		private String featureDAGTable;
+        private String featureDAGTable;
 
-		private String featureEngineeringConfigTable;
-		
-		private String pipelineDataSchemasTable;
-		
-		private String pipelineNameTable;
+        private String featureEngineeringConfigTable;
 
-		/**
-		 * Set default values for the configuration variables.
-		 */
-		public FeatureEngineeringConfig() {
-			this.dataSchemaTable = "schemaDataSet";
-			this.pluginConfigTable = "pluginConfigDataSet";
-			this.featureDAGTable = "featureDAGDataSet";
-			this.featureEngineeringConfigTable = "featureEngineeringDataSet";
-			this.pipelineDataSchemasTable = "pipelineDataSchemasDataSet";
-			this.pipelineNameTable = "pipelineNameDataSet";
-		}
+        private String pipelineDataSchemasTable;
 
-		/**
-		 * Used only for unit testing.
-		 */
-		public FeatureEngineeringConfig(final String dataSchemaTable, final String pluginConfigTable,
-				final String featureDAGTable, final String featureEngineeringConfigTable, final String pipelineDataSchemasTable) {
-			this.dataSchemaTable = dataSchemaTable;
-			this.pluginConfigTable = pluginConfigTable;
-			this.featureDAGTable = featureDAGTable;
-			this.featureEngineeringConfigTable = featureEngineeringConfigTable;
-			this.pipelineDataSchemasTable = pipelineDataSchemasTable;
-		}
+        private String pipelineNameTable;
 
-		public String getDataSchemaTable() {
-			return dataSchemaTable;
-		}
+        /**
+         * Set default values for the configuration variables.
+         */
+        public FeatureEngineeringConfig() {
+            this.dataSchemaTable = "schemaDataSet";
+            this.pluginConfigTable = "pluginConfigDataSet";
+            this.featureDAGTable = "featureDAGDataSet";
+            this.featureEngineeringConfigTable = "featureEngineeringDataSet";
+            this.pipelineDataSchemasTable = "pipelineDataSchemasDataSet";
+            this.pipelineNameTable = "pipelineNameDataSet";
+        }
 
-		public String getPluginConfigTable() {
-			return pluginConfigTable;
-		}
+        /**
+         * Used only for unit testing.
+         */
+        public FeatureEngineeringConfig(final String dataSchemaTable, final String pluginConfigTable,
+                final String featureDAGTable, final String featureEngineeringConfigTable,
+                final String pipelineDataSchemasTable) {
+            this.dataSchemaTable = dataSchemaTable;
+            this.pluginConfigTable = pluginConfigTable;
+            this.featureDAGTable = featureDAGTable;
+            this.featureEngineeringConfigTable = featureEngineeringConfigTable;
+            this.pipelineDataSchemasTable = pipelineDataSchemasTable;
+        }
 
-		/**
-		 * @return the featureDAGTable
-		 */
-		public String getFeatureDAGTable() {
-			return featureDAGTable;
-		}
+        public String getDataSchemaTable() {
+            return dataSchemaTable;
+        }
 
-		/**
-		 * @return the featureEngineeringConfigTable
-		 */
-		public String getFeatureEngineeringConfigTable() {
-			return featureEngineeringConfigTable;
-		}
+        public String getPluginConfigTable() {
+            return pluginConfigTable;
+        }
 
-		public String getPipelineDataSchemasTable() {
-			return pipelineDataSchemasTable;
-		}
+        /**
+         * @return the featureDAGTable
+         */
+        public String getFeatureDAGTable() {
+            return featureDAGTable;
+        }
 
-		/**
-		 * @return the pipelineNameTable
-		 */
-		public String getPipelineNameTable() {
-			return pipelineNameTable;
-		}
+        /**
+         * @return the featureEngineeringConfigTable
+         */
+        public String getFeatureEngineeringConfigTable() {
+            return featureEngineeringConfigTable;
+        }
 
-	}
+        public String getPipelineDataSchemasTable() {
+            return pipelineDataSchemasTable;
+        }
 
-	@Override
-	public void configure() {
-		FeatureEngineeringConfig config = getConfig();
-		setName("FeatureEngineeringApp");
-		setDescription("Application for Feature Engineering");
-		createDataset(config.getDataSchemaTable(), KeyValueTable.class,
-				DatasetProperties.builder().setDescription("Table to persist prepared data schema").build());
-		createDataset(config.getPluginConfigTable(), KeyValueTable.class,
-				DatasetProperties.builder().setDescription("Table to persist prepared wrangler plugin").build());
-		createDataset(config.getFeatureDAGTable(), KeyValueTable.class,
-				DatasetProperties.builder().setDescription("Table to persist Feature DAG").build());
-		createDataset(config.getFeatureEngineeringConfigTable(), KeyValueTable.class,
-				DatasetProperties.builder().setDescription("Table to persist feature engineering config").build());
-		createDataset(config.getPipelineDataSchemasTable(), KeyValueTable.class,
-				DatasetProperties.builder().setDescription("Table to persist pipeline data schemas").build());
-		createDataset(config.getPipelineNameTable(), KeyValueTable.class,
-				DatasetProperties.builder().setDescription("Table to persist pipeline names").build());
-		addService(new DataPrepSchemaService(config));
-		addService(new AutoFeatureGenerationService(config));
-		addService(new ManualFeatureSelectionService(config));
-		addService(new FeatureEngineeringPipelineService(config));
-	}
+        /**
+         * @return the pipelineNameTable
+         */
+        public String getPipelineNameTable() {
+            return pipelineNameTable;
+        }
+
+    }
+
+    @Override
+    public void configure() {
+        FeatureEngineeringConfig config = getConfig();
+        setName("FeatureEngineeringApp");
+        setDescription("Application for Feature Engineering");
+        createDataset(config.getDataSchemaTable(), KeyValueTable.class,
+                DatasetProperties.builder().setDescription("Table to persist prepared data schema").build());
+        createDataset(config.getPluginConfigTable(), KeyValueTable.class,
+                DatasetProperties.builder().setDescription("Table to persist prepared wrangler plugin").build());
+        createDataset(config.getFeatureDAGTable(), KeyValueTable.class,
+                DatasetProperties.builder().setDescription("Table to persist Feature DAG").build());
+        createDataset(config.getFeatureEngineeringConfigTable(), KeyValueTable.class,
+                DatasetProperties.builder().setDescription("Table to persist feature engineering config").build());
+        createDataset(config.getPipelineDataSchemasTable(), KeyValueTable.class,
+                DatasetProperties.builder().setDescription("Table to persist pipeline data schemas").build());
+        createDataset(config.getPipelineNameTable(), KeyValueTable.class,
+                DatasetProperties.builder().setDescription("Table to persist pipeline names").build());
+        addService(new DataPrepSchemaService(config));
+        addService(new AutoFeatureGenerationService(config));
+        addService(new ManualFeatureSelectionService(config));
+        addService(new FeatureEngineeringPipelineService(config));
+    }
 }

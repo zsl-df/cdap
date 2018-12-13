@@ -15,9 +15,8 @@
  */
 package co.cask.cdap.featureengineer.service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -25,8 +24,9 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * @author bhupesh.goel
@@ -34,30 +34,28 @@ import com.google.gson.GsonBuilder;
  */
 public class GetAllDataSchemasEndPointTest {
 
-	private static final String USER_AGENT = "Mozilla/5.0";
-	static final Gson gsonObj = new GsonBuilder().setPrettyPrinting().create();
-	
-	public static void main(String[] args) throws ClientProtocolException, IOException {
-		String url = "http://bhupesh-goel.local:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/DataPrepSchemaService/methods/featureengineering/dataschema/getall";
+    private static final String USER_AGENT = "Mozilla/5.0";
 
-		HttpClient client = HttpClientBuilder.create().build();
-		HttpGet request = new HttpGet(url);
+    public static void main(String[] args) throws ClientProtocolException, IOException {
+        String url = "http://bhupesh-goel.local:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/"
+                + "DataPrepSchemaService/methods/featureengineering/dataschema/getall";
 
-		// add request header
-		request.addHeader("User-Agent", USER_AGENT);
-		HttpResponse response = client.execute(request);
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpGet request = new HttpGet(url);
 
-		System.out.println("Response Code : " 
-	                + response.getStatusLine().getStatusCode());
+        // add request header
+        request.addHeader("User-Agent", USER_AGENT);
+        HttpResponse response = client.execute(request);
 
-		BufferedReader rd = new BufferedReader(
-			new InputStreamReader(response.getEntity().getContent()));
+        System.out.println("Response Code : " + response.getStatusLine().getStatusCode());
 
-		StringBuffer result = new StringBuffer();
-		String line = "";
-		while ((line = rd.readLine()) != null) {
-			result.append(line);
-		}
-		System.out.println(result.toString());
-	}
+        BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+
+        StringBuffer result = new StringBuffer();
+        String line = "";
+        while ((line = rd.readLine()) != null) {
+            result.append(line);
+        }
+        System.out.println(result.toString());
+    }
 }

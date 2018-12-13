@@ -22,62 +22,57 @@ import java.util.List;
  *
  */
 public class DataSchemaNameList {
-	
-	List<String> dataSchemaName;
 
-	/**
-	 * @return the dataSchemaName
-	 */
-	public List<String> getDataSchemaName() {
-		return dataSchemaName;
-	}
+    List<String> dataSchemaName;
 
-	/**
-	 * @param dataSchemaName the dataSchemaName to set
-	 */
-	public void setDataSchemaName(List<String> dataSchemaName) {
-		this.dataSchemaName = dataSchemaName;
-	}
+    /**
+     * @return the dataSchemaName
+     */
+    public List<String> getDataSchemaName() {
+        return dataSchemaName;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((dataSchemaName == null) ? 0 : dataSchemaName.hashCode());
-		return result;
-	}
+    /**
+     * @param dataSchemaName
+     *            the dataSchemaName to set
+     */
+    public void setDataSchemaName(List<String> dataSchemaName) {
+        this.dataSchemaName = dataSchemaName;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		DataSchemaNameList other = (DataSchemaNameList) obj;
-		if (dataSchemaName == null) {
-			if (other.dataSchemaName != null)
-				return false;
-		} else if (!dataSchemaName.equals(other.dataSchemaName))
-			return false;
-		return true;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((dataSchemaName == null) ? 0 : dataSchemaName.hashCode());
+        return result;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "DataSchemaNameList [dataSchemaName=" + dataSchemaName + "]";
-	}
-	
-	
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        DataSchemaNameList other = (DataSchemaNameList) obj;
+        if (dataSchemaName == null) {
+            if (other.dataSchemaName != null) {
+                return false;
+            }
+        } else if (!dataSchemaName.equals(other.dataSchemaName)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "DataSchemaNameList [dataSchemaName=" + dataSchemaName + "]";
+    }
 
 }

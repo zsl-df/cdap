@@ -24,77 +24,82 @@ import java.util.List;
  */
 public class FeatureGenerationConfigParamList {
 
-	private List<FeatureGenerationConfigParam> configParamList;
+    private List<FeatureGenerationConfigParam> configParamList;
 
-	public FeatureGenerationConfigParamList() {
-		this.configParamList = new LinkedList<>();
-	}
+    public FeatureGenerationConfigParamList() {
+        this.configParamList = new LinkedList<>();
+    }
 
-	public void addConfigParam(final FeatureGenerationConfigParam configParam) {
-		if(this.configParamList==null) {
-			this.configParamList = new LinkedList<>();
-		}
-		this.configParamList.add(configParam);
-	}
-	
-	/**
-	 * @return the configParamList
-	 */
-	public List<FeatureGenerationConfigParam> getConfigParamList() {
-		return configParamList;
-	}
+    public void addConfigParam(final FeatureGenerationConfigParam configParam) {
+        if (this.configParamList == null) {
+            this.configParamList = new LinkedList<>();
+        }
+        this.configParamList.add(configParam);
+    }
 
-	/**
-	 * @param configParamList
-	 *            the configParamList to set
-	 */
-	public void setConfigParamList(List<FeatureGenerationConfigParam> configParamList) {
-		this.configParamList = configParamList;
-	}
+    /**
+     * @return the configParamList
+     */
+    public List<FeatureGenerationConfigParam> getConfigParamList() {
+        return configParamList;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((configParamList == null) ? 0 : configParamList.hashCode());
-		return result;
-	}
+    /**
+     * @param configParamList
+     *            the configParamList to set
+     */
+    public void setConfigParamList(List<FeatureGenerationConfigParam> configParamList) {
+        this.configParamList = configParamList;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		FeatureGenerationConfigParamList other = (FeatureGenerationConfigParamList) obj;
-		if (configParamList == null) {
-			if (other.configParamList != null)
-				return false;
-		} else if (!configParamList.equals(other.configParamList))
-			return false;
-		return true;
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((configParamList == null) ? 0 : configParamList.hashCode());
+        return result;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "FeatureGenerationConfigParamList [configParamList=" + configParamList + "]";
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        FeatureGenerationConfigParamList other = (FeatureGenerationConfigParamList) obj;
+        if (configParamList == null) {
+            if (other.configParamList != null) {
+                return false;
+            }
+        } else if (!configParamList.equals(other.configParamList)) {
+            return false;
+        }
+        return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "FeatureGenerationConfigParamList [configParamList=" + configParamList + "]";
+    }
 
 }

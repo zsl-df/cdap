@@ -23,96 +23,105 @@ import java.util.List;
  */
 public class FeatureSelectionRequest {
 
-	private List<String> selectedFeatures;
-	private String featureEngineeringPipeline;
-	private String featureSelectionPipeline;
+    private List<String> selectedFeatures;
+    private String featureEngineeringPipeline;
+    private String featureSelectionPipeline;
 
-	/**
-	 * @return the selectedFeatures
-	 */
-	public List<String> getSelectedFeatures() {
-		return selectedFeatures;
-	}
+    /**
+     * @return the selectedFeatures
+     */
+    public List<String> getSelectedFeatures() {
+        return selectedFeatures;
+    }
 
-	/**
-	 * @param selectedFeatures
-	 *            the selectedFeatures to set
-	 */
-	public void setSelectedFeatures(List<String> selectedFeatures) {
-		this.selectedFeatures = selectedFeatures;
-	}
+    /**
+     * @param selectedFeatures
+     *            the selectedFeatures to set
+     */
+    public void setSelectedFeatures(List<String> selectedFeatures) {
+        this.selectedFeatures = selectedFeatures;
+    }
 
-	/**
-	 * @return the featureEngineeringPipeline
-	 */
-	public String getFeatureEngineeringPipeline() {
-		return featureEngineeringPipeline;
-	}
+    /**
+     * @return the featureEngineeringPipeline
+     */
+    public String getFeatureEngineeringPipeline() {
+        return featureEngineeringPipeline;
+    }
 
-	/**
-	 * @param featureEngineeringPipeline
-	 *            the featureEngineeringPipeline to set
-	 */
-	public void setFeatureEngineeringPipeline(String featureEngineeringPipeline) {
-		this.featureEngineeringPipeline = featureEngineeringPipeline;
-	}
+    /**
+     * @param featureEngineeringPipeline
+     *            the featureEngineeringPipeline to set
+     */
+    public void setFeatureEngineeringPipeline(String featureEngineeringPipeline) {
+        this.featureEngineeringPipeline = featureEngineeringPipeline;
+    }
 
-	/**
-	 * @return the featureSelectionPipeline
-	 */
-	public String getFeatureSelectionPipeline() {
-		return featureSelectionPipeline;
-	}
+    /**
+     * @return the featureSelectionPipeline
+     */
+    public String getFeatureSelectionPipeline() {
+        return featureSelectionPipeline;
+    }
 
-	/**
-	 * @param featureSelectionPipeline
-	 *            the featureSelectionPipeline to set
-	 */
-	public void setFeatureSelectionPipeline(String featureSelectionPipeline) {
-		this.featureSelectionPipeline = featureSelectionPipeline;
-	}
+    /**
+     * @param featureSelectionPipeline
+     *            the featureSelectionPipeline to set
+     */
+    public void setFeatureSelectionPipeline(String featureSelectionPipeline) {
+        this.featureSelectionPipeline = featureSelectionPipeline;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((featureEngineeringPipeline == null) ? 0 : featureEngineeringPipeline.hashCode());
-		result = prime * result + ((featureSelectionPipeline == null) ? 0 : featureSelectionPipeline.hashCode());
-		result = prime * result + ((selectedFeatures == null) ? 0 : selectedFeatures.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((featureEngineeringPipeline == null) ? 0 : featureEngineeringPipeline.hashCode());
+        result = prime * result + ((featureSelectionPipeline == null) ? 0 : featureSelectionPipeline.hashCode());
+        result = prime * result + ((selectedFeatures == null) ? 0 : selectedFeatures.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		FeatureSelectionRequest other = (FeatureSelectionRequest) obj;
-		if (featureEngineeringPipeline == null) {
-			if (other.featureEngineeringPipeline != null)
-				return false;
-		} else if (!featureEngineeringPipeline.equals(other.featureEngineeringPipeline))
-			return false;
-		if (featureSelectionPipeline == null) {
-			if (other.featureSelectionPipeline != null)
-				return false;
-		} else if (!featureSelectionPipeline.equals(other.featureSelectionPipeline))
-			return false;
-		if (selectedFeatures == null) {
-			if (other.selectedFeatures != null)
-				return false;
-		} else if (!selectedFeatures.equals(other.selectedFeatures))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        FeatureSelectionRequest other = (FeatureSelectionRequest) obj;
+        if (featureEngineeringPipeline == null) {
+            if (other.featureEngineeringPipeline != null) {
+                return false;
+            }
+        } else if (!featureEngineeringPipeline.equals(other.featureEngineeringPipeline)) {
+            return false;
+        }
+        if (featureSelectionPipeline == null) {
+            if (other.featureSelectionPipeline != null) {
+                return false;
+            }
+        } else if (!featureSelectionPipeline.equals(other.featureSelectionPipeline)) {
+            return false;
+        }
+        if (selectedFeatures == null) {
+            if (other.selectedFeatures != null) {
+                return false;
+            }
+        } else if (!selectedFeatures.equals(other.selectedFeatures)) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "FeatureSelectionRequest [selectedFeatures=" + selectedFeatures + ", featureEngineeringPipeline="
-				+ featureEngineeringPipeline + ", featureSelectionPipeline=" + featureSelectionPipeline + "]";
-	}
+    @Override
+    public String toString() {
+        return "FeatureSelectionRequest [selectedFeatures=" + selectedFeatures + ", featureEngineeringPipeline="
+                + featureEngineeringPipeline + ", featureSelectionPipeline=" + featureSelectionPipeline + "]";
+    }
 
 }

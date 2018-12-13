@@ -15,6 +15,17 @@
  */
 package co.cask.cdap.featureengineer.service;
 
+import co.cask.cdap.featureengineer.proto.FeatureSelectionRequest;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -23,59 +34,50 @@ import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import co.cask.cdap.featureengineer.proto.FeatureSelectionRequest;
-
 /**
  * @author bhupesh.goel
  *
  */
 public class FeatureSubsetPipelineGenerationEndPointTest {
-	private static final String USER_AGENT = "Mozilla/5.0";
-	static final Gson gsonObj = new GsonBuilder().setPrettyPrinting().create();
+    private static final String USER_AGENT = "Mozilla/5.0";
+    static final Gson GSON_OBJ = new GsonBuilder().setPrettyPrinting().create();
 
-	public static void main(String[] args) throws IOException {
-		String featureFile = "/tmp/generatedRandomFeatureSet";
-		File f = new File(featureFile);
-		BufferedReader b = new BufferedReader(new FileReader(f));
-		String readLine = "";
-		List<String> features = new LinkedList<String>();
-		while ((readLine = b.readLine()) != null) {
-			features.add(readLine.trim());
-		}
-		FeatureSelectionRequest request = new FeatureSelectionRequest();
-		request.setSelectedFeatures(features);
-		request.setFeatureSelectionPipeline("InputX1ErrorSelectionTestPipeline");
-		request.setFeatureEngineeringPipeline("InputX1ErrorTestPipeline");
+    public static void main(String[] args) throws IOException {
+        String featureFile = "/tmp/generatedRandomFeatureSet";
+        File f = new File(featureFile);
+        BufferedReader b = new BufferedReader(new FileReader(f));
+        String readLine = "";
+        List<String> features = new LinkedList<String>();
+        while ((readLine = b.readLine()) != null) {
+            features.add(readLine.trim());
+        }
+        FeatureSelectionRequest request = new FeatureSelectionRequest();
+        request.setSelectedFeatures(features);
+        request.setFeatureSelectionPipeline("InputX1ErrorSelectionTestPipeline");
+        request.setFeatureEngineeringPipeline("InputX1ErrorTestPipeline");
 
-		String url = "http://bhupesh-goel.local:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/ManualFeatureSelectionService/methods/featureengineering/InputX1ErrorTestPipeline/features/selected/create/pipeline";
-		System.out.println("url = " + url);
-		HttpClient client = HttpClientBuilder.create().build();
-		HttpPost post = new HttpPost(url);
+        String url = "http://bhupesh-goel.local:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/"
+                + "ManualFeatureSelectionService/methods/featureengineering/InputX1ErrorTestPipeline/features/"
+                + "selected/create/pipeline";
+        System.out.println("url = " + url);
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpPost post = new HttpPost(url);
 
-		// // add header
-		post.setHeader("User-Agent", USER_AGENT);
-		post.setHeader("Content-Type", "application/json");
-		post.setHeader("Accept", "application/json");
-		post.setHeader("X-Stream", "true");
-		post.setEntity(new StringEntity(gsonObj.toJson(request)));
-		HttpResponse response = client.execute(post);
-		System.out.println("Response Code : " + response.getStatusLine().getStatusCode());
-		BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-		String line = "";
-		StringBuilder result = new StringBuilder();
-		while ((line = reader.readLine()) != null) {
-			result.append(line);
-		}
-		System.out.println(result.toString());
-	}
+        // // add header
+        post.setHeader("User-Agent", USER_AGENT);
+        post.setHeader("Content-Type", "application/json");
+        post.setHeader("Accept", "application/json");
+        post.setHeader("X-Stream", "true");
+        post.setEntity(new StringEntity(GSON_OBJ.toJson(request)));
+        HttpResponse response = client.execute(post);
+        System.out.println("Response Code : " + response.getStatusLine().getStatusCode());
+        BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+        String line = "";
+        StringBuilder result = new StringBuilder();
+        while ((line = reader.readLine()) != null) {
+            result.append(line);
+        }
+        System.out.println(result.toString());
+    }
 
 }

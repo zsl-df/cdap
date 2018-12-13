@@ -23,45 +23,49 @@ import java.util.List;
  */
 public class MultiSchemaColumn {
 
-	private List<SchemaColumn> columns;
+    private List<SchemaColumn> columns;
 
-	public List<SchemaColumn> getColumns() {
-		return columns;
-	}
+    public List<SchemaColumn> getColumns() {
+        return columns;
+    }
 
-	public void setColumns(List<SchemaColumn> columns) {
-		this.columns = columns;
-	}
+    public void setColumns(List<SchemaColumn> columns) {
+        this.columns = columns;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((columns == null) ? 0 : columns.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((columns == null) ? 0 : columns.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MultiSchemaColumn other = (MultiSchemaColumn) obj;
-		if (columns == null) {
-			if (other.columns != null)
-				return false;
-		} else if (!columns.equals(other.columns))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        MultiSchemaColumn other = (MultiSchemaColumn) obj;
+        if (columns == null) {
+            if (other.columns != null) {
+                return false;
+            }
+        } else if (!columns.equals(other.columns)) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "MultiSchemaColumn [columns=" + columns + "]";
-	}
-	
-	
+    @Override
+    public String toString() {
+        return "MultiSchemaColumn [columns=" + columns + "]";
+    }
+
 }

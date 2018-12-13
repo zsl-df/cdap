@@ -15,10 +15,10 @@
  */
 package co.cask.cdap.featureengineer.response.pojo;
 
+import co.cask.cdap.featureengineer.request.pojo.Column;
+
 import java.util.LinkedList;
 import java.util.List;
-
-import co.cask.cdap.featureengineer.request.pojo.Column;
 
 /**
  * @author bhupesh.goel
@@ -26,80 +26,87 @@ import co.cask.cdap.featureengineer.request.pojo.Column;
  */
 public class DataSchema {
 
-	private String schemaName;
-	private List<Column> schemaColumns;
+    private String schemaName;
+    private List<Column> schemaColumns;
 
-	/**
-	 * @return the schemaName
-	 */
-	public String getSchemaName() {
-		return schemaName;
-	}
+    /**
+     * @return the schemaName
+     */
+    public String getSchemaName() {
+        return schemaName;
+    }
 
-	/**
-	 * @param schemaName
-	 *            the schemaName to set
-	 */
-	public void setSchemaName(String schemaName) {
-		this.schemaName = schemaName;
-	}
+    /**
+     * @param schemaName
+     *            the schemaName to set
+     */
+    public void setSchemaName(String schemaName) {
+        this.schemaName = schemaName;
+    }
 
-	/**
-	 * @return the schemaColumns
-	 */
-	public List<Column> getSchemaColumns() {
-		return schemaColumns;
-	}
+    /**
+     * @return the schemaColumns
+     */
+    public List<Column> getSchemaColumns() {
+        return schemaColumns;
+    }
 
-	/**
-	 * @param schemaColumns
-	 *            the schemaColumns to set
-	 */
-	public void setSchemaColumns(List<Column> schemaColumns) {
-		this.schemaColumns = schemaColumns;
-	}
+    /**
+     * @param schemaColumns
+     *            the schemaColumns to set
+     */
+    public void setSchemaColumns(List<Column> schemaColumns) {
+        this.schemaColumns = schemaColumns;
+    }
 
-	public void addSchemaColumn(Column column) {
-		if (schemaColumns == null) {
-			schemaColumns = new LinkedList<>();
-		}
-		schemaColumns.add(column);
-	}
+    public void addSchemaColumn(Column column) {
+        if (schemaColumns == null) {
+            schemaColumns = new LinkedList<>();
+        }
+        schemaColumns.add(column);
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((schemaColumns == null) ? 0 : schemaColumns.hashCode());
-		result = prime * result + ((schemaName == null) ? 0 : schemaName.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((schemaColumns == null) ? 0 : schemaColumns.hashCode());
+        result = prime * result + ((schemaName == null) ? 0 : schemaName.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		DataSchema other = (DataSchema) obj;
-		if (schemaColumns == null) {
-			if (other.schemaColumns != null)
-				return false;
-		} else if (!schemaColumns.equals(other.schemaColumns))
-			return false;
-		if (schemaName == null) {
-			if (other.schemaName != null)
-				return false;
-		} else if (!schemaName.equals(other.schemaName))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        DataSchema other = (DataSchema) obj;
+        if (schemaColumns == null) {
+            if (other.schemaColumns != null) {
+                return false;
+            }
+        } else if (!schemaColumns.equals(other.schemaColumns)) {
+            return false;
+        }
+        if (schemaName == null) {
+            if (other.schemaName != null) {
+                return false;
+            }
+        } else if (!schemaName.equals(other.schemaName)) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "DataSchema [schemaName=" + schemaName + ", schemaColumns=" + schemaColumns + "]";
-	}
+    @Override
+    public String toString() {
+        return "DataSchema [schemaName=" + schemaName + ", schemaColumns=" + schemaColumns + "]";
+    }
 
 }

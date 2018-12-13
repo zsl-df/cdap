@@ -24,62 +24,67 @@ import java.util.List;
  */
 public class SelectedFeatureStats {
 
-	private List<FeatureStats> featureStatsList;
+    private List<FeatureStats> featureStatsList;
 
-	public SelectedFeatureStats() {
-		this.featureStatsList = new LinkedList<>();
-	}
+    public SelectedFeatureStats() {
+        this.featureStatsList = new LinkedList<>();
+    }
 
-	/**
-	 * @return the featureStatsList
-	 */
-	public List<FeatureStats> getFeatureStatsList() {
-		return featureStatsList;
-	}
+    /**
+     * @return the featureStatsList
+     */
+    public List<FeatureStats> getFeatureStatsList() {
+        return featureStatsList;
+    }
 
-	/**
-	 * @param featureStatsList
-	 *            the featureStatsList to set
-	 */
-	public void setFeatureStatsList(List<FeatureStats> featureStatsList) {
-		this.featureStatsList = featureStatsList;
-	}
+    /**
+     * @param featureStatsList
+     *            the featureStatsList to set
+     */
+    public void setFeatureStatsList(List<FeatureStats> featureStatsList) {
+        this.featureStatsList = featureStatsList;
+    }
 
-	public void addFeatureStat(FeatureStats featureStat) {
-		if (featureStatsList == null) {
-			featureStatsList = new LinkedList<>();
-		}
-		featureStatsList.add(featureStat);
-	}
+    public void addFeatureStat(FeatureStats featureStat) {
+        if (featureStatsList == null) {
+            featureStatsList = new LinkedList<>();
+        }
+        featureStatsList.add(featureStat);
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((featureStatsList == null) ? 0 : featureStatsList.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((featureStatsList == null) ? 0 : featureStatsList.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		SelectedFeatureStats other = (SelectedFeatureStats) obj;
-		if (featureStatsList == null) {
-			if (other.featureStatsList != null)
-				return false;
-		} else if (!featureStatsList.equals(other.featureStatsList))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        SelectedFeatureStats other = (SelectedFeatureStats) obj;
+        if (featureStatsList == null) {
+            if (other.featureStatsList != null) {
+                return false;
+            }
+        } else if (!featureStatsList.equals(other.featureStatsList)) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "SelectedFeatureStats [featureStatsList=" + featureStatsList + "]";
-	}
+    @Override
+    public String toString() {
+        return "SelectedFeatureStats [featureStatsList=" + featureStatsList + "]";
+    }
 
 }

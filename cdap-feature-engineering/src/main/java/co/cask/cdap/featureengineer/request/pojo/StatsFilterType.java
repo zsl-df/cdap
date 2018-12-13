@@ -20,5 +20,5 @@ package co.cask.cdap.featureengineer.request.pojo;
  *
  */
 public enum StatsFilterType {
-	TopN, LowN, Range
+    TopN, LowN, Range
 }

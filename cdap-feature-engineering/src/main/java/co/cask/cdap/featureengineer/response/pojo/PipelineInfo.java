@@ -21,78 +21,85 @@ package co.cask.cdap.featureengineer.response.pojo;
  */
 public class PipelineInfo {
 
-	private String pipelineName;
-	private String pipelineType;
+    private String pipelineName;
+    private String pipelineType;
 
-	public PipelineInfo(final String pipelineName, final String pipelineType) {
-		this.pipelineName = pipelineName;
-		this.pipelineType = pipelineType;
-	}
+    public PipelineInfo(final String pipelineName, final String pipelineType) {
+        this.pipelineName = pipelineName;
+        this.pipelineType = pipelineType;
+    }
 
-	/**
-	 * @return the pipelineName
-	 */
-	public String getPipelineName() {
-		return pipelineName;
-	}
+    /**
+     * @return the pipelineName
+     */
+    public String getPipelineName() {
+        return pipelineName;
+    }
 
-	/**
-	 * @param pipelineName
-	 *            the pipelineName to set
-	 */
-	public void setPipelineName(String pipelineName) {
-		this.pipelineName = pipelineName;
-	}
+    /**
+     * @param pipelineName
+     *            the pipelineName to set
+     */
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
+    }
 
-	/**
-	 * @return the pipelineType
-	 */
-	public String getPipelineType() {
-		return pipelineType;
-	}
+    /**
+     * @return the pipelineType
+     */
+    public String getPipelineType() {
+        return pipelineType;
+    }
 
-	/**
-	 * @param pipelineType
-	 *            the pipelineType to set
-	 */
-	public void setPipelineType(String pipelineType) {
-		this.pipelineType = pipelineType;
-	}
+    /**
+     * @param pipelineType
+     *            the pipelineType to set
+     */
+    public void setPipelineType(String pipelineType) {
+        this.pipelineType = pipelineType;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((pipelineName == null) ? 0 : pipelineName.hashCode());
-		result = prime * result + ((pipelineType == null) ? 0 : pipelineType.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((pipelineName == null) ? 0 : pipelineName.hashCode());
+        result = prime * result + ((pipelineType == null) ? 0 : pipelineType.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		PipelineInfo other = (PipelineInfo) obj;
-		if (pipelineName == null) {
-			if (other.pipelineName != null)
-				return false;
-		} else if (!pipelineName.equals(other.pipelineName))
-			return false;
-		if (pipelineType == null) {
-			if (other.pipelineType != null)
-				return false;
-		} else if (!pipelineType.equals(other.pipelineType))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        PipelineInfo other = (PipelineInfo) obj;
+        if (pipelineName == null) {
+            if (other.pipelineName != null) {
+                return false;
+            }
+        } else if (!pipelineName.equals(other.pipelineName)) {
+            return false;
+        }
+        if (pipelineType == null) {
+            if (other.pipelineType != null) {
+                return false;
+            }
+        } else if (!pipelineType.equals(other.pipelineType)) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "PipelineInfo [pipelineName=" + pipelineName + ", pipelineType=" + pipelineType + "]";
-	}
+    @Override
+    public String toString() {
+        return "PipelineInfo [pipelineName=" + pipelineName + ", pipelineType=" + pipelineType + "]";
+    }
 
 }

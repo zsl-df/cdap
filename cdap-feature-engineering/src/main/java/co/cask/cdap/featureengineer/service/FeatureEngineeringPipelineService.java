@@ -25,18 +25,18 @@ import co.cask.cdap.featureengineer.service.handler.FeatureEngineeringPipelineSe
  */
 public class FeatureEngineeringPipelineService extends AbstractService {
 
-	public static final String SERVICE_NAME = "FeatureEngineeringPipelineService";
-	private final FeatureEngineeringApp.FeatureEngineeringConfig config;
+    public static final String SERVICE_NAME = "FeatureEngineeringPipelineService";
+    private final FeatureEngineeringApp.FeatureEngineeringConfig config;
 
-	public FeatureEngineeringPipelineService(FeatureEngineeringApp.FeatureEngineeringConfig config) {
-		this.config = config;
-	}
+    public FeatureEngineeringPipelineService(FeatureEngineeringApp.FeatureEngineeringConfig config) {
+        this.config = config;
+    }
 
-	@Override
-	protected void configure() {
-		setName(SERVICE_NAME);
-		setDescription("A service to do operations on Feature Engineering Pipelines.");
-		addHandler(new FeatureEngineeringPipelineServiceHandler(config));
-	}
+    @Override
+    protected void configure() {
+        setName(SERVICE_NAME);
+        setDescription("A service to do operations on Feature Engineering Pipelines.");
+        addHandler(new FeatureEngineeringPipelineServiceHandler(config));
+    }
 
 }
