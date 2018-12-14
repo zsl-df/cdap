@@ -32,7 +32,7 @@ public class DefaultTaskLocalizationContext implements TaskLocalizationContext, 
   private final Map<String, File> localizedResources;
 
   public DefaultTaskLocalizationContext(Map<String, File> localizedResources) {
-    this.localizedResources = ImmutableMap.copyOf(localizedResources);
+    this.localizedResources = localizedResources;
   }
 
   @Override

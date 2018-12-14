@@ -55,7 +55,8 @@ public final class SparkSpecification extends AbstractProgramSpecification imple
                             List<SparkHttpServiceHandlerSpecification> handlers, Map<String, Plugin> plugins) {
     super(className, name, description, plugins);
     this.mainClassName = mainClassName;
-    this.properties = Collections.unmodifiableMap(new HashMap<>(properties));
+    //Miraj - changed to new HashMap
+    this.properties = new HashMap<>(properties);
     this.datasets = Collections.unmodifiableSet(new HashSet<>(datasets));
     this.clientResources = clientResources;
     this.driverResources = driverResources;

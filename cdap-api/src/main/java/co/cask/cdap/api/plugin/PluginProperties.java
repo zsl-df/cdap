@@ -51,8 +51,12 @@ public class PluginProperties implements Serializable {
     this(properties, new Macros());
   }
 
+  /**
+   * Miraj -- changed to return modifiable hash map for wrangler
+   * @return
+   */
   public Map<String, String> getProperties() {
-    return properties;
+    return new HashMap(properties);
   }
 
   public Macros getMacros() {
@@ -132,7 +136,7 @@ public class PluginProperties implements Serializable {
      * Creates a new instance of {@link PluginProperties} with the properties added to this builder prior to this call.
      */
     public PluginProperties build() {
-      return new PluginProperties(Collections.unmodifiableMap(new HashMap<>(properties)));
+      return new PluginProperties(new HashMap<>(properties));
     }
   }
 }

@@ -91,6 +91,8 @@ public class PreviewHttpHandler extends AbstractLogHandler {
                     @PathParam("namespace-id") String namespaceId) throws Exception {
     NamespaceId namespace = new NamespaceId(namespaceId);
     AppRequest appRequest;
+    System.out.println(request.content().toString(StandardCharsets.UTF_8));
+    LOG.debug(request.content().toString(StandardCharsets.UTF_8));
     try (Reader reader = new InputStreamReader(new ByteBufInputStream(request.content()), StandardCharsets.UTF_8)) {
       appRequest = GSON.fromJson(reader, AppRequest.class);
     } catch (JsonSyntaxException e) {

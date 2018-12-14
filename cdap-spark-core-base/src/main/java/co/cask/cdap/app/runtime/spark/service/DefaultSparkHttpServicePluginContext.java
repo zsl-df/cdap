@@ -146,8 +146,24 @@ public class DefaultSparkHttpServicePluginContext implements SparkHttpServicePlu
   @Override
   public <T> T usePlugin(String pluginType, String pluginName, String pluginId,
                          PluginProperties properties, PluginSelector selector) {
-    checkCanConfigure(pluginId);
-    return pluginConfigurer.usePlugin(pluginType, pluginName, pluginId, properties, selector);
+	  //Miraj - commented because in interective a plugin could have been already initiated with this name, now replace that.. as this is a new call.
+//	  checkCanConfigure(pluginId);
+    Class klass = runtimeContext.getClass();
+	java.net.URL location = klass.getResource('/' + klass.getName().replace('.', '/') + ".class");
+	klass.getProtectionDomain().getCodeSource().getLocation();
+	System.out.println("---- Location of DefaultPluginContext class: " + location + "   -------- locaiotn of jar: "
+			+ klass.getProtectionDomain().getCodeSource().getLocation());
+	
+	T t = pluginConfigurer.usePlugin(pluginType, pluginName, pluginId, properties, selector);
+	//Miraj - added because the runtime context does not get this plugin information even after user plugin methoed is called
+    Map<String, PluginWithLocation> pluginsLocation = pluginConfigurer.getPlugins();
+    Map<String, Plugin> plugins = new HashMap<String, Plugin>();
+    for (Map.Entry<String, PluginWithLocation> entry : pluginsLocation.entrySet()) {
+    	plugins.put(entry.getKey(),entry.getValue().getPlugin());
+	}
+    runtimeContext.getPluginContext().setPlugins(plugins);
+    runtimeContext.getPluginContext().setPluginInstantiator(pluginInstantiator);
+    return t;
   }
 
   @Nullable
@@ -155,6 +171,7 @@ public class DefaultSparkHttpServicePluginContext implements SparkHttpServicePlu
   public <T> Class<T> usePluginClass(String pluginType, String pluginName,
                                      String pluginId, PluginProperties properties, PluginSelector selector) {
     checkCanConfigure(pluginId);
+    runtimeContext.getPluginContext().setPlugin(pluginId,getExtraPlugin(pluginId));
     return pluginConfigurer.usePluginClass(pluginType, pluginName, pluginId, properties, selector);
   }
 
@@ -216,7 +233,9 @@ public class DefaultSparkHttpServicePluginContext implements SparkHttpServicePlu
     }
 
     try {
-      return pluginInstantiator.newInstance(getExtraPlugin(pluginId), evaluator);
+//    	 runtimeContext.getPluginContext().setPlugin(pluginId,getExtraPlugin(pluginId));
+//    	 runtimeContext.getPluginContext().setPluginInstantiator(pluginInstantiator);
+      return  pluginInstantiator.newInstance(getExtraPlugin(pluginId), evaluator);
     } catch (ClassNotFoundException e) {
       // Shouldn't happen, unless there is bug in file localization
       throw new IllegalArgumentException("Plugin class not found", e);

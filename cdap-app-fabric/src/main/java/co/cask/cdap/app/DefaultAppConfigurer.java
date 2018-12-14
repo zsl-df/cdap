@@ -89,7 +89,36 @@ public class DefaultAppConfigurer extends AbstractConfigurer implements Applicat
   public DefaultAppConfigurer(Id.Namespace namespace, Id.Artifact artifactId, Application app) {
     this(namespace, artifactId, app, "", null, null);
   }
+  
+  /**
+   * Mirj - Added because app object was not available so pass the app name instead
+   * @param namespace
+   * @param artifactId
+   * @param appName
+   */
+	public DefaultAppConfigurer(Id.Namespace namespace, Id.Artifact artifactId, String appName) {
+		this(namespace, artifactId, appName, "", null, null);
+	}
 
+	/**
+	   * Mirj - Added because app object was not available so pass the app name instead
+	   * @param namespace
+	   * @param artifactId
+	   * @param appName
+	   */
+	public DefaultAppConfigurer(Id.Namespace namespace, Id.Artifact artifactId, String appName, String configuration,
+			@Nullable ArtifactRepository artifactRepository, @Nullable PluginInstantiator pluginInstantiator) {
+		super(namespace, artifactId, artifactRepository, pluginInstantiator);
+		this.name = appName;
+		this.description = "";
+		this.configuration = configuration;
+		this.artifactId = artifactId;
+		this.artifactRepository = artifactRepository;
+		this.pluginInstantiator = pluginInstantiator;
+		this.triggerFactory = new DefaultTriggerFactory(namespace.toEntityId());
+	}
+  
+  
   public DefaultAppConfigurer(Id.Namespace namespace, Id.Artifact artifactId, Application app, String configuration,
                               @Nullable ArtifactRepository artifactRepository,
                               @Nullable PluginInstantiator pluginInstantiator) {
