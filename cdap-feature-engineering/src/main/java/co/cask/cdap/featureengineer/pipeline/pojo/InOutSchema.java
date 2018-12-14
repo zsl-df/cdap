@@ -23,67 +23,74 @@ import java.util.List;
  *
  */
 public class InOutSchema {
-	String name;
-	String schema;
+    String name;
+    String schema;
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getSchema() {
-		return schema;
-	}
+    public String getSchema() {
+        return schema;
+    }
 
-	public void setSchema(String schema) {
-		this.schema = schema;
-	}
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((schema == null) ? 0 : schema.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((schema == null) ? 0 : schema.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		InOutSchema other = (InOutSchema) obj;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (schema == null) {
-			if (other.schema != null)
-				return false;
-		} else if (!schema.equals(other.schema))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        InOutSchema other = (InOutSchema) obj;
+        if (name == null) {
+            if (other.name != null) {
+                return false;
+            }
+        } else if (!name.equals(other.name)) {
+            return false;
+        }
+        if (schema == null) {
+            if (other.schema != null) {
+                return false;
+            }
+        } else if (!schema.equals(other.schema)) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "InOutSchema [name=" + name + ", schema=" + schema + "]";
-	}
+    @Override
+    public String toString() {
+        return "InOutSchema [name=" + name + ", schema=" + schema + "]";
+    }
 
-	public static void main(String args[]) {
-		Object o=null;
-		List<String> s = new LinkedList<String>();
-		s.add("1");
-		s.add("2");
-		o = s;
-		System.out.println(o.toString());
-	}
+    public static void main(String args[]) {
+        Object o = null;
+        List<String> s = new LinkedList<String>();
+        s.add("1");
+        s.add("2");
+        o = s;
+        System.out.println(o.toString());
+    }
 }

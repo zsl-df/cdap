@@ -23,58 +23,65 @@ import java.util.List;
  */
 public class PipelineNode extends BasePipelineNode {
 
-	String outputSchema;
-	List<InOutSchema> inputSchema;
+    String outputSchema;
+    List<InOutSchema> inputSchema;
 
-	public String getOutputSchema() {
-		return outputSchema;
-	}
+    public String getOutputSchema() {
+        return outputSchema;
+    }
 
-	public void setOutputSchema(String outputSchema) {
-		this.outputSchema = outputSchema;
-	}
+    public void setOutputSchema(String outputSchema) {
+        this.outputSchema = outputSchema;
+    }
 
-	public List<InOutSchema> getInputSchema() {
-		return inputSchema;
-	}
+    public List<InOutSchema> getInputSchema() {
+        return inputSchema;
+    }
 
-	public void setInputSchema(List<InOutSchema> inputSchema) {
-		this.inputSchema = inputSchema;
-	}
+    public void setInputSchema(List<InOutSchema> inputSchema) {
+        this.inputSchema = inputSchema;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((inputSchema == null) ? 0 : inputSchema.hashCode());
-		result = prime * result + ((outputSchema == null) ? 0 : outputSchema.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((inputSchema == null) ? 0 : inputSchema.hashCode());
+        result = prime * result + ((outputSchema == null) ? 0 : outputSchema.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		PipelineNode other = (PipelineNode) obj;
-		if (inputSchema == null) {
-			if (other.inputSchema != null)
-				return false;
-		} else if (!inputSchema.equals(other.inputSchema))
-			return false;
-		if (outputSchema == null) {
-			if (other.outputSchema != null)
-				return false;
-		} else if (!outputSchema.equals(other.outputSchema))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        PipelineNode other = (PipelineNode) obj;
+        if (inputSchema == null) {
+            if (other.inputSchema != null) {
+                return false;
+            }
+        } else if (!inputSchema.equals(other.inputSchema)) {
+            return false;
+        }
+        if (outputSchema == null) {
+            if (other.outputSchema != null) {
+                return false;
+            }
+        } else if (!outputSchema.equals(other.outputSchema)) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "PipelineNode [outputSchema=" + outputSchema + ", inputSchema=" + inputSchema + "]";
-	}
+    @Override
+    public String toString() {
+        return "PipelineNode [outputSchema=" + outputSchema + ", inputSchema=" + inputSchema + "]";
+    }
 }

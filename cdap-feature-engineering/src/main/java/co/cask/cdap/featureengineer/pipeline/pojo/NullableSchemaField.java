@@ -24,50 +24,55 @@ import java.util.List;
  */
 public class NullableSchemaField extends SchemaFieldName {
 
-	List<String> type;
+    List<String> type;
 
-	public List<String> getType() {
-		return type;
-	}
+    public List<String> getType() {
+        return type;
+    }
 
-	public void setType(List<String> type) {
-		this.type = type;
-	}
+    public void setType(List<String> type) {
+        this.type = type;
+    }
 
-	public void setNullType(String type) {
-		this.type = new LinkedList<String>();
-		this.type.add(type);
-		this.type.add("null");
-	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
-		return result;
-	}
+    public void setNullType(String type) {
+        this.type = new LinkedList<String>();
+        this.type.add(type);
+        this.type.add("null");
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		NullableSchemaField other = (NullableSchemaField) obj;
-		if (type == null) {
-			if (other.type != null)
-				return false;
-		} else if (!type.equals(other.type))
-			return false;
-		return true;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        return result;
+    }
 
-	@Override
-	public String toString() {
-		return "NullableSchemaField [type=" + type + "]";
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        NullableSchemaField other = (NullableSchemaField) obj;
+        if (type == null) {
+            if (other.type != null) {
+                return false;
+            }
+        } else if (!type.equals(other.type)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "NullableSchemaField [type=" + type + "]";
+    }
 
 }

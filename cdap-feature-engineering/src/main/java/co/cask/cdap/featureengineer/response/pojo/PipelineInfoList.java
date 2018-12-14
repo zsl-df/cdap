@@ -24,62 +24,67 @@ import java.util.List;
  */
 public class PipelineInfoList {
 
-	private List<PipelineInfo> pipelineInfoList;
-	
-	/**
-	 * 
-	 */
-	public PipelineInfoList() {
-		this.pipelineInfoList = new LinkedList<>();
-	}
+    private List<PipelineInfo> pipelineInfoList;
 
-	public void addPipelineInfo(final PipelineInfo pipelineInfo) {
-		this.pipelineInfoList.add(pipelineInfo);
-	}
-	
-	/**
-	 * @return the pipelineInfoList
-	 */
-	public List<PipelineInfo> getPipelineInfoList() {
-		return pipelineInfoList;
-	}
+    /**
+     * 
+     */
+    public PipelineInfoList() {
+        this.pipelineInfoList = new LinkedList<>();
+    }
 
-	/**
-	 * @param pipelineInfoList the pipelineInfoList to set
-	 */
-	public void setPipelineInfoList(List<PipelineInfo> pipelineInfoList) {
-		this.pipelineInfoList = pipelineInfoList;
-	}
+    public void addPipelineInfo(final PipelineInfo pipelineInfo) {
+        this.pipelineInfoList.add(pipelineInfo);
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((pipelineInfoList == null) ? 0 : pipelineInfoList.hashCode());
-		return result;
-	}
+    /**
+     * @return the pipelineInfoList
+     */
+    public List<PipelineInfo> getPipelineInfoList() {
+        return pipelineInfoList;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		PipelineInfoList other = (PipelineInfoList) obj;
-		if (pipelineInfoList == null) {
-			if (other.pipelineInfoList != null)
-				return false;
-		} else if (!pipelineInfoList.equals(other.pipelineInfoList))
-			return false;
-		return true;
-	}
+    /**
+     * @param pipelineInfoList
+     *            the pipelineInfoList to set
+     */
+    public void setPipelineInfoList(List<PipelineInfo> pipelineInfoList) {
+        this.pipelineInfoList = pipelineInfoList;
+    }
 
-	@Override
-	public String toString() {
-		return "PipelineInfoList [pipelineInfoList=" + pipelineInfoList + "]";
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((pipelineInfoList == null) ? 0 : pipelineInfoList.hashCode());
+        return result;
+    }
 
-	
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        PipelineInfoList other = (PipelineInfoList) obj;
+        if (pipelineInfoList == null) {
+            if (other.pipelineInfoList != null) {
+                return false;
+            }
+        } else if (!pipelineInfoList.equals(other.pipelineInfoList)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "PipelineInfoList [pipelineInfoList=" + pipelineInfoList + "]";
+    }
+
 }

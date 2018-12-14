@@ -21,44 +21,49 @@ package co.cask.cdap.featureengineer.pipeline.pojo;
  */
 public class StagePipelineNode extends BasePipelineNode {
 
-	String outputSchema;
+    String outputSchema;
 
-	public String getOutputSchema() {
-		return outputSchema;
-	}
+    public String getOutputSchema() {
+        return outputSchema;
+    }
 
-	public void setOutputSchema(String outputSchema) {
-		this.outputSchema = outputSchema;
-	}
+    public void setOutputSchema(String outputSchema) {
+        this.outputSchema = outputSchema;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((outputSchema == null) ? 0 : outputSchema.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((outputSchema == null) ? 0 : outputSchema.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		StagePipelineNode other = (StagePipelineNode) obj;
-		if (outputSchema == null) {
-			if (other.outputSchema != null)
-				return false;
-		} else if (!outputSchema.equals(other.outputSchema))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        StagePipelineNode other = (StagePipelineNode) obj;
+        if (outputSchema == null) {
+            if (other.outputSchema != null) {
+                return false;
+            }
+        } else if (!outputSchema.equals(other.outputSchema)) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "StagePipelineNode [outputSchema=" + outputSchema + "]";
-	}
+    @Override
+    public String toString() {
+        return "StagePipelineNode [outputSchema=" + outputSchema + "]";
+    }
 
 }

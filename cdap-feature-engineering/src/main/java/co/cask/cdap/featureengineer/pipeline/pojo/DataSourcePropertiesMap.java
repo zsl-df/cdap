@@ -22,60 +22,67 @@ import java.util.Map;
  *
  */
 public class DataSourcePropertiesMap {
-	public Map<String, String> propertyMap;
+    public Map<String, String> propertyMap;
 
-	private Schema schema;
+    private Schema schema;
 
-	public Map<String, String> getPropertyMap() {
-		return propertyMap;
-	}
+    public Map<String, String> getPropertyMap() {
+        return propertyMap;
+    }
 
-	public void setPropertyMap(Map<String, String> propertyMap) {
-		this.propertyMap = propertyMap;
-	}
+    public void setPropertyMap(Map<String, String> propertyMap) {
+        this.propertyMap = propertyMap;
+    }
 
-	public Schema getSchema() {
-		return schema;
-	}
+    public Schema getSchema() {
+        return schema;
+    }
 
-	public void setSchema(Schema schema) {
-		this.schema = schema;
-	}
+    public void setSchema(Schema schema) {
+        this.schema = schema;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((propertyMap == null) ? 0 : propertyMap.hashCode());
-		result = prime * result + ((schema == null) ? 0 : schema.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((propertyMap == null) ? 0 : propertyMap.hashCode());
+        result = prime * result + ((schema == null) ? 0 : schema.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		DataSourcePropertiesMap other = (DataSourcePropertiesMap) obj;
-		if (propertyMap == null) {
-			if (other.propertyMap != null)
-				return false;
-		} else if (!propertyMap.equals(other.propertyMap))
-			return false;
-		if (schema == null) {
-			if (other.schema != null)
-				return false;
-		} else if (!schema.equals(other.schema))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        DataSourcePropertiesMap other = (DataSourcePropertiesMap) obj;
+        if (propertyMap == null) {
+            if (other.propertyMap != null) {
+                return false;
+            }
+        } else if (!propertyMap.equals(other.propertyMap)) {
+            return false;
+        }
+        if (schema == null) {
+            if (other.schema != null) {
+                return false;
+            }
+        } else if (!schema.equals(other.schema)) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "DataSourcePropertiesMap [propertyMap=" + propertyMap + ", schema=" + schema + "]";
-	}
+    @Override
+    public String toString() {
+        return "DataSourcePropertiesMap [propertyMap=" + propertyMap + ", schema=" + schema + "]";
+    }
 
 }
