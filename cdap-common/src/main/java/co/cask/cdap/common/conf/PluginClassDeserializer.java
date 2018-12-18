@@ -20,8 +20,10 @@ import co.cask.cdap.api.annotation.Plugin;
 import co.cask.cdap.api.plugin.PluginClass;
 import co.cask.cdap.api.plugin.PluginPropertyField;
 import co.cask.cdap.api.plugin.Requirements;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -35,53 +37,73 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A Gson deserializater for creating {@link PluginClass} object from external plugin config file.
- * Used to verify that required fields are present and property map is never null.
+ * A Gson deserializater for creating {@link PluginClass} object from external
+ * plugin config file. Used to verify that required fields are present and
+ * property map is never null.
  */
 public class PluginClassDeserializer implements JsonDeserializer<PluginClass> {
 
-  // Type for the PluginClass.properties map.
-  private static final Type PROPERTIES_TYPE = new TypeToken<Map<String, PluginPropertyField>>() { }.getType();
-  //Type for endpoints property
-  private static final Type SET_OF_STRING_TYPE = new TypeToken<Set<String>>() { }.getType();
+    // Type for the PluginClass.properties map.
+    private static final Type PROPERTIES_TYPE = new TypeToken<Map<String, PluginPropertyField>>() {
+    }.getType();
+    // Type for endpoints property
+    private static final Type SET_OF_STRING_TYPE = new TypeToken<Set<String>>() {
+    }.getType();
 
-  @Override
-  public PluginClass deserialize(JsonElement json, Type typeOfT,
-                                 JsonDeserializationContext context) throws JsonParseException {
-    if (!json.isJsonObject()) {
-      throw new JsonParseException("PluginClass should be a JSON Object");
+    @Override
+    public PluginClass deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+            throws JsonParseException {
+        if (!json.isJsonObject()) {
+            throw new JsonParseException("PluginClass should be a JSON Object");
+        }
+
+        JsonObject jsonObj = json.getAsJsonObject();
+
+        String type = jsonObj.has("type") ? jsonObj.get("type").getAsString() : Plugin.DEFAULT_TYPE;
+        String name = getRequired(jsonObj, "name").getAsString();
+        String description = jsonObj.has("description") ? jsonObj.get("description").getAsString() : "";
+        String[] pluginInput = jsonObj.has("pluginInput") ? toStringArray(jsonObj.getAsJsonArray("pluginInput")) : null;
+        String[] pluginOutput = jsonObj.has("pluginOutput") ? toStringArray(jsonObj.getAsJsonArray("pluginOutput"))
+                : null;
+        String[] pluginFunction = jsonObj.has("pluginFunction")
+                ? toStringArray(jsonObj.getAsJsonArray("pluginFunction"))
+                : null;
+        String className = getRequired(jsonObj, "className").getAsString();
+
+        Set<String> endpointsSet = new HashSet<>();
+        if (jsonObj.has("endpoints")) {
+            endpointsSet = context.deserialize(jsonObj.get("endpoints"), SET_OF_STRING_TYPE);
+        }
+
+        Map<String, PluginPropertyField> properties = jsonObj.has("properties")
+                ? context.<Map<String, PluginPropertyField>>deserialize(jsonObj.get("properties"), PROPERTIES_TYPE)
+                : ImmutableMap.<String, PluginPropertyField>of();
+
+        Set<String> datasetTypes = Collections.emptySet();
+        if (jsonObj.has("requirements")) {
+            datasetTypes = context.deserialize(jsonObj.getAsJsonObject("requirements").get("datasetTypes"),
+                    SET_OF_STRING_TYPE);
+        }
+
+        return new PluginClass(type, name, description, pluginInput, pluginOutput, pluginFunction, className, null,
+                properties, endpointsSet, new Requirements(datasetTypes));
     }
 
-    JsonObject jsonObj = json.getAsJsonObject();
-
-    String type = jsonObj.has("type") ? jsonObj.get("type").getAsString() : Plugin.DEFAULT_TYPE;
-    String name = getRequired(jsonObj, "name").getAsString();
-    String description = jsonObj.has("description") ? jsonObj.get("description").getAsString() : "";
-    String className = getRequired(jsonObj, "className").getAsString();
-
-    Set<String> endpointsSet = new HashSet<>();
-    if (jsonObj.has("endpoints")) {
-      endpointsSet = context.deserialize(jsonObj.get("endpoints"), SET_OF_STRING_TYPE);
+    private static String[] toStringArray(JsonArray array) {
+        if (array == null) {
+            return null;
+        }
+        String[] arr = new String[array.size()];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = array.getAsString();
+        }
+        return arr;
     }
 
-    Map<String, PluginPropertyField> properties = jsonObj.has("properties")
-      ? context.<Map<String, PluginPropertyField>>deserialize(jsonObj.get("properties"), PROPERTIES_TYPE)
-      : ImmutableMap.<String, PluginPropertyField>of();
-
-    Set<String> datasetTypes = Collections.emptySet();
-    if (jsonObj.has("requirements")) {
-      datasetTypes = context.deserialize(jsonObj.getAsJsonObject("requirements").get("datasetTypes"),
-                                         SET_OF_STRING_TYPE);
+    private JsonElement getRequired(JsonObject jsonObj, String name) {
+        if (!jsonObj.has(name)) {
+            throw new JsonParseException("Property '" + name + "' is missing from PluginClass.");
+        }
+        return jsonObj.get(name);
     }
-
-    return new PluginClass(type, name, description, className, null, properties, endpointsSet,
-                           new Requirements(datasetTypes));
-  }
-
-  private JsonElement getRequired(JsonObject jsonObj, String name) {
-    if (!jsonObj.has(name)) {
-      throw new JsonParseException("Property '" + name + "' is missing from PluginClass.");
-    }
-    return jsonObj.get(name);
-  }
 }

@@ -163,11 +163,11 @@ public class StandaloneMain {
                                                                      Constants.AppFabric.RemoteExecution.class));
     metadataSubscriberService = injector.getInstance(MetadataSubscriberService.class);
 
-    if (cConf.getBoolean(DISABLE_UI, false)) {
-      userInterfaceService = null;
-    } else {
+//    if (cConf.getBoolean(DISABLE_UI, false)) {
+//      userInterfaceService = null;
+//    } else {
       userInterfaceService = injector.getInstance(UserInterfaceService.class);
-    }
+//    }
 
     sslEnabled = cConf.getBoolean(Constants.Security.SSL.EXTERNAL_ENABLED);
     securityEnabled = cConf.getBoolean(Constants.Security.ENABLED);
