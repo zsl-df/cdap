@@ -185,7 +185,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
         systemArtifact.setVersion("5.1.0");
         pluginArtifact.setName("core-plugins");
         pluginArtifact.setScope("SYSTEM");
-        pluginArtifact.setVersion("2.1-1-SNAPSHOT");
+        pluginArtifact.setVersion("2.1.1-SNAPSHOT");
         featureEngineeringArtifact.setName("feature-engineering-plugin");
         featureEngineeringArtifact.setScope("SYSTEM");
         featureEngineeringArtifact.setVersion("2.1.1-SNAPSHOT");

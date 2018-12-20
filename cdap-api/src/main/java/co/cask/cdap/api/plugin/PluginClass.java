@@ -98,8 +98,8 @@ public class PluginClass {
                 endpoints, Requirements.EMPTY);
     }
 
-    public PluginClass(String type, String name, String description, String className, 
-            @Nullable String configfieldName, Map<String, PluginPropertyField> properties) {
+    public PluginClass(String type, String name, String description, String className, @Nullable String configfieldName,
+            Map<String, PluginPropertyField> properties) {
         this(type, name, description, null, null, null, className, configfieldName, properties, Collections.emptySet(),
                 Requirements.EMPTY);
     }
@@ -226,12 +226,9 @@ public class PluginClass {
 
         return Objects.equals(type, that.type) && Objects.equals(name, that.name)
                 && Objects.equals(description, that.description)
-                && Objects.equals(pluginInput == null ? "" : pluginInput,
-                        that.pluginInput == null ? "" : that.pluginInput)
-                && Objects.equals(pluginOutput == null ? "" : pluginOutput,
-                        that.pluginOutput == null ? "" : that.pluginOutput)
-                && Objects.equals(pluginFunction == null ? "" : pluginFunction,
-                        that.pluginFunction == null ? "" : that.pluginFunction)
+                && Objects.equals(getPluginInputToString(), that.getPluginInputToString())
+                && Objects.equals(getPluginOutputToString(), that.getPluginOutputToString())
+                && Objects.equals(getPluginFunctionToString(), that.getPluginFunctionToString())
                 && Objects.equals(className, that.className) && Objects.equals(configFieldName, that.configFieldName)
                 && Objects.equals(properties, that.properties) && Objects.equals(endpoints, that.endpoints)
                 && Objects.equals(requirements, that.requirements);
@@ -239,8 +236,8 @@ public class PluginClass {
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, name, description, pluginInput, pluginOutput, pluginFunction, className,
-                configFieldName, properties, endpoints, requirements);
+        return Objects.hash(type, name, description, getPluginInputToString(), getPluginOutputToString(),
+                getPluginFunctionToString(), className, configFieldName, properties, endpoints, requirements);
     }
 
     @Override
