@@ -15,14 +15,11 @@
  */
 package co.cask.cdap.featureengineer.service;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,7 +38,7 @@ public class GetFeatureGenerationConfigParametersEndPointTest {
                 + "AutoFeatureGenerationService/methods/featureengineering/feature/generation/configparams"
                 + "/get?getSchemaParams=" + args[0];
 
-        HttpClient client = HttpClientBuilder.create().build();
+        HttpClient client = new DefaultHttpClient();
         HttpGet request = new HttpGet(url);
 
         // add request header
