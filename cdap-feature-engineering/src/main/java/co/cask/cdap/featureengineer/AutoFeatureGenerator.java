@@ -19,10 +19,14 @@ import co.cask.cdap.api.artifact.ArtifactScope;
 import co.cask.cdap.api.artifact.ArtifactSummary;
 import co.cask.cdap.client.ApplicationClient;
 import co.cask.cdap.client.ArtifactClient;
+import co.cask.cdap.client.DatasetClient;
 import co.cask.cdap.client.config.ClientConfig;
 import co.cask.cdap.client.config.ConnectionConfig;
 import co.cask.cdap.common.ArtifactNotFoundException;
+import co.cask.cdap.common.DatasetNotFoundException;
 import co.cask.cdap.common.UnauthenticatedException;
+import co.cask.cdap.common.enums.CorrelationMatrixSchema;
+import co.cask.cdap.common.enums.VarianceInflationFactorSchema;
 import co.cask.cdap.featureengineer.featuretool.FeatureToolCodeGenerator;
 import co.cask.cdap.featureengineer.pipeline.CDAPPipelineDynamicSchemaGenerator;
 import co.cask.cdap.featureengineer.pipeline.pojo.CDAPPipelineInfo;
@@ -40,6 +44,7 @@ import co.cask.cdap.proto.artifact.PluginSummary;
 import co.cask.cdap.proto.artifact.preview.PreviewConfig;
 import co.cask.cdap.proto.id.ApplicationId;
 import co.cask.cdap.proto.id.ArtifactId;
+import co.cask.cdap.proto.id.DatasetId;
 import co.cask.cdap.security.spi.authorization.UnauthorizedException;
 
 import com.google.common.collect.Lists;
@@ -69,15 +74,15 @@ import java.util.Set;
  *
  */
 public class AutoFeatureGenerator {
-
+    
     private static final Logger LOG = LoggerFactory.getLogger(AutoFeatureGenerator.class);
-
+    
     static final Gson GSON_OBJ = new GsonBuilder().setPrettyPrinting().create();
-
+    
     private final FeatureGenerationRequest featureGenerationRequest;
     private final Map<String, NullableSchema> inputDataschemaMap;
     private final Map<String, CDAPPipelineInfo> wranglerPluginConfigMap;
-
+    
     /**
      * 
      * @author bhupesh.goel
@@ -86,81 +91,81 @@ public class AutoFeatureGenerator {
     public static final class AutoFeatureGeneratorResult {
         private String featureEngineeringDAG;
         private String pipelineName;
-
+        
         public AutoFeatureGeneratorResult(final String featureEngineeringDAG, final String pipelineName) {
             this.featureEngineeringDAG = featureEngineeringDAG;
             this.pipelineName = pipelineName;
         }
-
+        
         public String getFeatureEngineeringDAG() {
             return featureEngineeringDAG;
         }
-
+        
         public void setFeatureEngineeringDAG(String featureEngineeringDAG) {
             this.featureEngineeringDAG = featureEngineeringDAG;
         }
-
+        
         public String getPipelineName() {
             return pipelineName;
         }
-
+        
         public void setPipelineName(String pipelineName) {
             this.pipelineName = pipelineName;
         }
-
+        
     }
-
+    
     public AutoFeatureGenerator(FeatureGenerationRequest featureGenerationRequest,
             Map<String, NullableSchema> inputDataschemaMap, Map<String, CDAPPipelineInfo> wranglerPluginConfigMap) {
         this.featureGenerationRequest = featureGenerationRequest;
         this.inputDataschemaMap = inputDataschemaMap;
         this.wranglerPluginConfigMap = wranglerPluginConfigMap;
     }
-
+    
     public AutoFeatureGeneratorResult generateFeatures(String[] hostAndPort) throws Exception {
         ClientConfig clientConfig = ClientConfig.builder()
                 .setConnectionConfig(new ConnectionConfig(hostAndPort[0], Integer.parseInt(hostAndPort[1]), false))
                 .build();
         Map<String, PluginSummary> aggregatePluginFunctionMap = new HashMap<String, PluginSummary>();
         Map<String, PluginSummary> transformPluginFunctionMap = new HashMap<String, PluginSummary>();
-
+        
         Map<String, PluginSummary> multiInputAggregatePluginFunctionMap = new HashMap<String, PluginSummary>();
         Map<String, PluginSummary> multiInputTransformPluginFunctionMap = new HashMap<String, PluginSummary>();
-
+        
         Set<String> typeSet = new HashSet<String>();
         List<String> entityNames = new LinkedList<String>();
         List<NullableSchema> dataSchemaList = new LinkedList<NullableSchema>();
-
+        
         parseDataSchemaInJson(typeSet, entityNames, dataSchemaList);
         List<SchemaColumn> timestampColumns = featureGenerationRequest.getTimestampColumns();
-
+        
         List<PluginSummary> pluginSummariesBatchAggregator = new LinkedList<PluginSummary>();
         List<PluginSummary> pluginSummariesTransform = new LinkedList<PluginSummary>();
         getCDAPPluginSummary(pluginSummariesBatchAggregator, pluginSummariesTransform, clientConfig);
-
+        
         List<String> aggregatePrimitives = getPrimitives(pluginSummariesBatchAggregator, typeSet,
                 aggregatePluginFunctionMap, featureGenerationRequest.getCategoricalColumns(),
                 multiInputAggregatePluginFunctionMap, true);
         List<String> transformPrimitives = getPrimitives(pluginSummariesTransform, typeSet, transformPluginFunctionMap,
                 null, multiInputTransformPluginFunctionMap, true);
-
+        
         Map<String, Map<String, List<String>>> appliedTransFunctionsWithArguments = findMatchingMultiInputPrimitives(
                 featureGenerationRequest.getMultiFieldTransformationFunctionInputs(),
                 multiInputTransformPluginFunctionMap);
         Map<String, Map<String, List<String>>> appliedAggFunctionsWithArguments = findMatchingMultiInputPrimitives(
                 featureGenerationRequest.getMultiFieldAggregationFunctionInputs(),
                 multiInputAggregatePluginFunctionMap);
-
+        
         String pythonScript = new FeatureToolCodeGenerator().generateFeatureToolCode(entityNames, dataSchemaList,
                 featureGenerationRequest.getIndexes(), featureGenerationRequest.getRelationShips(), aggregatePrimitives,
                 transformPrimitives, featureGenerationRequest.getDfsDepth(), featureGenerationRequest.getTargetEntity(),
                 timestampColumns, featureGenerationRequest.getCategoricalColumns(),
                 featureGenerationRequest.getIgnoreColumns(), appliedTransFunctionsWithArguments,
                 appliedAggFunctionsWithArguments, transformPluginFunctionMap, aggregatePluginFunctionMap);
-
+        
         LOG.debug("Generated Python Script = " + pythonScript);
         File pythonScriptFile = writeDataToTempFile(pythonScript, "python");
-
+        
         String featureEngineeringDag = executeFeatureToolsAndGetFeatureDag(pythonScriptFile);
         LOG.info("Generated Feature Engineering DAG = " + featureEngineeringDag);
         CDAPPipelineDynamicSchemaGenerator pipelineGenerator = new CDAPPipelineDynamicSchemaGenerator(
@@ -190,7 +195,7 @@ public class AutoFeatureGenerator {
             }
         }
     }
-
+    
     public Map<String, Map<String, List<String>>> findMatchingMultiInputPrimitives(
             Object multiFieldColumnsCombinationObject, Map<String, PluginSummary> multiInputPluginFunctionMap) {
         List multiFieldColumnsCombination = (List) multiFieldColumnsCombinationObject;
@@ -208,7 +213,7 @@ public class AutoFeatureGenerator {
                     String groupByKey = null;
                     String destinationColumn = "";
                     SchemaColumn[] columns = null;
-
+                    
                     if (columnCombination instanceof MultiSchemaColumn) {
                         columns = ((MultiSchemaColumn) columnCombination).getColumns().toArray(new SchemaColumn[0]);
                     } else if (columnCombination instanceof MultiFieldAggregationInput) {
@@ -218,7 +223,7 @@ public class AutoFeatureGenerator {
                         groupByKey = aggInput.getGroupByColumn().getColumn();
                         columns = aggInput.getSourceColumns().toArray(new SchemaColumn[0]);
                     }
-
+                    
                     if (columns.length != inputArguments.length) {
                         continue;
                     }
@@ -255,7 +260,7 @@ public class AutoFeatureGenerator {
                             columnMap = new HashMap<>();
                             matchingFunctionWithArguments.put(tableName, columnMap);
                         }
-
+                        
                         columnMap.put(summary.getPluginFunction()[i] + "_" + primitiveArguments.toString(),
                                 Lists.newArrayList(summary.getPluginFunction()[i], argumentList.toString().trim(),
                                         getOutput(summary.getPluginOutput()[i], matchedIndex), groupByKey,
@@ -267,7 +272,7 @@ public class AutoFeatureGenerator {
         }
         return matchingFunctionWithArguments;
     }
-
+    
     String getOutput(final String outputType, int matchedIndex) {
         if (outputType.startsWith("list")) {
             return getOutputTypeFromListType(outputType);
@@ -278,13 +283,13 @@ public class AutoFeatureGenerator {
         }
         return outputType;
     }
-
+    
     String getOutputTypeFromListType(String outputType) {
         int indexSt = outputType.indexOf('<');
         int indexEnd = outputType.indexOf('>');
         return outputType.substring(indexSt + 1, indexEnd);
     }
-
+    
     int containsType(String columnType, String[] columnTypes) {
         int index = 0;
         for (String type : columnTypes) {
@@ -295,7 +300,7 @@ public class AutoFeatureGenerator {
         }
         return -1;
     }
-
+    
     Map<String, Map<String, String>> getColumnWiseTableSchemaMap(final Map<String, NullableSchema> tableSchemaMap) {
         Map<String, Map<String, String>> columnWiseTableSchemaType = new HashMap<>();
         for (Map.Entry<String, NullableSchema> entry : tableSchemaMap.entrySet()) {
@@ -310,7 +315,7 @@ public class AutoFeatureGenerator {
         }
         return columnWiseTableSchemaType;
     }
-
+    
     public void uploadPipelineFileToCDAP(String cdapPipelineFileName, ClientConfig clientConfig, String pipelineName)
             throws UnauthenticatedException, IOException {
         ApplicationClient applicationClient = new ApplicationClient(clientConfig);
@@ -324,7 +329,7 @@ public class AutoFeatureGenerator {
         String ownerPrincipal = null;
         Boolean updateSchedules = null;
         PreviewConfig previewConfig = null;
-
+        
         if (cdapPipelineFileName != null) {
             File configFile = new File(cdapPipelineFileName);
             try (FileReader reader = new FileReader(configFile)) {
@@ -339,25 +344,44 @@ public class AutoFeatureGenerator {
         ArtifactSummary artifact = new ArtifactSummary("cdap-data-pipeline", "5.1.0", ArtifactScope.SYSTEM);
         AppRequest<JsonObject> appRequest = new AppRequest<>(artifact, config, previewConfig, ownerPrincipal,
                 updateSchedules);
-
+        
         applicationClient.deploy(appId, appRequest);
+        deleteAllDatasets(pipelineName, clientConfig);
     }
-
+    
+    private void deleteAllDatasets(String pipelineName, ClientConfig clientConfig) {
+        DatasetClient dataSetClient = new DatasetClient(clientConfig);
+        deleteDataSet(pipelineName, dataSetClient);
+        deleteDataSet(CorrelationMatrixSchema.getDataSetName(pipelineName), dataSetClient);
+        deleteDataSet(VarianceInflationFactorSchema.getDataSetName(pipelineName), dataSetClient);
+    }
+    
+    private void deleteDataSet(String dataSetName, DatasetClient dataSetClient) {
+        DatasetId instance = new DatasetId("default", dataSetName);
+        try {
+            if (dataSetClient.exists(instance)) {
+                dataSetClient.delete(instance);
+            }
+        } catch (DatasetNotFoundException | UnauthorizedException | IOException | UnauthenticatedException e) {
+            LOG.error("Unable to delete dataset with name " + dataSetName, e);
+        }
+    }
+    
     void writeToFile(String fileContent, String fileName) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
         bw.write(fileContent);
         bw.close();
     }
-
+    
     String executeFeatureToolsAndGetFeatureDag(File pythonScriptFile) throws IOException, InterruptedException {
         CommandExecutor executor = new CommandExecutor();
         executor.executeCommand("python", pythonScriptFile.getAbsolutePath());
         return executor.getCommandOutput();
     }
-
+    
     public void parseDataSchemaInJson(Set<String> typeSet, List<String> entityNames,
             List<NullableSchema> dataSchemaList) {
-
+        
         for (Map.Entry<String, NullableSchema> entry : inputDataschemaMap.entrySet()) {
             NullableSchema dataSchema = entry.getValue();
             dataSchemaList.add(dataSchema);
@@ -365,7 +389,7 @@ public class AutoFeatureGenerator {
             entityNames.add(entry.getKey());
         }
     }
-
+    
     File writeDataToTempFile(String data, String key) throws IOException {
         File tmpFile = File.createTempFile("temp-feature-engineering-key", ".tmp");
         FileWriter writer = new FileWriter(tmpFile);
@@ -373,7 +397,7 @@ public class AutoFeatureGenerator {
         writer.close();
         return tmpFile;
     }
-
+    
     public List<String> getPrimitives(List<PluginSummary> pluginSummaries, Set<String> typeSet,
             Map<String, PluginSummary> pluginFunctionMap, List<SchemaColumn> categoricalColumns,
             Map<String, PluginSummary> multiInputPluginFunctionMap, boolean getDynamicPrimitives) {
@@ -422,14 +446,14 @@ public class AutoFeatureGenerator {
                             }
                         }
                     }
-
+                    
                 }
             }
             return new LinkedList<String>(primitives);
         }
-
+        
     }
-
+    
     String[] addInferiorDataTypes(String[] inputTypeToken) {
         Set<String> inputTypeTokenSet = new HashSet<String>();
         for (String token : inputTypeToken) {
@@ -444,16 +468,16 @@ public class AutoFeatureGenerator {
         }
         return new LinkedList<String>(inputTypeTokenSet).toArray(new String[0]);
     }
-
+    
     public void getCDAPPluginSummary(List<PluginSummary> pluginSummariesBatchAggregator,
             List<PluginSummary> pluginSummariesTransform, ClientConfig clientConfig)
             throws UnauthenticatedException, ArtifactNotFoundException, IOException, UnauthorizedException {
         // Interact with the CDAP instance located at example.com, port 11015
-
+        
         // Construct the client used to interact with CDAP
         ArtifactClient artifactClient = new ArtifactClient(clientConfig);
         ArtifactId artifactId = new ArtifactId("default", "cdap-data-pipeline", "5.1.0");
-
+        
         List<PluginSummary> pluginSummariesBatchAggregatorTmp = artifactClient.getPluginSummaries(artifactId,
                 "batchaggregator", ArtifactScope.SYSTEM);
         List<PluginSummary> pluginSummariesTransformTmp = artifactClient.getPluginSummaries(artifactId, "transform",
@@ -461,13 +485,13 @@ public class AutoFeatureGenerator {
         pluginSummariesBatchAggregator.addAll(pluginSummariesBatchAggregatorTmp);
         pluginSummariesTransform.addAll(pluginSummariesTransformTmp);
     }
-
+    
     void populateTypeSet(final NullableSchema dataSchema, final Set<String> typeSet) {
         for (SchemaFieldName field : dataSchema.getFields()) {
             typeSet.add(getSchemaType(field).toLowerCase());
         }
     }
-
+    
     String getSchemaType(SchemaFieldName field) {
         if (field instanceof SchemaField) {
             return ((SchemaField) field).getType();

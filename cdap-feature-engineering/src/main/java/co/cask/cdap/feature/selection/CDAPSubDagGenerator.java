@@ -339,9 +339,6 @@ public class CDAPSubDagGenerator {
         List<NullableSchema> dataSchemaList = new LinkedList<NullableSchema>();
         autoFeatureGenerator.parseDataSchemaInJson(typeSet, entityNames, dataSchemaList);
 
-        // Set<SchemaColumn> timestampColumns = new
-        // HashSet<SchemaColumn>(this.featureGenerationRequest.getTimestampColumns());
-
         List<PluginSummary> pluginSummariesBatchAggregator = new LinkedList<PluginSummary>();
         List<PluginSummary> pluginSummariesTransform = new LinkedList<PluginSummary>();
         autoFeatureGenerator.getCDAPPluginSummary(pluginSummariesBatchAggregator, pluginSummariesTransform,

@@ -23,7 +23,10 @@ import co.cask.cdap.api.dataset.table.Table;
 import co.cask.cdap.api.service.http.HttpServiceContext;
 import co.cask.cdap.api.service.http.HttpServiceRequest;
 import co.cask.cdap.api.service.http.HttpServiceResponder;
+import co.cask.cdap.common.enums.CorrelationCoefficient;
+import co.cask.cdap.common.enums.CorrelationMatrixSchema;
 import co.cask.cdap.common.enums.FeatureSTATS;
+import co.cask.cdap.common.enums.VarianceInflationFactorSchema;
 import co.cask.cdap.feature.selection.CDAPSubDagGenerator;
 import co.cask.cdap.featureengineer.FeatureEngineeringApp.FeatureEngineeringConfig;
 import co.cask.cdap.featureengineer.RequestExtractor;
@@ -38,9 +41,17 @@ import co.cask.cdap.featureengineer.request.pojo.CompositeType;
 import co.cask.cdap.featureengineer.request.pojo.DataSchemaNameList;
 import co.cask.cdap.featureengineer.request.pojo.StatsFilter;
 import co.cask.cdap.featureengineer.request.pojo.StatsFilterType;
+import co.cask.cdap.featureengineer.response.pojo.FeatureCorrelationMatrix;
+import co.cask.cdap.featureengineer.response.pojo.FeatureCorrelationRow;
 import co.cask.cdap.featureengineer.response.pojo.FeatureStats;
+import co.cask.cdap.featureengineer.response.pojo.FeatureVIFIterationRow;
+import co.cask.cdap.featureengineer.response.pojo.FeatureVIFIterationScores;
 import co.cask.cdap.featureengineer.response.pojo.SelectedFeatureStats;
 import co.cask.cdap.featureengineer.utils.JSONInputParser;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,9 +79,10 @@ import javax.ws.rs.QueryParam;
  *
  */
 public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
-
+    
     private static final Logger LOG = LoggerFactory.getLogger(ManualFeatureSelectionServiceHandler.class);
-
+    private static final Gson GSON_OBJ = new GsonBuilder().create();
+    
     private StatsFilter defaultFilter;
     @Property
     private final String dataSchemaTableName;
@@ -84,16 +96,16 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
     private final String pipelineDataSchemasTableName;
     @Property
     private final String pipelineNameTableName;
-
+    
     private KeyValueTable dataSchemaTable;
     private KeyValueTable pluginConfigTable;
     private KeyValueTable featureDAGTable;
     private KeyValueTable featureEngineeringConfigTable;
     private KeyValueTable pipelineDataSchemasTable;
     private KeyValueTable pipelineNameTable;
-
+    
     private HttpServiceContext context;
-
+    
     /**
      * @param config
      * 
@@ -105,10 +117,10 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
         this.featureEngineeringConfigTableName = config.getFeatureEngineeringConfigTable();
         this.pipelineDataSchemasTableName = config.getPipelineDataSchemasTable();
         this.pipelineNameTableName = config.getPipelineNameTable();
-
+        
         createDefaultFilter();
     }
-
+    
     private void createDefaultFilter() {
         defaultFilter = new StatsFilter();
         defaultFilter.setFilterType(StatsFilterType.TopN);
@@ -116,7 +128,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
         defaultFilter.setLowerLimit(0);
         defaultFilter.setUpperLimit(Integer.MAX_VALUE);
     }
-
+    
     @Override
     public void initialize(HttpServiceContext context) throws Exception {
         super.initialize(context);
@@ -128,7 +140,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
         this.pipelineNameTable = context.getDataset(pipelineNameTableName);
         this.context = context;
     }
-
+    
     @POST
     @Path("featureengineering/{pipelineName}/features/selected/create/pipeline")
     public void generateSelectedFeaturesPipeline(HttpServiceRequest request, HttpServiceResponder responder,
@@ -139,11 +151,11 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
             String dataSchemaNames = readCDAPKeyValueTable(pipelineDataSchemasTable, featureGenerationPipelineName);
             DataSchemaNameList schemaList = (DataSchemaNameList) JSONInputParser.convertToObject(dataSchemaNames,
                     DataSchemaNameList.class);
-
+            
             FeatureSelectionRequest featureSelectionRequest = new RequestExtractor(request).getContent("UTF-8",
                     FeatureSelectionRequest.class);
             String featureEngineeringPipelineName = featureSelectionRequest.getFeatureEngineeringPipeline();
-
+            
             inputDataschemaMap = getSchemaMap(schemaList.getDataSchemaName(), dataSchemaTable);
             wranglerPluginConfigMap = getWranglerPluginConfigMap(schemaList.getDataSchemaName(), pluginConfigTable);
             String hostAndPort[] = getHostAndPort(request);
@@ -152,7 +164,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
             FeatureGenerationRequest featureGenerationRequest = (FeatureGenerationRequest) JSONInputParser
                     .convertToObject(featuresConfig, FeatureGenerationRequest.class);
             String featureDag = readCDAPKeyValueTable(featureDAGTable, featureEngineeringPipelineName);
-
+            
             new CDAPSubDagGenerator(featureDag, inputDataschemaMap, wranglerPluginConfigMap, featureGenerationRequest,
                     hostAndPort).triggerCDAPPipelineGeneration(featureSelectionRequest.getSelectedFeatures(),
                             featureSelectionRequest.getFeatureSelectionPipeline());
@@ -169,7 +181,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
                     + inputDataschemaMap.keySet(), e);
         }
     }
-
+    
     @GET
     @Path("featureengineering/features/stats/get")
     public void getFeatureStats(HttpServiceRequest request, HttpServiceResponder responder,
@@ -178,7 +190,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
         Scanner allFeatures = featureStatsDataSet.scan(null, null);
         Row row;
         SelectedFeatureStats featureStatsObj = new SelectedFeatureStats();
-
+        
         while ((row = allFeatures.next()) != null) {
             FeatureStats featureStat = new FeatureStats();
             String featureName = row.getString(FeatureSTATS.Feature.getName());
@@ -194,7 +206,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
         }
         responder.sendJson(featureStatsObj);
     }
-
+    
     @POST
     @Path("featureengineering/{pipelineName}/features/filter")
     public void filterFeaturesByStats(HttpServiceRequest request, HttpServiceResponder responder,
@@ -226,7 +238,85 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
         featureStatsObj.setFeatureStatsList(featureStatsList);
         responder.sendJson(featureStatsObj);
     }
-
+    
+    @GET
+    @Path("featureengineering/features/correlation/matrix/get")
+    public void getFeatureCorrelationMatrix(HttpServiceRequest request, HttpServiceResponder responder,
+            @QueryParam("pipelineName") String featureGenerationPipelineName,
+            @QueryParam("correlationCoefficient") String correlationCofficient) {
+        
+        if (!isValidCorrelationCoefficient(correlationCofficient)) {
+            error(responder, "Passed correlation coefficient is not valid " + correlationCofficient);
+            return;
+        }
+        final String correlationMatrixDataSetName = CorrelationMatrixSchema
+                .getDataSetName(featureGenerationPipelineName);
+        Table featureCorrelationMatrixDataSet = context.getDataset(correlationMatrixDataSetName);
+        
+        Scanner allFeatures = featureCorrelationMatrixDataSet.scan(null, null);
+        Row row;
+        FeatureCorrelationMatrix featureCorrelationMatrix = new FeatureCorrelationMatrix();
+        
+        while ((row = allFeatures.next()) != null) {
+            String coefficientType = row.getString(CorrelationMatrixSchema.COEFFICIENT_TYPE.getName());
+            if ((correlationCofficient != null && !correlationCofficient.isEmpty())
+                    && !coefficientType.equals(correlationCofficient)) {
+                continue;
+            }
+            FeatureCorrelationRow featureCorrelationRow = new FeatureCorrelationRow();
+            String featureName = row.getString(CorrelationMatrixSchema.FEATURE_NAME.getName());
+            featureCorrelationRow.setFeatureName(featureName);
+            featureCorrelationRow.setCoefficientType(coefficientType);
+            String featureScoreInJSONFormat = row.getString(CorrelationMatrixSchema.COEFFICIENT_SCORES.getName());
+            Map<String, Double> coefficientScores = new Gson().fromJson(featureScoreInJSONFormat,
+                    new TypeToken<HashMap<String, Double>>() {
+                    }.getType());
+            featureCorrelationRow.setFeatureCorrelationScores(coefficientScores);
+            featureCorrelationMatrix.addFeatureCorrelationRow(featureCorrelationRow);
+        }
+        responder.sendJson(featureCorrelationMatrix);
+    }
+    
+    @GET
+    @Path("featureengineering/features/vif/iterations/get")
+    public void getCollinearityRemovedFeatureWithScores(HttpServiceRequest request, HttpServiceResponder responder,
+            @QueryParam("pipelineName") String featureGenerationPipelineName) {
+        
+        final String vifDataSetName = VarianceInflationFactorSchema.getDataSetName(featureGenerationPipelineName);
+        Table vifDataSet = context.getDataset(vifDataSetName);
+        
+        Scanner allVIFIterations = vifDataSet.scan(null, null);
+        Row row;
+        FeatureVIFIterationScores featureVIFIterationScores = new FeatureVIFIterationScores();
+        
+        while ((row = allVIFIterations.next()) != null) {
+            FeatureVIFIterationRow featureVIFIterationRow = new FeatureVIFIterationRow();
+            String featureName = row.getString(VarianceInflationFactorSchema.MAX_VALUE_FEATURE_NAME.getName());
+            featureVIFIterationRow.setFeatureName(featureName);
+            double vifScore = row.getDouble(VarianceInflationFactorSchema.VIF_SCORE.getName());
+            featureVIFIterationRow.setVifScore(vifScore);
+            String vifScoreInJSONFormat = row.getString(VarianceInflationFactorSchema.ALL_VIF_SCORES.getName());
+            Map<String, Double> vifScores = new Gson().fromJson(vifScoreInJSONFormat,
+                    new TypeToken<HashMap<String, Double>>() {
+                    }.getType());
+            featureVIFIterationRow.setAllVIFScores(vifScores);
+            featureVIFIterationScores.addFeatureVIFIterationRow(featureVIFIterationRow);
+        }
+        responder.sendJson(featureVIFIterationScores);
+    }
+    
+    private boolean isValidCorrelationCoefficient(String correlationCofficient) {
+        if (correlationCofficient == null || correlationCofficient.isEmpty()) {
+            return true;
+        }
+        for (CorrelationCoefficient coefficient : CorrelationCoefficient.values()) {
+            if (coefficient.getName().equals(correlationCofficient)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private List<FeatureStats> applyLimit(final List<FeatureStats> featureStatsList,
             final FilterFeaturesByStatsRequest filterFeaturesByStatsRequest) {
         List<FeatureStats> resultFeatureStatsList = new LinkedList<>();
@@ -237,14 +327,14 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
         }
         return resultFeatureStatsList;
     }
-
+    
     private List<FeatureStats> applyOrderByClause(List<FeatureStats> featureStatsList,
             FilterFeaturesByStatsRequest filterFeaturesByStatsRequest) {
         if (filterFeaturesByStatsRequest.getOrderByStat() == null) {
             return featureStatsList;
         }
         Collections.sort(featureStatsList, new Comparator<FeatureStats>() {
-
+            
             @Override
             public int compare(FeatureStats entry1, FeatureStats entry2) {
                 FeatureSTATS orderByStat = filterFeaturesByStatsRequest.getOrderByStat();
@@ -255,7 +345,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
         });
         return featureStatsList;
     }
-
+    
     private List<FeatureStats> applyRangeFiltersOnFeatureStats(
             FilterFeaturesByStatsRequest filterFeaturesByStatsRequest, List<FeatureStats> featureStatsList) {
         List<FeatureStats> resultFeatureStatsList = new ArrayList<>();
@@ -291,14 +381,14 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
         }
         return resultFeatureStatsList;
     }
-
+    
     private boolean satisfyRangeFilter(StatsFilter rangeLimitFilter, FeatureStats featureStat) {
         FeatureSTATS stat = rangeLimitFilter.getStatsName();
         Object statValue = featureStat.getFeatureStatisticValue(stat.getName());
         return rangeLimitFilter.getStatsName().liesInBetween(statValue, rangeLimitFilter.getLowerLimit(),
                 rangeLimitFilter.getUpperLimit());
     }
-
+    
     private List<FeatureStats> combineAllPriorityQueues(final List<Queue<FeatureStatsPriorityNode>> queueList,
             FilterFeaturesByStatsRequest filterFeaturesByStatsRequest) {
         boolean union = true;
@@ -320,7 +410,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
                 featureStatsMap.put(featureName, priorityNode.getFeatureStats());
             }
         }
-
+        
         List<FeatureStats> featureStatsList = new ArrayList<>();
         if (union) {
             featureStatsList.addAll(featureStatsMap.values());
@@ -334,7 +424,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
         }
         return featureStatsList;
     }
-
+    
     private void prepareAllPriorityQueuesForTopFilters(int rowIndex,
             FilterFeaturesByStatsRequest filterFeaturesByStatsRequest, List<Queue<FeatureStatsPriorityNode>> queueList,
             FeatureStats featureStat, Row row) {
@@ -353,7 +443,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
             }
         }
     }
-
+    
     private void addPriorityNodeInQueue(StatsFilter filter, FeatureStats featureStat, Row row,
             List<Queue<FeatureStatsPriorityNode>> queueList, int rowIndex, int queueIndex) {
         FeatureStatsPriorityNode priorityNode = getPriorityNode(filter, featureStat, row);
@@ -366,7 +456,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
             queue.poll();
         }
     }
-
+    
     private Integer getIntValue(Object value) {
         if (value == null) {
             return null;
@@ -380,7 +470,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
         }
         return (int) value;
     }
-
+    
     private FeatureStatsPriorityNode getPriorityNode(final StatsFilter singleLimitFilter, FeatureStats featureStat,
             Row row) {
         FeatureSTATS stat = singleLimitFilter.getStatsName();
@@ -390,18 +480,18 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
             isAscending = false;
         }
         switch (stat.getType()) {
-        case "long":
-            return new FeatureStatsPriorityNode<Long>((Long) value, featureStat, isAscending);
-        case "double":
-            return new FeatureStatsPriorityNode<Double>((Double) value, featureStat, isAscending);
-        case "string":
-            return new FeatureStatsPriorityNode<String>((String) value, featureStat, isAscending);
-        case "boolean":
-            return new FeatureStatsPriorityNode<Boolean>((Boolean) value, featureStat, isAscending);
+            case "long":
+                return new FeatureStatsPriorityNode<Long>((Long) value, featureStat, isAscending);
+            case "double":
+                return new FeatureStatsPriorityNode<Double>((Double) value, featureStat, isAscending);
+            case "string":
+                return new FeatureStatsPriorityNode<String>((String) value, featureStat, isAscending);
+            case "boolean":
+                return new FeatureStatsPriorityNode<Boolean>((Boolean) value, featureStat, isAscending);
         }
         return null;
     }
-
+    
     private Set<FeatureSTATS> getFeatureStatsSet(FilterFeaturesByStatsRequest filterFeaturesByStatsRequest) {
         Set<FeatureSTATS> featureStatSet = new HashSet<FeatureSTATS>();
         if (filterFeaturesByStatsRequest.getOrderByStat() != null) {
@@ -420,17 +510,17 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
         }
         return featureStatSet;
     }
-
+    
     private Object getStatColumnValue(FeatureSTATS stat, Row row) {
         switch (stat.getType()) {
-        case "long":
-            return row.getLong(stat.getName());
-        case "double":
-            return row.getDouble(stat.getName());
-        case "string":
-            return row.getString(stat.getName());
-        case "boolean":
-            return row.getBoolean(stat.getName());
+            case "long":
+                return row.getLong(stat.getName());
+            case "double":
+                return row.getDouble(stat.getName());
+            case "string":
+                return row.getString(stat.getName());
+            case "boolean":
+                return row.getBoolean(stat.getName());
         }
         return null;
     }
