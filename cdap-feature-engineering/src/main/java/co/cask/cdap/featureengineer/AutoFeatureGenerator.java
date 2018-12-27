@@ -176,7 +176,8 @@ public class AutoFeatureGenerator {
                 multiInputAggregatePluginFunctionMap, multiInputTransformPluginFunctionMap,
                 appliedAggFunctionsWithArguments, appliedTransFunctionsWithArguments,
                 featureGenerationRequest.getIndexes(), featureGenerationRequest.getPipelineRunName(),
-                featureGenerationRequest.getRelationShips(), featureGenerationRequest.getCreateEntities());
+                featureGenerationRequest.getRelationShips(), featureGenerationRequest.getCreateEntities(),
+                timestampColumns);
         CDAPPipelineInfo pipelineInfo = pipelineGenerator.generateCDAPPipeline(featureEngineeringDag,
                 inputDataschemaMap, wranglerPluginConfigMap);
         File cdapPipelineFile = writeDataToTempFile(GSON_OBJ.toJson(pipelineInfo), "cdap-pipeline");

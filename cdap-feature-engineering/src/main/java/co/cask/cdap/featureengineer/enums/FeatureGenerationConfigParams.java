@@ -21,27 +21,33 @@ package co.cask.cdap.featureengineer.enums;
  */
 public enum FeatureGenerationConfigParams {
 
-    INDEXES("Indexes", true, ""),
-    RELATIONSHIPS("Relationships", true, ""),
-    TIMESTAMP_COLUMNS("TimestampColumns", true, ""),
-    TIME_INDEX_COLUMNS("TimeIndexColumns", true, ""),
-    CATEGORICAL_COLUMNS("CategoricalColumns", true, ""), 
-    IGNORE_COLUMNS("IgnoreColumns", true, ""),
-    MULTI_FIELD_TRANS_FUNCTION_INPUT_COLUMNS("multiFieldTransFunctionInputColumns", true, ""),  
-    MULTI_FIELD_AGG_FUNCTION_INPUT_COLUMNS("multiFieldAggFunctionInputColumns", true, ""), 
-    TARGET_ENTITY("TargetEntity", true, ""), 
-    TARGET_ENTITY_PRIMARY_FIELD("TargetEntityPrimaryField", true, ""),  
-    DFS_DEPTH("DFSDepth", false, ""), 
-    TRAINING_WINDOWS("TrainingWindows", false, ""),  
-    WINDOW_END_TIME("WindowEndTime", false, "");
+    INDEXES("Indexes", true, true, "unknown", ""),
+    RELATIONSHIPS("Relationships", true, true, "unknown", ""),
+    TIMESTAMP_COLUMNS("TimestampColumns", true, true, "unknown", ""),
+    CREATE_ENTITIES("CreateEntities", true, true, "unknown", ""),
+    TIME_INDEX_COLUMNS("TimeIndexColumns", true, true, "unknown", ""),
+    CATEGORICAL_COLUMNS("CategoricalColumns", true, true, "unknown", ""), 
+    IGNORE_COLUMNS("IgnoreColumns", true, true, "unknown", ""),
+    MULTI_FIELD_TRANS_FUNCTION_INPUT_COLUMNS("multiFieldTransFunctionInputColumns", true, true, "unknown", ""),  
+    MULTI_FIELD_AGG_FUNCTION_INPUT_COLUMNS("multiFieldAggFunctionInputColumns", true, true, "unknown", ""), 
+    TARGET_ENTITY("TargetEntity", true, true, "unknown", ""), 
+    TARGET_ENTITY_PRIMARY_FIELD("TargetEntityPrimaryField", true, true, "unknown", ""),  
+    DFS_DEPTH("DFSDepth", false, false, "int", ""), 
+    TRAINING_WINDOWS("TrainingWindows", false, true, "int", ""),  
+    WINDOW_END_TIME("WindowEndTime", false, false, "string", "");
 
     final String name;
     final Boolean isSchemaSpecific;
+    final Boolean isCollection;
+    final String dataType;
     final String description;
 
-    FeatureGenerationConfigParams(final String name, final boolean isSchemaSpecific, final String description) {
+    FeatureGenerationConfigParams(final String name, final boolean isSchemaSpecific, final Boolean isCollection,
+            final String dataType, final String description) {
         this.name = name;
         this.isSchemaSpecific = isSchemaSpecific;
+        this.isCollection = isCollection;
+        this.dataType = dataType;
         this.description = description;
     }
 
@@ -64,6 +70,20 @@ public enum FeatureGenerationConfigParams {
      */
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * @return the isCollection
+     */
+    public Boolean getIsCollection() {
+        return isCollection;
+    }
+
+    /**
+     * @return the dataType
+     */
+    public String getDataType() {
+        return dataType;
     }
 
 }

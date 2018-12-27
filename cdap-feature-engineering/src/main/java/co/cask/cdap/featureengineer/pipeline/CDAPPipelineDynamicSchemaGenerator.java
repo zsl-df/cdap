@@ -100,7 +100,8 @@ public class CDAPPipelineDynamicSchemaGenerator {
     private List<Relation> relationShips;
     private List<SchemaColumn> createEntities;
     private Map<String, String> createEntitiesMap;
-
+    private List<SchemaColumn> timestampColumns;
+    
     private int globalUniqueID;
     private static final String STAGE_NAME = "stage";
     private final Map<String, String> generatedStageMap;
@@ -127,6 +128,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
      * @param createEntities
      * @param relationShips
      * @param createEntities
+     * @param timestampColumns 
      * 
      */
     public CDAPPipelineDynamicSchemaGenerator(Map<String, PluginSummary> aggregatePluginFunctionMap,
@@ -137,7 +139,8 @@ public class CDAPPipelineDynamicSchemaGenerator {
             Map<String, PluginSummary> multiInputTransformPluginFunctionMap,
             Map<String, Map<String, List<String>>> appliedAggFunctionsWithArguments,
             Map<String, Map<String, List<String>>> appliedTransFunctionsWithArguments, List<SchemaColumn> indexes,
-            String pipelineName, List<Relation> relationShips, List<SchemaColumn> createEntities) {
+            String pipelineName, List<Relation> relationShips, List<SchemaColumn> createEntities, 
+            List<SchemaColumn> timestampColumns) {
         this.stageMap = new LinkedHashMap<String, BasePipelineNode>();
         this.connections = new LinkedHashMap<String, Set<String>>();
         this.systemArtifact = new Artifact();
@@ -159,6 +162,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
                 createEntitiesMap.put(col.getTable(), col.getColumn());
             }
         }
+        this.timestampColumns = timestampColumns;
         this.pipelineName = pipelineName;
         globalUniqueID = 0;
         this.generatedStageMap = new HashMap<String, String>();

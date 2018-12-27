@@ -23,27 +23,27 @@ import java.util.List;
  *
  */
 public class FeatureGenerationConfigParamList {
-
+    
     private List<FeatureGenerationConfigParam> configParamList;
-
+    
     public FeatureGenerationConfigParamList() {
         this.configParamList = new LinkedList<>();
     }
-
+    
     public void addConfigParam(final FeatureGenerationConfigParam configParam) {
         if (this.configParamList == null) {
             this.configParamList = new LinkedList<>();
         }
         this.configParamList.add(configParam);
     }
-
+    
     /**
      * @return the configParamList
      */
     public List<FeatureGenerationConfigParam> getConfigParamList() {
         return configParamList;
     }
-
+    
     /**
      * @param configParamList
      *            the configParamList to set
@@ -51,12 +51,7 @@ public class FeatureGenerationConfigParamList {
     public void setConfigParamList(List<FeatureGenerationConfigParam> configParamList) {
         this.configParamList = configParamList;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#hashCode()
-     */
+    
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -64,12 +59,7 @@ public class FeatureGenerationConfigParamList {
         result = prime * result + ((configParamList == null) ? 0 : configParamList.hashCode());
         return result;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -91,15 +81,10 @@ public class FeatureGenerationConfigParamList {
         }
         return true;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
+    
     @Override
     public String toString() {
         return "FeatureGenerationConfigParamList [configParamList=" + configParamList + "]";
     }
-
+    
 }

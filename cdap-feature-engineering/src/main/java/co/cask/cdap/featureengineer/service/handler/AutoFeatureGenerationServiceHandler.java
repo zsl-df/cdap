@@ -52,9 +52,9 @@ import javax.ws.rs.QueryParam;
  *
  */
 public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
-
+    
     private static final Logger LOG = LoggerFactory.getLogger(AutoFeatureGenerationServiceHandler.class);
-
+    
     @Property
     private final String dataSchemaTableName;
     @Property
@@ -67,16 +67,16 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
     private final String pipelineDataSchemasTableName;
     @Property
     private final String pipelineNameTableName;
-
+    
     private KeyValueTable dataSchemaTable;
     private KeyValueTable pluginConfigTable;
     private KeyValueTable featureDAGTable;
     private KeyValueTable featureEngineeringConfigTable;
     private KeyValueTable pipelineDataSchemasTable;
     private KeyValueTable pipelineNameTable;
-
+    
     private HttpServiceContext context;
-
+    
     /**
      * @param config
      * 
@@ -89,7 +89,7 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
         this.pipelineDataSchemasTableName = config.getPipelineDataSchemasTable();
         this.pipelineNameTableName = config.getPipelineNameTable();
     }
-
+    
     @Override
     public void initialize(HttpServiceContext context) throws Exception {
         super.initialize(context);
@@ -101,7 +101,7 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
         this.pipelineNameTable = context.getDataset(pipelineNameTableName);
         this.context = context;
     }
-
+    
     @POST
     @Path("featureengineering/{pipelineName}/features/create")
     public void generateFeatures(HttpServiceRequest request, HttpServiceResponder responder,
@@ -130,21 +130,21 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
         } catch (Exception e) {
             error(responder, "Failed to generate features for data schemas " + inputDataschemaMap.keySet()
                     + " with error message " + e.getMessage());
-            LOG.error("Failed to generate features for data schemas " + inputDataschemaMap.keySet() + 
-                    " with error message " + e.getMessage(), e);
+            LOG.error("Failed to generate features for data schemas " + inputDataschemaMap.keySet()
+                    + " with error message " + e.getMessage(), e);
         }
     }
-
+    
     @GET
     @Path("featureengineering/feature/generation/configparams/get")
     public void getFeatureGenerationConfigParameters(HttpServiceRequest request, HttpServiceResponder responder,
             @QueryParam("getSchemaParams") Boolean getSchemaParams) {
-
+        
         FeatureGenerationConfigParamList configParamList = new FeatureGenerationConfigParamList();
         for (FeatureGenerationConfigParams configParam : FeatureGenerationConfigParams.values()) {
             if (getSchemaParams.equals(configParam.isSchemaSpecific())) {
-                configParamList.addConfigParam(
-                        new FeatureGenerationConfigParam(configParam.getName(), configParam.getDescription()));
+                configParamList.addConfigParam(new FeatureGenerationConfigParam(configParam.getName(),
+                        configParam.getDescription(), configParam.getDataType(), configParam.getIsCollection()));
             }
         }
         responder.sendJson(configParamList);

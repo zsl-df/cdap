@@ -20,22 +20,27 @@ package co.cask.cdap.featureengineer.response.pojo;
  *
  */
 public class FeatureGenerationConfigParam {
-
+    
     private String paramName;
     private String description;
-
-    public FeatureGenerationConfigParam(final String paramName, final String description) {
+    private boolean isCollection;
+    private String dataType;
+    
+    public FeatureGenerationConfigParam(final String paramName, final String description, final String dataType,
+            final boolean isCollection) {
         this.paramName = paramName;
         this.description = description;
+        this.isCollection = isCollection;
+        this.dataType = dataType;
     }
-
+    
     /**
      * @return the paramName
      */
     public String getParamName() {
         return paramName;
     }
-
+    
     /**
      * @param paramName
      *            the paramName to set
@@ -43,14 +48,14 @@ public class FeatureGenerationConfigParam {
     public void setParamName(String paramName) {
         this.paramName = paramName;
     }
-
+    
     /**
      * @return the description
      */
     public String getDescription() {
         return description;
     }
-
+    
     /**
      * @param description
      *            the description to set
@@ -58,26 +63,48 @@ public class FeatureGenerationConfigParam {
     public void setDescription(String description) {
         this.description = description;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#hashCode()
+    
+    /**
+     * @return the isCollection
      */
+    public boolean isCollection() {
+        return isCollection;
+    }
+    
+    /**
+     * @param isCollection
+     *            the isArray to set
+     */
+    public void setCollection(boolean isCollection) {
+        this.isCollection = isCollection;
+    }
+    
+    /**
+     * @return the dataType
+     */
+    public String getDataType() {
+        return dataType;
+    }
+    
+    /**
+     * @param dataType
+     *            the dataType to set
+     */
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+    
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((dataType == null) ? 0 : dataType.hashCode());
         result = prime * result + ((description == null) ? 0 : description.hashCode());
+        result = prime * result + (isCollection ? 1231 : 1237);
         result = prime * result + ((paramName == null) ? 0 : paramName.hashCode());
         return result;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -90,11 +117,21 @@ public class FeatureGenerationConfigParam {
             return false;
         }
         FeatureGenerationConfigParam other = (FeatureGenerationConfigParam) obj;
+        if (dataType == null) {
+            if (other.dataType != null) {
+                return false;
+            }
+        } else if (!dataType.equals(other.dataType)) {
+            return false;
+        }
         if (description == null) {
             if (other.description != null) {
                 return false;
             }
         } else if (!description.equals(other.description)) {
+            return false;
+        }
+        if (isCollection != other.isCollection) {
             return false;
         }
         if (paramName == null) {
@@ -106,15 +143,11 @@ public class FeatureGenerationConfigParam {
         }
         return true;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
+    
     @Override
     public String toString() {
-        return "FeatureGenerationConfigParam [paramName=" + paramName + ", description=" + description + "]";
+        return "FeatureGenerationConfigParam [paramName=" + paramName + ", description=" + description
+                + ", isCollection=" + isCollection + ", dataType=" + dataType + "]";
     }
-
+    
 }
