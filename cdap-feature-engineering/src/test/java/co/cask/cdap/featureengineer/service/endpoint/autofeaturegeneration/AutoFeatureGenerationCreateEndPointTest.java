@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package co.cask.cdap.featureengineer.service;
+package co.cask.cdap.featureengineer.service.endpoint.autofeaturegeneration;
 
 import co.cask.cdap.featureengineer.proto.FeatureGenerationRequest;
 import co.cask.cdap.featureengineer.request.pojo.MultiFieldAggregationInput;
@@ -41,7 +41,7 @@ import java.util.List;
  * @author bhupesh.goel
  *
  */
-public class AutoFeatureGenerationEndPointTest {
+public class AutoFeatureGenerationCreateEndPointTest {
 
     private static final String USER_AGENT = "Mozilla/5.0";
     static final Gson GSON_OBJ = new GsonBuilder().setPrettyPrinting().create();

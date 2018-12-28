@@ -39,6 +39,7 @@ import co.cask.cdap.featureengineer.request.pojo.MultiFieldAggregationInput;
 import co.cask.cdap.featureengineer.request.pojo.MultiSchemaColumn;
 import co.cask.cdap.featureengineer.request.pojo.SchemaColumn;
 import co.cask.cdap.featureengineer.utils.CommandExecutor;
+import co.cask.cdap.proto.ApplicationDetail;
 import co.cask.cdap.proto.artifact.AppRequest;
 import co.cask.cdap.proto.artifact.PluginSummary;
 import co.cask.cdap.proto.artifact.preview.PreviewConfig;
@@ -318,7 +319,7 @@ public class AutoFeatureGenerator {
     }
     
     public void uploadPipelineFileToCDAP(String cdapPipelineFileName, ClientConfig clientConfig, String pipelineName)
-            throws UnauthenticatedException, IOException {
+            throws Exception {
         ApplicationClient applicationClient = new ApplicationClient(clientConfig);
         ApplicationId appId = new ApplicationId("default", pipelineName);
         if (applicationClient.exists(appId)) {

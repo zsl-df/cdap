@@ -253,8 +253,7 @@ public class CDAPSubDagGenerator {
      * @throws InterruptedException
      */
     public void triggerCDAPPipelineGeneration(List<String> features, String featureSelectionPipeline)
-            throws IOException, UnauthenticatedException, ArtifactNotFoundException, UnauthorizedException,
-            InterruptedException {
+            throws Exception {
         Set<String> manualMultiInputFeatures = getManualMultiInputFeatures();
         Map<String, CDAPSubDagGeneratorOutput> dagGeneratorOutputMap = generateFilteredFeatureDag(featureDag, features,
                 manualMultiInputFeatures);
@@ -326,8 +325,7 @@ public class CDAPSubDagGenerator {
     }
 
     private void generateCDAPPipelineForDAG(Map<String, CDAPSubDagGeneratorOutput> dagGeneratorOutputMap,
-            String featureSelectionPipeline) throws IOException, UnauthenticatedException, ArtifactNotFoundException,
-            UnauthorizedException, InterruptedException {
+            String featureSelectionPipeline) throws Exception {
         Map<String, PluginSummary> aggregatePluginFunctionMap = new HashMap<String, PluginSummary>();
         Map<String, PluginSummary> transformPluginFunctionMap = new HashMap<String, PluginSummary>();
 

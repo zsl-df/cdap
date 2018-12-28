@@ -32,15 +32,19 @@ import co.cask.cdap.featureengineer.proto.FeatureGenerationRequest;
 import co.cask.cdap.featureengineer.request.pojo.DataSchemaNameList;
 import co.cask.cdap.featureengineer.response.pojo.FeatureGenerationConfigParam;
 import co.cask.cdap.featureengineer.response.pojo.FeatureGenerationConfigParamList;
+import co.cask.cdap.featureengineer.response.pojo.PipelineGenerationInfo;
+import co.cask.cdap.featureengineer.response.pojo.PipelineInfo;
 import co.cask.cdap.featureengineer.utils.JSONInputParser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -75,8 +79,6 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
     private KeyValueTable pipelineDataSchemasTable;
     private KeyValueTable pipelineNameTable;
     
-    private HttpServiceContext context;
-    
     /**
      * @param config
      * 
@@ -99,7 +101,6 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
         this.featureEngineeringConfigTable = context.getDataset(featureEngineeringConfigTableName);
         this.pipelineDataSchemasTable = context.getDataset(pipelineDataSchemasTableName);
         this.pipelineNameTable = context.getDataset(pipelineNameTableName);
-        this.context = context;
     }
     
     @POST
@@ -133,6 +134,53 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
             LOG.error("Failed to generate features for data schemas " + inputDataschemaMap.keySet()
                     + " with error message " + e.getMessage(), e);
         }
+    }
+    
+    @POST
+    @Path("featureengineering/{pipelineName}/features/edit")
+    public void editGeneratedFeatures(HttpServiceRequest request, HttpServiceResponder responder,
+            @PathParam("pipelineName") String pipelineName) {
+        try {
+            deletePipeline(request, pipelineName);
+        } catch (Exception e) {
+            LOG.error("Unable to delete existing pipeline = " + pipelineName, e);
+        }
+        generateFeatures(request, responder, pipelineName);
+    }
+    
+    @DELETE
+    @Path("featureengineering/{pipelineName}/features/delete")
+    public void delete(HttpServiceRequest request, HttpServiceResponder responder,
+            @PathParam("pipelineName") String pipelineName) {
+        try {
+            featureDAGTable.delete(pipelineName);
+            featureEngineeringConfigTable.delete(pipelineName);
+            pipelineDataSchemasTable.delete(pipelineName);
+            pipelineNameTable.delete(pipelineName);
+            deletePipeline(request, pipelineName);
+            success(responder, String.format("Successfully deleted Feature Generation Pipeline '%s'", pipelineName));
+        } catch (Exception e) {
+            error(responder, "Failed to delete Feature Generation Pipeline = " + pipelineName + " with error message = "
+                    + e.getMessage());
+        }
+    }
+    
+    @GET
+    @Path("featureengineering/{pipelineName}/features/read")
+    public void getFeaturesGenerationRequest(HttpServiceRequest request, HttpServiceResponder responder,
+            @PathParam("pipelineName") String pipelineName) {
+        byte[] featureGenerationRequestInByte = featureEngineeringConfigTable.read(pipelineName);
+        PipelineGenerationInfo pipelineGenerationInfo = new PipelineGenerationInfo();
+        if (featureGenerationRequestInByte != null) {
+            String serializedFeatureGenerationRequest = new String(featureGenerationRequestInByte,
+                    StandardCharsets.UTF_8);
+            FeatureGenerationRequest featureGenerationRequest = (FeatureGenerationRequest) JSONInputParser
+                    .convertToObject(serializedFeatureGenerationRequest, FeatureGenerationRequest.class);
+            PipelineInfo pipelineInfo = getPipelineInfo(pipelineName, getClientConfig(request));
+            pipelineGenerationInfo = new PipelineGenerationInfo(featureGenerationRequest, pipelineInfo.getStatus(),
+                    pipelineInfo.getLastStartEpochTime(), pipelineInfo.getLastRunId());
+        }
+        responder.sendJson(pipelineGenerationInfo);
     }
     
     @GET

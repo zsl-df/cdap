@@ -23,6 +23,7 @@ import co.cask.cdap.api.dataset.lib.KeyValueTable;
 import co.cask.cdap.api.service.http.HttpServiceContext;
 import co.cask.cdap.api.service.http.HttpServiceRequest;
 import co.cask.cdap.api.service.http.HttpServiceResponder;
+import co.cask.cdap.client.config.ClientConfig;
 import co.cask.cdap.featureengineer.FeatureEngineeringApp.FeatureEngineeringConfig;
 import co.cask.cdap.featureengineer.response.pojo.PipelineInfo;
 import co.cask.cdap.featureengineer.response.pojo.PipelineInfoList;
@@ -39,14 +40,14 @@ import javax.ws.rs.QueryParam;
  *
  */
 public class FeatureEngineeringPipelineServiceHandler extends BaseServiceHandler {
-
+    
     private static final Logger LOG = LoggerFactory.getLogger(FeatureEngineeringPipelineServiceHandler.class);
-
+    
     @Property
     private final String pipelineNameTableName;
-
+    
     private KeyValueTable pipelineNameTable;
-
+    
     /**
      * @param config
      * 
@@ -54,30 +55,34 @@ public class FeatureEngineeringPipelineServiceHandler extends BaseServiceHandler
     public FeatureEngineeringPipelineServiceHandler(FeatureEngineeringConfig config) {
         this.pipelineNameTableName = config.getPipelineNameTable();
     }
-
+    
     @Override
     public void initialize(HttpServiceContext context) throws Exception {
         super.initialize(context);
         pipelineNameTable = context.getDataset(pipelineNameTableName);
     }
-
+    
     @GET
     @Path("featureengineering/pipeline/getall")
     public void getAllFeatureEngineeringPipelines(HttpServiceRequest request, HttpServiceResponder responder,
             @QueryParam("pipelineType") String pipelineType) {
         CloseableIterator<KeyValue<byte[], byte[]>> iterator = pipelineNameTable.scan(null, null);
         PipelineInfoList pipelineInfoList = new PipelineInfoList();
+        String hostAndPort[] = getHostAndPort(request);
+        ClientConfig clientConfig = getClientConfig(hostAndPort);
         while (iterator.hasNext()) {
             KeyValue<byte[], byte[]> keyValue = iterator.next();
             String pipelineName = Bytes.toString(keyValue.getKey());
             String curPipelineType = Bytes.toString(keyValue.getValue());
+            PipelineInfo pipelineInfo = getPipelineInfo(pipelineName, clientConfig);
+            pipelineInfo.setPipelineType(curPipelineType);
             if (pipelineType == null || pipelineType.isEmpty()) {
-                pipelineInfoList.addPipelineInfo(new PipelineInfo(pipelineName, curPipelineType));
+                pipelineInfoList.addPipelineInfo(pipelineInfo);
             } else if (pipelineType.equalsIgnoreCase(curPipelineType)) {
-                pipelineInfoList.addPipelineInfo(new PipelineInfo(pipelineName, curPipelineType));
+                pipelineInfoList.addPipelineInfo(pipelineInfo);
             }
         }
         responder.sendJson(pipelineInfoList);
     }
-
+    
 }

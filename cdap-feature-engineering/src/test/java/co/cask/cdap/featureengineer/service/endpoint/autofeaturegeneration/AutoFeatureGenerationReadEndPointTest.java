@@ -13,49 +13,49 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package co.cask.cdap.featureengineer.service;
+package co.cask.cdap.featureengineer.service.endpoint.autofeaturegeneration;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
  * @author bhupesh.goel
  *
  */
-public class GetCollinearityRemovedFeatureWithScoresEndPointTest {
+public class AutoFeatureGenerationReadEndPointTest {
     
     private static final String USER_AGENT = "Mozilla/5.0";
+    static final Gson GSON_OBJ = new GsonBuilder().setPrettyPrinting().create();
+    static final String ERROR_TABLE = "errors";
+    static final String ACCOUNT_TABLE = "accounts";
     
-    private static void testURL() throws Exception {
+    public static void main(String args[]) throws ClientProtocolException, IOException {
         String url = "http://bhupesh-goel.local:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/"
-                + "ManualFeatureSelectionService/methods/featureengineering/features/vif/iterations/get?"
-                + "pipelineName=InputX1ErrorTestPipeline";
-        
+                + "AutoFeatureGenerationService/methods/featureengineering/InputX1ErrorTestPipeline/features/read";
+        System.out.println("url = " + url);
         HttpClient client = new DefaultHttpClient();
         HttpGet request = new HttpGet(url);
         
-        // add request header
-        request.addHeader("User-Agent", USER_AGENT);
+        // // add header
+        request.setHeader("User-Agent", USER_AGENT);
         HttpResponse response = client.execute(request);
-        
         System.out.println("Response Code : " + response.getStatusLine().getStatusCode());
-        
-        BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-        
-        StringBuffer result = new StringBuffer();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
         String line = "";
-        while ((line = rd.readLine()) != null) {
+        StringBuilder result = new StringBuilder();
+        while ((line = reader.readLine()) != null) {
             result.append(line);
         }
         System.out.println(result.toString());
-    }
-    
-    public static void main(String[] args) throws Exception {
-        testURL();
     }
 }

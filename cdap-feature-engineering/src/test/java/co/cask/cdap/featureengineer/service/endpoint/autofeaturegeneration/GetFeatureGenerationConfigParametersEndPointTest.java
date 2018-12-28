@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package co.cask.cdap.featureengineer.service;
+package co.cask.cdap.featureengineer.service.endpoint.autofeaturegeneration;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -29,13 +29,14 @@ import java.io.InputStreamReader;
  * @author bhupesh.goel
  *
  */
-public class GetAllDataSchemasEndPointTest {
+public class GetFeatureGenerationConfigParametersEndPointTest {
 
     private static final String USER_AGENT = "Mozilla/5.0";
 
     public static void main(String[] args) throws ClientProtocolException, IOException {
         String url = "http://bhupesh-goel.local:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/"
-                + "DataPrepSchemaService/methods/featureengineering/dataschema/getall";
+                + "AutoFeatureGenerationService/methods/featureengineering/feature/generation/configparams"
+                + "/get?getSchemaParams=" + args[0];
 
         HttpClient client = new DefaultHttpClient();
         HttpGet request = new HttpGet(url);
@@ -55,4 +56,5 @@ public class GetAllDataSchemasEndPointTest {
         }
         System.out.println(result.toString());
     }
+
 }
