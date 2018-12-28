@@ -15,6 +15,9 @@
  */
 package co.cask.cdap.featureengineer.response.pojo;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * @author bhupesh.goel
  *
@@ -25,6 +28,7 @@ public class FeatureGenerationConfigParam {
     private String description;
     private boolean isCollection;
     private String dataType;
+    private List<FeatureGenerationConfigParam> subParams;
     
     public FeatureGenerationConfigParam(final String paramName, final String description, final String dataType,
             final boolean isCollection) {
@@ -32,6 +36,13 @@ public class FeatureGenerationConfigParam {
         this.description = description;
         this.isCollection = isCollection;
         this.dataType = dataType;
+    }
+    
+    public void addSubParam(FeatureGenerationConfigParam param) {
+        if (this.subParams == null) {
+            this.subParams = new LinkedList<>();
+        }
+        this.subParams.add(param);
     }
     
     /**
@@ -73,7 +84,7 @@ public class FeatureGenerationConfigParam {
     
     /**
      * @param isCollection
-     *            the isArray to set
+     *            the isCollection to set
      */
     public void setCollection(boolean isCollection) {
         this.isCollection = isCollection;
@@ -94,6 +105,21 @@ public class FeatureGenerationConfigParam {
         this.dataType = dataType;
     }
     
+    /**
+     * @return the subParams
+     */
+    public List<FeatureGenerationConfigParam> getSubParams() {
+        return subParams;
+    }
+    
+    /**
+     * @param subParams
+     *            the subParams to set
+     */
+    public void setSubParams(List<FeatureGenerationConfigParam> subParams) {
+        this.subParams = subParams;
+    }
+    
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -102,6 +128,7 @@ public class FeatureGenerationConfigParam {
         result = prime * result + ((description == null) ? 0 : description.hashCode());
         result = prime * result + (isCollection ? 1231 : 1237);
         result = prime * result + ((paramName == null) ? 0 : paramName.hashCode());
+        result = prime * result + ((subParams == null) ? 0 : subParams.hashCode());
         return result;
     }
     
@@ -141,13 +168,20 @@ public class FeatureGenerationConfigParam {
         } else if (!paramName.equals(other.paramName)) {
             return false;
         }
+        if (subParams == null) {
+            if (other.subParams != null) {
+                return false;
+            }
+        } else if (!subParams.equals(other.subParams)) {
+            return false;
+        }
         return true;
     }
     
     @Override
     public String toString() {
         return "FeatureGenerationConfigParam [paramName=" + paramName + ", description=" + description
-                + ", isCollection=" + isCollection + ", dataType=" + dataType + "]";
+                + ", isCollection=" + isCollection + ", dataType=" + dataType + ", subParams=" + subParams + "]";
     }
     
 }

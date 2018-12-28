@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -188,11 +189,27 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
     public void getFeatureGenerationConfigParameters(HttpServiceRequest request, HttpServiceResponder responder,
             @QueryParam("getSchemaParams") Boolean getSchemaParams) {
         
+        Map<String, FeatureGenerationConfigParam> subParamMap = new HashMap<>();
+        for (FeatureGenerationConfigParams configParam : FeatureGenerationConfigParams.values()) {
+            if (configParam.getIsSubParam()) {
+                subParamMap.put(configParam.getName(), new FeatureGenerationConfigParam(configParam.getName(),
+                        configParam.getDescription(), configParam.getDataType(), configParam.getIsCollection()));
+            }
+        }
+        
         FeatureGenerationConfigParamList configParamList = new FeatureGenerationConfigParamList();
         for (FeatureGenerationConfigParams configParam : FeatureGenerationConfigParams.values()) {
-            if (getSchemaParams.equals(configParam.isSchemaSpecific())) {
-                configParamList.addConfigParam(new FeatureGenerationConfigParam(configParam.getName(),
-                        configParam.getDescription(), configParam.getDataType(), configParam.getIsCollection()));
+            if (getSchemaParams.equals(configParam.getIsSchemaSpecific()) && !configParam.getIsSubParam()) {
+                FeatureGenerationConfigParam param = new FeatureGenerationConfigParam(configParam.getName(),
+                        configParam.getDescription(), configParam.getDataType(), configParam.getIsCollection());
+                String subParam = configParam.getSubParams();
+                if (subParam != null && !subParam.isEmpty()) {
+                    String subParamsToken[] = subParam.split(",");
+                    for (String subParams : subParamsToken) {
+                        param.addSubParam(subParamMap.get(subParams));
+                    }
+                }
+                configParamList.addConfigParam(param);
             }
         }
         responder.sendJson(configParamList);

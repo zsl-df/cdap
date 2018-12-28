@@ -21,34 +21,45 @@ package co.cask.cdap.featureengineer.enums;
  */
 public enum FeatureGenerationConfigParams {
 
-    INDEXES("Indexes", true, true, "unknown", ""),
-    RELATIONSHIPS("Relationships", true, true, "unknown", ""),
-    TIMESTAMP_COLUMNS("TimestampColumns", true, true, "unknown", ""),
-    CREATE_ENTITIES("CreateEntities", true, true, "unknown", ""),
-    TIME_INDEX_COLUMNS("TimeIndexColumns", true, true, "unknown", ""),
-    CATEGORICAL_COLUMNS("CategoricalColumns", true, true, "unknown", ""), 
-    IGNORE_COLUMNS("IgnoreColumns", true, true, "unknown", ""),
-    MULTI_FIELD_TRANS_FUNCTION_INPUT_COLUMNS("multiFieldTransFunctionInputColumns", true, true, "unknown", ""),  
-    MULTI_FIELD_AGG_FUNCTION_INPUT_COLUMNS("multiFieldAggFunctionInputColumns", true, true, "unknown", ""), 
-    TARGET_ENTITY("TargetEntity", true, true, "unknown", ""), 
-    TARGET_ENTITY_PRIMARY_FIELD("TargetEntityPrimaryField", true, true, "unknown", ""),  
-    DFS_DEPTH("DFSDepth", false, false, "int", ""), 
-    TRAINING_WINDOWS("TrainingWindows", false, true, "int", ""),  
-    WINDOW_END_TIME("WindowEndTime", false, false, "string", "");
+    INDEXES("Indexes", true, true, "unknown", "", "", false),
+    RELATIONSHIPS("Relationships", true, true, "unknown", "", "Column1,Column2", false),
+    TIMESTAMP_COLUMNS("TimestampColumns", true, true, "unknown", "", "", false),
+    CREATE_ENTITIES("CreateEntities", true, true, "unknown", "", "", false),
+    TIME_INDEX_COLUMNS("TimeIndexColumns", true, true, "unknown", "", "", false),
+    CATEGORICAL_COLUMNS("CategoricalColumns", true, true, "unknown", "", "", false), 
+    IGNORE_COLUMNS("IgnoreColumns", true, true, "unknown", "", "", false),
+    MULTI_FIELD_TRANS_FUNCTION_INPUT_COLUMNS("multiFieldTransFunctionInputColumns", true, true, "unknown", "", "", 
+            false),  
+    MULTI_FIELD_AGG_FUNCTION_INPUT_COLUMNS("multiFieldAggFunctionInputColumns", true, true, "unknown", "", 
+            "DestinationColumn,GroupByColumn,SourceColumns", false), 
+    TARGET_ENTITY("TargetEntity", true, false, "unknown", "", "", false), 
+    TARGET_ENTITY_PRIMARY_FIELD("TargetEntityPrimaryField", true, false, "unknown", "", "", false),  
+    DFS_DEPTH("DFSDepth", false, false, "int", "", "", false), 
+    TRAINING_WINDOWS("TrainingWindows", false, true, "int", "", "", false),  
+    WINDOW_END_TIME("WindowEndTime", false, false, "string", "", "", false),
+    COLUMN_ONE("Column1", true, false, "unknown", "", "", true),
+    COLUMN_TWO("Column2", true, false, "unknown", "", "", true),
+    DESTINATION_COLUMN("DestinationColumn", true, false, "unknown", "", "", true),
+    GROUP_BY_COLUMN("GroupByColumn", true, false, "unknown", "", "", true),
+    SOURCE_COLUMNS("SourceColumns", true, true, "unknown", "", "", true);
 
     final String name;
     final Boolean isSchemaSpecific;
     final Boolean isCollection;
     final String dataType;
     final String description;
-
+    final String subParams;
+    final Boolean isSubParam;
+    
     FeatureGenerationConfigParams(final String name, final boolean isSchemaSpecific, final Boolean isCollection,
-            final String dataType, final String description) {
+            final String dataType, final String description, final String subParams, final Boolean isSubParam) {
         this.name = name;
         this.isSchemaSpecific = isSchemaSpecific;
         this.isCollection = isCollection;
         this.dataType = dataType;
         this.description = description;
+        this.subParams = subParams;
+        this.isSubParam = isSubParam;
     }
 
     /**
@@ -61,15 +72,8 @@ public enum FeatureGenerationConfigParams {
     /**
      * @return the isSchemaSpecific
      */
-    public Boolean isSchemaSpecific() {
+    public Boolean getIsSchemaSpecific() {
         return isSchemaSpecific;
-    }
-
-    /**
-     * @return the description
-     */
-    public String getDescription() {
-        return description;
     }
 
     /**
@@ -85,5 +89,27 @@ public enum FeatureGenerationConfigParams {
     public String getDataType() {
         return dataType;
     }
+
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @return the subParams
+     */
+    public String getSubParams() {
+        return subParams;
+    }
+
+    /**
+     * @return the isSubParam
+     */
+    public Boolean getIsSubParam() {
+        return isSubParam;
+    }
+
 
 }

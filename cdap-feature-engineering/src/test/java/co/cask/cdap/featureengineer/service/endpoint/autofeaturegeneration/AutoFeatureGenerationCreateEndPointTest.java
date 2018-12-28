@@ -49,7 +49,7 @@ public class AutoFeatureGenerationCreateEndPointTest {
     static final String ACCOUNT_TABLE = "accounts";
 
     public static void main(String args[]) throws ClientProtocolException, IOException {
-        String url = "http://bhupesh-goel.local:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/"
+        String url = "http://localhost:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/"
                 + "AutoFeatureGenerationService/methods/featureengineering/InputX1ErrorTestPipeline/features/create";
         System.out.println("url = " + url);
         HttpClient client = new DefaultHttpClient();
