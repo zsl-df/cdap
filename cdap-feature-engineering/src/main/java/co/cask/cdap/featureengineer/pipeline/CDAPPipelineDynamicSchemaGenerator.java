@@ -999,7 +999,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
     }
     
     private void markReachableNodesFromTargetEntity(String root) {
-        if(firstStageMapForTable.containsKey(root)) {
+        if (firstStageMapForTable.containsKey(root)) {
             root = firstStageMapForTable.get(root);
         }
         if (!connections.containsKey(root)) {

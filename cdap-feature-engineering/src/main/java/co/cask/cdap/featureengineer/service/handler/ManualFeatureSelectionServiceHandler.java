@@ -23,6 +23,7 @@ import co.cask.cdap.api.dataset.table.Table;
 import co.cask.cdap.api.service.http.HttpServiceContext;
 import co.cask.cdap.api.service.http.HttpServiceRequest;
 import co.cask.cdap.api.service.http.HttpServiceResponder;
+import co.cask.cdap.common.enums.CategoricalColumnEncoding;
 import co.cask.cdap.common.enums.CorrelationCoefficient;
 import co.cask.cdap.common.enums.CorrelationMatrixSchema;
 import co.cask.cdap.common.enums.FeatureSTATS;
@@ -205,6 +206,50 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
             featureStatsObj.addFeatureStat(featureStat);
         }
         responder.sendJson(featureStatsObj);
+    }
+    
+    @POST
+    @Path("featureengineering/{pipelineName}/features/stats/filtered/get")
+    public void getFilteredFeatureStats(HttpServiceRequest request, HttpServiceResponder responder,
+            @PathParam("pipelineName") String featureGenerationPipelineName) {
+        List<String> featuresToBeDiscardedList = new RequestExtractor(request).getContent("UTF-8", LinkedList.class);
+        Set<String> featuresToBeDiscardedSet = getDiscardedFeaturesSet(featuresToBeDiscardedList);
+        
+        Table featureStatsDataSet = context.getDataset(featureGenerationPipelineName);
+        Scanner allFeatures = featureStatsDataSet.scan(null, null);
+        Row row;
+        SelectedFeatureStats featureStatsObj = new SelectedFeatureStats();
+        
+        while ((row = allFeatures.next()) != null) {
+            String featureName = row.getString(FeatureSTATS.Feature.getName());
+            if (featuresToBeDiscardedSet.contains(featureName)) {
+                continue;
+            }
+            FeatureStats featureStat = new FeatureStats();
+            featureStat.setFeatureName(featureName);
+            for (FeatureSTATS stat : FeatureSTATS.values()) {
+                if (stat.equals(FeatureSTATS.Feature)) {
+                    continue;
+                }
+                Object value = getStatColumnValue(stat, row);
+                featureStat.addFeatureStat(stat.getName(), value);
+            }
+            featureStatsObj.addFeatureStat(featureStat);
+        }
+        responder.sendJson(featureStatsObj);
+    }
+    
+    private Set<String> getDiscardedFeaturesSet(List<String> featuresToBeDiscardedList) {
+        Set<String> featuresToBeDiscardedSet = new HashSet<String>();
+        for (String encodedFeature : featuresToBeDiscardedList) {
+            String originalFeature = CategoricalColumnEncoding.DUMMY_CODING.getOriginalFeatureName(encodedFeature);
+            if (originalFeature == null) {
+                featuresToBeDiscardedSet.add(encodedFeature);
+            } else {
+                featuresToBeDiscardedSet.add(originalFeature);
+            }
+        }
+        return featuresToBeDiscardedSet;
     }
     
     @POST
