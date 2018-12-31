@@ -21,8 +21,10 @@ package co.cask.cdap.common.enums;
  */
 public enum CorrelationMatrixSchema {
     
-    ID("Id", "long"), COEFFICIENT_TYPE("coefficientType", "string"), FEATURE_NAME("featureName",
-            "string"), COEFFICIENT_SCORES("coefficientScores", "string");
+    ID("Id", "long"), 
+    COEFFICIENT_TYPE("coefficientType", "string"), 
+    FEATURE_NAME("featureName", "string"), 
+    COEFFICIENT_SCORES("coefficientScores", "string");
     
     private final String name;
     private final String type;

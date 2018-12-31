@@ -107,6 +107,8 @@ public class CDAPPipelineGenerator {
     private final Map<String, String> generatedStageMap;
     private final Map<String, String> generatedReverseStageMap;
     
+    private String targetEntityStageName;
+    
     private static final String NUM_PARTITIONS = "5";
     private static final boolean enablePartitions = false;
     
@@ -338,6 +340,7 @@ public class CDAPPipelineGenerator {
         
         createSourceStages(dataSchema, wranglerPluginConfigMap, pipeLineConfiguration);
         createMissingEntityTables(wranglerPluginConfigMap, this.relationShips, this.entityNames);
+        this.targetEntityStageName = lastStageMapForTable.get(this.targetEntity);
         Map<String, String> lastStageMapForTableTillSource = new HashMap<>(lastStageMapForTable);
         List<String> lastStagesForEachTrainingWindow = new LinkedList<String>();
         // List<String> statsStagesForEachTrainingWindow = new LinkedList<String>();
@@ -384,7 +387,9 @@ public class CDAPPipelineGenerator {
             // getElasticSearchSinkNode("StatsElasticsearch", "statsDataSink",
             // "stats_index_" + System.currentTimeMillis(),
             // "stats", "Statistic", joinedStatsTableName);
-            lastStageMapForTable.put(targetEntity, sourceTempTableName);
+            String finalMergedTableStageName = takeOuterJoinOfTwoTables(this.targetEntityStageName, sourceTempTableName,
+                    this.targetEntityIdField, this.targetEntityIdField, -1);
+            lastStageMapForTable.put(targetEntity, finalMergedTableStageName);
             completePipelineAndSerializeIt(pipeLineConfiguration);
             
         } else {
@@ -621,7 +626,6 @@ public class CDAPPipelineGenerator {
         }
         
         for (SchemaFieldName schemaField : sourceTableLastStageSchema.getFields()) {
-            // boolean added = schemaSet.add(schemaField.getName());
             if (!schemaSet.contains(schemaField.getName())) {
                 if (i > 0) {
                     selectedFields.append(",");
@@ -632,8 +636,13 @@ public class CDAPPipelineGenerator {
                     currentSchemaFieldList.add(schemaField);
                     schemaSet.add(schemaField.getName());
                 } else {
-                    selectedFields.append(sourceTableLastStage + "." + schemaField.getName() + " as "
-                            + schemaField.getName() + "_" + this.trainingWindows.get(index));
+                    if (index >= 0) {
+                        selectedFields.append(sourceTableLastStage + "." + schemaField.getName() + " as "
+                                + schemaField.getName() + "_" + this.trainingWindows.get(index));
+                    } else {
+                        selectedFields.append(
+                                sourceTableLastStage + "." + schemaField.getName() + " as " + schemaField.getName());
+                    }
                     SchemaFieldName schemaFieldCopy = null;
                     if (schemaField instanceof NullableSchemaField) {
                         NullableSchemaField schemaFieldCopy2 = new NullableSchemaField();
@@ -644,8 +653,13 @@ public class CDAPPipelineGenerator {
                         schemaFieldCopy2.setType(((SchemaField) schemaField).getType());
                         schemaFieldCopy = schemaFieldCopy2;
                     }
-                    schemaSet.add(schemaField.getName() + "_" + this.trainingWindows.get(index));
-                    schemaFieldCopy.setName(schemaField.getName() + "_" + this.trainingWindows.get(index));
+                    if (index >= 0) {
+                        schemaSet.add(schemaField.getName() + "_" + this.trainingWindows.get(index));
+                        schemaFieldCopy.setName(schemaField.getName() + "_" + this.trainingWindows.get(index));
+                    } else {
+                        schemaSet.add(schemaField.getName());
+                        schemaFieldCopy.setName(schemaField.getName());
+                    }
                     currentSchemaFieldList.add(schemaFieldCopy);
                 }
                 i++;

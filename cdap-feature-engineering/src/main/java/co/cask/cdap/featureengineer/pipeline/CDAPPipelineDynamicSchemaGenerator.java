@@ -15,7 +15,9 @@
  */
 package co.cask.cdap.featureengineer.pipeline;
 
+import co.cask.cdap.common.enums.CorrelationMatrixSchema;
 import co.cask.cdap.common.enums.FeatureSTATS;
+import co.cask.cdap.common.enums.VarianceInflationFactorSchema;
 import co.cask.cdap.featureengineer.pipeline.pojo.Artifact;
 import co.cask.cdap.featureengineer.pipeline.pojo.BasePipelineNode;
 import co.cask.cdap.featureengineer.pipeline.pojo.CDAPPipelineInfo;
@@ -36,6 +38,7 @@ import co.cask.cdap.proto.artifact.PluginSummary;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -102,6 +105,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
     private List<SchemaColumn> createEntities;
     private Map<String, String> createEntitiesMap;
     private List<SchemaColumn> timestampColumns;
+    private String targetEntityStageName;
     
     private int globalUniqueID;
     private static final String STAGE_NAME = "stage";
@@ -332,6 +336,8 @@ public class CDAPPipelineDynamicSchemaGenerator {
         
         createSourceStages(inputDataSourceInfoMap, wranglerPluginConfigMap, pipeLineConfiguration);
         createMissingEntityTables(wranglerPluginConfigMap, this.relationShips, this.entityNames);
+        this.targetEntityStageName = lastStageMapForTable.get(this.targetEntity);
+        
         Map<String, String> lastStageMapForTableTillSource = new HashMap<>(lastStageMapForTable);
         List<String> lastStagesForEachTrainingWindow = new LinkedList<String>();
         // List<String> statsStagesForEachTrainingWindow = new LinkedList<String>();
@@ -361,12 +367,151 @@ public class CDAPPipelineDynamicSchemaGenerator {
             // getFileSinkNode("StatsFileSink", "statsDataSink", "stats_index_",
             // joinedStatsTableName);
             // lastStageMapForTable.put(targetEntity, sourceTempTableName);
+            addEncodingAndCorrelationStages(sourceTempTableName);
             completePipelineAndSerializeIt(pipeLineConfiguration);
             
         } else {
             generatePipelineStagesAndCreateConnections(pipeLineConfiguration, featureDag);
         }
         return pipeLineConfiguration;
+    }
+    
+    private void addEncodingAndCorrelationStages(String sourceTempTableName) {
+        String finalMergedTableStageName = takeOuterJoinOfTwoTables(this.targetEntityStageName, sourceTempTableName,
+                this.targetEntityIdField, this.targetEntityIdField, -1);
+        String hotEncodedStage = addHotEncodingStage(finalMergedTableStageName);
+        addVIFCalculationStageWithCDAPSink(hotEncodedStage);
+        addCorrelationMatrixStageWithCDAPSink(hotEncodedStage);
+    }
+    
+    private String addCorrelationMatrixStageWithCDAPSink(String currentStageName) {
+        PipelineNode stageNode = new PipelineNode();
+        String stageName = currentStageName + "_correlationmat";
+        stageNode.setName(stageName);
+        PluginNode pluginNode = new PluginNode();
+        stageNode.setPlugin(pluginNode);
+        pluginNode.setLabel(stageName);
+        pluginNode.setName("CorrelationMatrixCompute");
+        pluginNode.setType("sparkcompute");
+        Artifact esArtifact = featureEngineeringArtifact;
+        pluginNode.setArtifact(esArtifact);
+        Map<String, Object> properties = new HashMap<String, Object>();
+        pluginNode.setProperties(properties);
+        putInConnection(currentStageName, stageName);
+        stageMap.put(stageName, stageNode);
+        isUsedStage.add(currentStageName);
+        isUsedStage.add(stageName);
+        
+        return addCDAPSinkStageForCorrelationMatrix(stageName);
+    }
+    
+    private String addCDAPSinkStageForCorrelationMatrix(String curStageName) {
+        String stageName = curStageName + "_correlationmatsink";
+        PipelineNode stageNode = new PipelineNode();
+        stageNode.setName(stageName);
+        PluginNode pluginNode = new PluginNode();
+        stageNode.setPlugin(pluginNode);
+        pluginNode.setLabel(stageName);
+        pluginNode.setName("Table");
+        pluginNode.setType("batchsink");
+        pluginNode.setArtifact(this.pluginArtifact);
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put("name", CorrelationMatrixSchema.getDataSetName(pipelineName));
+        properties.put("schema.row.field", "Id");
+        properties.put("schema", gsonObj.toJson(getCorrelationMatrixSchema()));
+        pluginNode.setProperties(properties);
+        
+        putInConnection(curStageName, stageName);
+        stageMap.put(stageName, stageNode);
+        isUsedStage.add(curStageName);
+        isUsedStage.add(stageName);
+        return stageName;
+    }
+    
+    private String addVIFCalculationStageWithCDAPSink(String currentStageName) {
+        PipelineNode stageNode = new PipelineNode();
+        String stageName = currentStageName + "_vif";
+        stageNode.setName(stageName);
+        PluginNode pluginNode = new PluginNode();
+        stageNode.setPlugin(pluginNode);
+        pluginNode.setLabel(stageName);
+        pluginNode.setName("VarianceInflationFactorCompute");
+        pluginNode.setType("sparkcompute");
+        Artifact esArtifact = featureEngineeringArtifact;
+        pluginNode.setArtifact(esArtifact);
+        Map<String, Object> properties = new HashMap<String, Object>();
+        pluginNode.setProperties(properties);
+        properties.put("selectionThreshold", "0.999999999");
+        properties.put("numIterations", "1000");
+        properties.put("linearRegressionIterations", "2000000000");
+        properties.put("stepSize", "0.001");
+        properties.put("skipEncodedFeaturesInVIF", "true");
+        putInConnection(currentStageName, stageName);
+        stageMap.put(stageName, stageNode);
+        isUsedStage.add(currentStageName);
+        isUsedStage.add(stageName);
+        
+        return addCDAPSinkStageForVIF(stageName);
+    }
+    
+    private String addCDAPSinkStageForVIF(String curStageName) {
+        String stageName = curStageName + "_vifsink";
+        PipelineNode stageNode = new PipelineNode();
+        stageNode.setName(stageName);
+        PluginNode pluginNode = new PluginNode();
+        stageNode.setPlugin(pluginNode);
+        pluginNode.setLabel(stageName);
+        pluginNode.setName("Table");
+        pluginNode.setType("batchsink");
+        pluginNode.setArtifact(this.pluginArtifact);
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put("name", VarianceInflationFactorSchema.getDataSetName(pipelineName));
+        properties.put("schema.row.field", "Id");
+        properties.put("schema", gsonObj.toJson(getVIFStatsSchema()));
+        pluginNode.setProperties(properties);
+        
+        putInConnection(curStageName, stageName);
+        stageMap.put(stageName, stageNode);
+        isUsedStage.add(curStageName);
+        isUsedStage.add(stageName);
+        return stageName;
+    }
+    
+    private String addHotEncodingStage(String currentStageName) {
+        PipelineNode stageNode = new PipelineNode();
+        String stageName = currentStageName + "_hotEncoding";
+        stageNode.setName(stageName);
+        PluginNode pluginNode = new PluginNode();
+        stageNode.setPlugin(pluginNode);
+        pluginNode.setLabel(stageName);
+        pluginNode.setName("OneHotEncoder");
+        pluginNode.setType("sparkcompute");
+        Artifact esArtifact = featureEngineeringArtifact;
+        pluginNode.setArtifact(esArtifact);
+        Map<String, Object> properties = new HashMap<String, Object>();
+        pluginNode.setProperties(properties);
+        properties.put("categoricalDictionaryThreshold", "1000");
+        properties.put("discardedColumns", getTimestampColumnsSerialized());
+        putInConnection(currentStageName, stageName);
+        stageMap.put(stageName, stageNode);
+        isUsedStage.add(currentStageName);
+        isUsedStage.add(stageName);
+        return stageName;
+    }
+    
+    private Object getTimestampColumnsSerialized() {
+        StringBuilder sb = new StringBuilder();
+        int index = 0;
+        for (SchemaColumn timestampCol : this.timestampColumns) {
+            if (timestampCol.getTable().equals(this.targetEntity)) {
+                if (index > 0) {
+                    sb.append(",");
+                }
+                sb.append(timestampCol.getColumn());
+                index++;
+            }
+        }
+        return sb.toString();
     }
     
     private void createMissingEntityTables(Map<String, CDAPPipelineInfo> wranglerPluginConfigMap,
@@ -398,9 +543,6 @@ public class CDAPPipelineDynamicSchemaGenerator {
         pluginNode.setName("SparkStatsCompute");
         pluginNode.setType("sparkcompute");
         Artifact esArtifact = featureEngineeringArtifact;
-        // esArtifact.setName("feature-engineering-plugin");
-        // esArtifact.setVersion("2.0.0");
-        // esArtifact.setScope("SYSTEM");
         pluginNode.setArtifact(esArtifact);
         Map<String, Object> properties = new HashMap<String, Object>();
         pluginNode.setProperties(properties);
@@ -468,13 +610,14 @@ public class CDAPPipelineDynamicSchemaGenerator {
         Map<String, Object> pluginProperties = new HashMap<String, Object>();
         pluginNode.setProperties(pluginProperties);
         Map<String, String> keysToBeAppendedMap = new HashMap<String, String>();
-        if (index == 1) {
-            keysToBeAppendedMap.put(destTableLastStage, "_" + this.trainingWindows.get(0));
+        if (index >= 0) {
+            if (index == 1) {
+                keysToBeAppendedMap.put(destTableLastStage, "_" + this.trainingWindows.get(0));
+            }
+            // else
+            // keysToBeAppendedMap.put(destTableLastStage, "");
+            keysToBeAppendedMap.put(sourceTableLastStage, "_" + this.trainingWindows.get(index));
         }
-        // else
-        // keysToBeAppendedMap.put(destTableLastStage, "");
-        keysToBeAppendedMap.put(sourceTableLastStage, "_" + this.trainingWindows.get(index));
-        
         pluginProperties.put("joinKeys",
                 sourceTableLastStage + "." + sourceJoinKey + " = " + destTableLastStage + "." + destJoinKey);
         pluginProperties.put("requiredInputs", sourceTableLastStage);
@@ -949,6 +1092,38 @@ public class CDAPPipelineDynamicSchemaGenerator {
         field2.setName("Id");
         field2.setType("long");
         schemaFields.add(field2);
+        schema.setFields(schemaFields.toArray(new SchemaFieldName[0]));
+        return schema;
+    }
+    
+    private Schema getVIFStatsSchema() {
+        Schema schema = new Schema();
+        schema.setName("fileRecord");
+        schema.setType("record");
+        List<SchemaFieldName> schemaFields = new LinkedList<SchemaFieldName>();
+        NullableSchemaField field = new NullableSchemaField();
+        for (VarianceInflationFactorSchema vifSchema : VarianceInflationFactorSchema.values()) {
+            field = new NullableSchemaField();
+            field.setName(vifSchema.getName());
+            field.setNullType(vifSchema.getType());
+            schemaFields.add(field);
+        }
+        schema.setFields(schemaFields.toArray(new SchemaFieldName[0]));
+        return schema;
+    }
+    
+    private Schema getCorrelationMatrixSchema() {
+        Schema schema = new Schema();
+        schema.setName("fileRecord");
+        schema.setType("record");
+        List<SchemaFieldName> schemaFields = new LinkedList<SchemaFieldName>();
+        NullableSchemaField field = new NullableSchemaField();
+        for (CorrelationMatrixSchema corMatSchema : CorrelationMatrixSchema.values()) {
+            field = new NullableSchemaField();
+            field.setName(corMatSchema.getName());
+            field.setNullType(corMatSchema.getType());
+            schemaFields.add(field);
+        }
         schema.setFields(schemaFields.toArray(new SchemaFieldName[0]));
         return schema;
     }
