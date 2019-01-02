@@ -28,14 +28,16 @@ public class FeatureGenerationConfigParam {
     private String description;
     private boolean isCollection;
     private String dataType;
+    private boolean isMandatory;
     private List<FeatureGenerationConfigParam> subParams;
     
     public FeatureGenerationConfigParam(final String paramName, final String description, final String dataType,
-            final boolean isCollection) {
+            final boolean isCollection, final boolean isMandatory) {
         this.paramName = paramName;
         this.description = description;
         this.isCollection = isCollection;
         this.dataType = dataType;
+        this.isMandatory = isMandatory;
     }
     
     public void addSubParam(FeatureGenerationConfigParam param) {
@@ -106,6 +108,21 @@ public class FeatureGenerationConfigParam {
     }
     
     /**
+     * @return the isMandatory
+     */
+    public boolean isMandatory() {
+        return isMandatory;
+    }
+    
+    /**
+     * @param isMandatory
+     *            the isMandatory to set
+     */
+    public void setMandatory(boolean isMandatory) {
+        this.isMandatory = isMandatory;
+    }
+    
+    /**
      * @return the subParams
      */
     public List<FeatureGenerationConfigParam> getSubParams() {
@@ -127,6 +144,7 @@ public class FeatureGenerationConfigParam {
         result = prime * result + ((dataType == null) ? 0 : dataType.hashCode());
         result = prime * result + ((description == null) ? 0 : description.hashCode());
         result = prime * result + (isCollection ? 1231 : 1237);
+        result = prime * result + (isMandatory ? 1231 : 1237);
         result = prime * result + ((paramName == null) ? 0 : paramName.hashCode());
         result = prime * result + ((subParams == null) ? 0 : subParams.hashCode());
         return result;
@@ -161,6 +179,9 @@ public class FeatureGenerationConfigParam {
         if (isCollection != other.isCollection) {
             return false;
         }
+        if (isMandatory != other.isMandatory) {
+            return false;
+        }
         if (paramName == null) {
             if (other.paramName != null) {
                 return false;
@@ -181,7 +202,8 @@ public class FeatureGenerationConfigParam {
     @Override
     public String toString() {
         return "FeatureGenerationConfigParam [paramName=" + paramName + ", description=" + description
-                + ", isCollection=" + isCollection + ", dataType=" + dataType + ", subParams=" + subParams + "]";
+                + ", isCollection=" + isCollection + ", dataType=" + dataType + ", isMandatory=" + isMandatory
+                + ", subParams=" + subParams + "]";
     }
     
 }

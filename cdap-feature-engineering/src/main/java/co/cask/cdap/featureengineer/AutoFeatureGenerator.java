@@ -39,7 +39,6 @@ import co.cask.cdap.featureengineer.request.pojo.MultiFieldAggregationInput;
 import co.cask.cdap.featureengineer.request.pojo.MultiSchemaColumn;
 import co.cask.cdap.featureengineer.request.pojo.SchemaColumn;
 import co.cask.cdap.featureengineer.utils.CommandExecutor;
-import co.cask.cdap.proto.ApplicationDetail;
 import co.cask.cdap.proto.artifact.AppRequest;
 import co.cask.cdap.proto.artifact.PluginSummary;
 import co.cask.cdap.proto.artifact.preview.PreviewConfig;
@@ -178,7 +177,7 @@ public class AutoFeatureGenerator {
                 appliedAggFunctionsWithArguments, appliedTransFunctionsWithArguments,
                 featureGenerationRequest.getIndexes(), featureGenerationRequest.getPipelineRunName(),
                 featureGenerationRequest.getRelationShips(), featureGenerationRequest.getCreateEntities(),
-                timestampColumns);
+                timestampColumns, featureGenerationRequest);
         CDAPPipelineInfo pipelineInfo = pipelineGenerator.generateCDAPPipeline(featureEngineeringDag,
                 inputDataschemaMap, wranglerPluginConfigMap);
         File cdapPipelineFile = writeDataToTempFile(GSON_OBJ.toJson(pipelineInfo), "cdap-pipeline");
@@ -419,7 +418,7 @@ public class AutoFeatureGenerator {
                         multiInputPluginFunctionMap.put(summary.getName(), summary);
                         continue;
                     }
-                    if (outputType.startsWith("list") && categoricalColumns == null) {
+                    if (outputType.startsWith("list") && (categoricalColumns == null || categoricalColumns.isEmpty())) {
                         continue;
                     }
                     String[] outputTypeToken = outputType.split(":");

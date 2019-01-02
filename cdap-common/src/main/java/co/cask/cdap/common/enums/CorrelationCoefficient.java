@@ -20,7 +20,7 @@ package co.cask.cdap.common.enums;
  *
  */
 public enum CorrelationCoefficient {
-    PEARSON("pearson"), SPEARMAN("spearman");
+    PEARSON("pearson"), SPEARMAN("spearman"), CHI_SQUARE_TEST("ChiSqTest");
     
     private final String name;
     

@@ -192,8 +192,10 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
         Map<String, FeatureGenerationConfigParam> subParamMap = new HashMap<>();
         for (FeatureGenerationConfigParams configParam : FeatureGenerationConfigParams.values()) {
             if (configParam.getIsSubParam()) {
-                subParamMap.put(configParam.getName(), new FeatureGenerationConfigParam(configParam.getName(),
-                        configParam.getDescription(), configParam.getDataType(), configParam.getIsCollection()));
+                subParamMap.put(configParam.getName(),
+                        new FeatureGenerationConfigParam(configParam.getName(), configParam.getDescription(),
+                                configParam.getDataType(), configParam.getIsCollection(),
+                                configParam.getIsMandatory()));
             }
         }
         
@@ -201,7 +203,8 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
         for (FeatureGenerationConfigParams configParam : FeatureGenerationConfigParams.values()) {
             if (getSchemaParams.equals(configParam.getIsSchemaSpecific()) && !configParam.getIsSubParam()) {
                 FeatureGenerationConfigParam param = new FeatureGenerationConfigParam(configParam.getName(),
-                        configParam.getDescription(), configParam.getDataType(), configParam.getIsCollection());
+                        configParam.getDescription(), configParam.getDataType(), configParam.getIsCollection(),
+                        configParam.getIsMandatory());
                 String subParam = configParam.getSubParams();
                 if (subParam != null && !subParam.isEmpty()) {
                     String subParamsToken[] = subParam.split(",");

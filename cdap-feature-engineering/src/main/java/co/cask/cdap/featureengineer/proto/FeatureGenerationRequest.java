@@ -21,6 +21,7 @@ import co.cask.cdap.featureengineer.request.pojo.MultiSchemaColumn;
 import co.cask.cdap.featureengineer.request.pojo.Relation;
 import co.cask.cdap.featureengineer.request.pojo.SchemaColumn;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -28,7 +29,7 @@ import java.util.List;
  *
  */
 public class FeatureGenerationRequest {
-
+    
     private List<String> dataSchemaNames;
     private List<SchemaColumn> indexes;
     private List<Relation> relationShips;
@@ -46,14 +47,196 @@ public class FeatureGenerationRequest {
     private String targetEntity;
     private String targetEntityFieldId;
     private String pipelineRunName;
-
+    private Integer driverMemory;
+    private Integer driverVirtualCores;
+    private Integer resourceMemory;
+    private Integer resourceVirtualCore;
+    private Integer categoricalColumnDictionaryLimit;
+    private Boolean skipHotEncoding;
+    private Integer linearRegressionIterations;
+    private Double linearRegressionStepSize;
+    private Boolean computeVIFScores;
+    private Integer numDataPartitions;
+    private Integer driverSideParallelism;
+    
+    /**
+     * @return the driverMemory
+     */
+    public int getDriverMemory() {
+        if (driverMemory != null) {
+            return driverMemory;
+        } else {
+            return 1024;
+        }
+    }
+    
+    /**
+     * @param driverMemory
+     *            the driverMemory to set
+     */
+    public void setDriverMemory(int driverMemory) {
+        this.driverMemory = driverMemory;
+    }
+    
+    /**
+     * @return the driverVirtualCores
+     */
+    public int getDriverVirtualCores() {
+        if (driverVirtualCores != null) {
+            return driverVirtualCores;
+        } else {
+            return 1;
+        }
+    }
+    
+    /**
+     * @param driverVirtualCores
+     *            the driverVirtualCores to set
+     */
+    public void setDriverVirtualCores(int driverVirtualCores) {
+        this.driverVirtualCores = driverVirtualCores;
+    }
+    
+    /**
+     * @return the resourceMemory
+     */
+    public int getResourceMemory() {
+        if (resourceMemory != null) {
+            return resourceMemory;
+        } else {
+            return 1024;
+        }
+    }
+    
+    /**
+     * @param resourceMemory
+     *            the resourceMemory to set
+     */
+    public void setResourceMemory(int resourceMemory) {
+        this.resourceMemory = resourceMemory;
+    }
+    
+    /**
+     * @return the resourceVirtualCore
+     */
+    public int getResourceVirtualCore() {
+        if (resourceVirtualCore != null) {
+            return resourceVirtualCore;
+        } else {
+            return 1;
+        }
+    }
+    
+    /**
+     * @param resourceVirtualCore
+     *            the resourceVirtualCore to set
+     */
+    public void setResourceVirtualCore(int resourceVirtualCore) {
+        this.resourceVirtualCore = resourceVirtualCore;
+    }
+    
+    /**
+     * @return the categoricalColumnDictionaryLimit
+     */
+    public int getCategoricalColumnDictionaryLimit() {
+        if (categoricalColumnDictionaryLimit != null) {
+            return categoricalColumnDictionaryLimit;
+        } else {
+            return 1000;
+        }
+    }
+    
+    /**
+     * @param categoricalColumnDictionaryLimit
+     *            the categoricalColumnDictionaryLimit to set
+     */
+    public void setCategoricalColumnDictionaryLimit(int categoricalColumnDictionaryLimit) {
+        this.categoricalColumnDictionaryLimit = categoricalColumnDictionaryLimit;
+    }
+    
+    /**
+     * @return the skipHotEncoding
+     */
+    public boolean isSkipHotEncoding() {
+        if (skipHotEncoding != null) {
+            return skipHotEncoding;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+     * @param skipHotEncoding
+     *            the skipHotEncoding to set
+     */
+    public void setSkipHotEncoding(boolean skipHotEncoding) {
+        this.skipHotEncoding = skipHotEncoding;
+    }
+    
+    /**
+     * @return the linearRegressionIterations
+     */
+    public int getLinearRegressionIterations() {
+        if (linearRegressionIterations != null) {
+            return linearRegressionIterations;
+        } else {
+            return 1000;
+        }
+    }
+    
+    /**
+     * @param linearRegressionIterations
+     *            the linearRegressionIterations to set
+     */
+    public void setLinearRegressionIterations(int linearRegressionIterations) {
+        this.linearRegressionIterations = linearRegressionIterations;
+    }
+    
+    /**
+     * @return the linearRegressionStepSize
+     */
+    public Double getLinearRegressionStepSize() {
+        if (linearRegressionStepSize != null) {
+            return linearRegressionStepSize;
+        } else {
+            return .001;
+        }
+    }
+    
+    /**
+     * @param linearRegressionStepSize
+     *            the linearRegressionStepSize to set
+     */
+    public void setLinearRegressionStepSize(double linearRegressionStepSize) {
+        this.linearRegressionStepSize = linearRegressionStepSize;
+    }
+    
+    /**
+     * @return the computeVIFScores
+     */
+    public boolean isComputeVIFScores() {
+        if (computeVIFScores != null) {
+            return computeVIFScores;
+        } else {
+            return true;
+        }
+    }
+    
+    /**
+     * @param computeVIFScores
+     *            the computeVIFScores to set
+     */
+    public void setComputeVIFScores(boolean computeVIFScores) {
+        this.computeVIFScores = computeVIFScores;
+    }
+    
     /**
      * @return the dataSchemaNames
      */
     public List<String> getDataSchemaNames() {
         return dataSchemaNames;
     }
-
+    
     /**
      * @param dataSchemaNames
      *            the dataSchemaNames to set
@@ -61,14 +244,14 @@ public class FeatureGenerationRequest {
     public void setDataSchemaNames(List<String> dataSchemaNames) {
         this.dataSchemaNames = dataSchemaNames;
     }
-
+    
     /**
      * @return the indexes
      */
     public List<SchemaColumn> getIndexes() {
         return indexes;
     }
-
+    
     /**
      * @param indexes
      *            the indexes to set
@@ -76,14 +259,14 @@ public class FeatureGenerationRequest {
     public void setIndexes(List<SchemaColumn> indexes) {
         this.indexes = indexes;
     }
-
+    
     /**
      * @return the relationShips
      */
     public List<Relation> getRelationShips() {
         return relationShips;
     }
-
+    
     /**
      * @param relationShips
      *            the relationShips to set
@@ -91,14 +274,18 @@ public class FeatureGenerationRequest {
     public void setRelationShips(List<Relation> relationShips) {
         this.relationShips = relationShips;
     }
-
+    
     /**
      * @return the createEntities
      */
     public List<SchemaColumn> getCreateEntities() {
-        return createEntities;
+        if (this.createEntities != null) {
+            return createEntities;
+        } else {
+            return new LinkedList<>();
+        }
     }
-
+    
     /**
      * @param createEntities
      *            the createEntities to set
@@ -106,14 +293,18 @@ public class FeatureGenerationRequest {
     public void setCreateEntities(List<SchemaColumn> createEntities) {
         this.createEntities = createEntities;
     }
-
+    
     /**
      * @return the timestampColumns
      */
     public List<SchemaColumn> getTimestampColumns() {
-        return timestampColumns;
+        if (timestampColumns != null) {
+            return timestampColumns;
+        } else {
+            return new LinkedList<>();
+        }
     }
-
+    
     /**
      * @param timestampColumns
      *            the timestampColumns to set
@@ -121,14 +312,18 @@ public class FeatureGenerationRequest {
     public void setTimestampColumns(List<SchemaColumn> timestampColumns) {
         this.timestampColumns = timestampColumns;
     }
-
+    
     /**
      * @return the timeIndexColumns
      */
     public List<SchemaColumn> getTimeIndexColumns() {
-        return timeIndexColumns;
+        if (timeIndexColumns != null) {
+            return timeIndexColumns;
+        } else {
+            return new LinkedList<>();
+        }
     }
-
+    
     /**
      * @param timeIndexColumns
      *            the timeIndexColumns to set
@@ -136,14 +331,18 @@ public class FeatureGenerationRequest {
     public void setTimeIndexColumns(List<SchemaColumn> timeIndexColumns) {
         this.timeIndexColumns = timeIndexColumns;
     }
-
+    
     /**
      * @return the categoricalColumns
      */
     public List<SchemaColumn> getCategoricalColumns() {
-        return categoricalColumns;
+        if (categoricalColumns != null) {
+            return categoricalColumns;
+        } else {
+            return new LinkedList<>();
+        }
     }
-
+    
     /**
      * @param categoricalColumns
      *            the categoricalColumns to set
@@ -151,14 +350,18 @@ public class FeatureGenerationRequest {
     public void setCategoricalColumns(List<SchemaColumn> categoricalColumns) {
         this.categoricalColumns = categoricalColumns;
     }
-
+    
     /**
      * @return the ignoreColumns
      */
     public List<SchemaColumn> getIgnoreColumns() {
-        return ignoreColumns;
+        if (ignoreColumns != null) {
+            return ignoreColumns;
+        } else {
+            return new LinkedList<>();
+        }
     }
-
+    
     /**
      * @param ignoreColumns
      *            the ignoreColumns to set
@@ -166,14 +369,18 @@ public class FeatureGenerationRequest {
     public void setIgnoreColumns(List<SchemaColumn> ignoreColumns) {
         this.ignoreColumns = ignoreColumns;
     }
-
+    
     /**
      * @return the categoricalColumnDictionary
      */
     public List<ColumnDictionary> getCategoricalColumnDictionary() {
-        return categoricalColumnDictionary;
+        if (categoricalColumnDictionary != null) {
+            return categoricalColumnDictionary;
+        } else {
+            return categoricalColumnDictionary;
+        }
     }
-
+    
     /**
      * @param categoricalColumnDictionary
      *            the categoricalColumnDictionary to set
@@ -181,14 +388,14 @@ public class FeatureGenerationRequest {
     public void setCategoricalColumnDictionary(List<ColumnDictionary> categoricalColumnDictionary) {
         this.categoricalColumnDictionary = categoricalColumnDictionary;
     }
-
+    
     /**
      * @return the multiFieldTransformationFunctionInputs
      */
     public List<MultiSchemaColumn> getMultiFieldTransformationFunctionInputs() {
         return multiFieldTransformationFunctionInputs;
     }
-
+    
     /**
      * @param multiFieldTransformationFunctionInputs
      *            the multiFieldTransformationFunctionInputs to set
@@ -197,14 +404,14 @@ public class FeatureGenerationRequest {
             List<MultiSchemaColumn> multiFieldTransformationFunctionInputs) {
         this.multiFieldTransformationFunctionInputs = multiFieldTransformationFunctionInputs;
     }
-
+    
     /**
      * @return the multiFieldAggregationFunctionInputs
      */
     public List<MultiFieldAggregationInput> getMultiFieldAggregationFunctionInputs() {
         return multiFieldAggregationFunctionInputs;
     }
-
+    
     /**
      * @param multiFieldAggregationFunctionInputs
      *            the multiFieldAggregationFunctionInputs to set
@@ -213,14 +420,14 @@ public class FeatureGenerationRequest {
             List<MultiFieldAggregationInput> multiFieldAggregationFunctionInputs) {
         this.multiFieldAggregationFunctionInputs = multiFieldAggregationFunctionInputs;
     }
-
+    
     /**
      * @return the dfsDepth
      */
     public Integer getDfsDepth() {
         return dfsDepth;
     }
-
+    
     /**
      * @param dfsDepth
      *            the dfsDepth to set
@@ -228,14 +435,18 @@ public class FeatureGenerationRequest {
     public void setDfsDepth(Integer dfsDepth) {
         this.dfsDepth = dfsDepth;
     }
-
+    
     /**
      * @return the trainingWindows
      */
     public List<Integer> getTrainingWindows() {
-        return trainingWindows;
+        if (trainingWindows != null) {
+            return trainingWindows;
+        } else {
+            return trainingWindows;
+        }
     }
-
+    
     /**
      * @param trainingWindows
      *            the trainingWindows to set
@@ -243,14 +454,14 @@ public class FeatureGenerationRequest {
     public void setTrainingWindows(List<Integer> trainingWindows) {
         this.trainingWindows = trainingWindows;
     }
-
+    
     /**
      * @return the windowEndTime
      */
     public String getWindowEndTime() {
         return windowEndTime;
     }
-
+    
     /**
      * @param windowEndTime
      *            the windowEndTime to set
@@ -258,14 +469,14 @@ public class FeatureGenerationRequest {
     public void setWindowEndTime(String windowEndTime) {
         this.windowEndTime = windowEndTime;
     }
-
+    
     /**
      * @return the targetEntity
      */
     public String getTargetEntity() {
         return targetEntity;
     }
-
+    
     /**
      * @param targetEntity
      *            the targetEntity to set
@@ -273,14 +484,14 @@ public class FeatureGenerationRequest {
     public void setTargetEntity(String targetEntity) {
         this.targetEntity = targetEntity;
     }
-
+    
     /**
      * @return the targetEntityFieldId
      */
     public String getTargetEntityFieldId() {
         return targetEntityFieldId;
     }
-
+    
     /**
      * @param targetEntityFieldId
      *            the targetEntityFieldId to set
@@ -288,14 +499,14 @@ public class FeatureGenerationRequest {
     public void setTargetEntityFieldId(String targetEntityFieldId) {
         this.targetEntityFieldId = targetEntityFieldId;
     }
-
+    
     /**
      * @return the pipelineRunName
      */
     public String getPipelineRunName() {
         return pipelineRunName;
     }
-
+    
     /**
      * @param pipelineRunName
      *            the pipelineRunName to set
@@ -303,43 +514,59 @@ public class FeatureGenerationRequest {
     public void setPipelineRunName(String pipelineRunName) {
         this.pipelineRunName = pipelineRunName;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#hashCode()
+    
+    /**
+     * @return the numDataPartitions
      */
+    public Integer getNumDataPartitions() {
+        return numDataPartitions;
+    }
+    
+    /**
+     * @param numDataPartitions
+     *            the numDataPartitions to set
+     */
+    public void setNumDataPartitions(Integer numDataPartitions) {
+        this.numDataPartitions = numDataPartitions;
+    }
+    
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((categoricalColumnDictionary == null) ? 0 : categoricalColumnDictionary.hashCode());
+        result = prime * result + categoricalColumnDictionaryLimit;
         result = prime * result + ((categoricalColumns == null) ? 0 : categoricalColumns.hashCode());
+        result = prime * result + (computeVIFScores ? 1231 : 1237);
         result = prime * result + ((createEntities == null) ? 0 : createEntities.hashCode());
         result = prime * result + ((dataSchemaNames == null) ? 0 : dataSchemaNames.hashCode());
         result = prime * result + ((dfsDepth == null) ? 0 : dfsDepth.hashCode());
+        result = prime * result + getDriverMemory();
+        result = prime * result + getDriverVirtualCores();
         result = prime * result + ((ignoreColumns == null) ? 0 : ignoreColumns.hashCode());
         result = prime * result + ((indexes == null) ? 0 : indexes.hashCode());
+        result = prime * result + getLinearRegressionIterations();
+        result = prime * result + getLinearRegressionStepSize().hashCode();
         result = prime * result
                 + ((multiFieldAggregationFunctionInputs == null) ? 0 : multiFieldAggregationFunctionInputs.hashCode());
         result = prime * result + ((multiFieldTransformationFunctionInputs == null) ? 0
                 : multiFieldTransformationFunctionInputs.hashCode());
         result = prime * result + ((pipelineRunName == null) ? 0 : pipelineRunName.hashCode());
         result = prime * result + ((relationShips == null) ? 0 : relationShips.hashCode());
+        result = prime * result + getResourceMemory();
+        result = prime * result + getResourceVirtualCore();
+        result = prime * result + (isSkipHotEncoding() ? 1231 : 1237);
         result = prime * result + ((targetEntity == null) ? 0 : targetEntity.hashCode());
         result = prime * result + ((targetEntityFieldId == null) ? 0 : targetEntityFieldId.hashCode());
         result = prime * result + ((timeIndexColumns == null) ? 0 : timeIndexColumns.hashCode());
         result = prime * result + ((timestampColumns == null) ? 0 : timestampColumns.hashCode());
         result = prime * result + ((trainingWindows == null) ? 0 : trainingWindows.hashCode());
         result = prime * result + ((windowEndTime == null) ? 0 : windowEndTime.hashCode());
+        result = prime * result + ((numDataPartitions == null) ? 0 : numDataPartitions.hashCode());
+        result = prime * result + ((driverSideParallelism == null) ? 0 : driverSideParallelism.hashCode());
         return result;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -359,11 +586,17 @@ public class FeatureGenerationRequest {
         } else if (!categoricalColumnDictionary.equals(other.categoricalColumnDictionary)) {
             return false;
         }
+        if (getCategoricalColumnDictionaryLimit() != other.getCategoricalColumnDictionaryLimit()) {
+            return false;
+        }
         if (categoricalColumns == null) {
             if (other.categoricalColumns != null) {
                 return false;
             }
         } else if (!categoricalColumns.equals(other.categoricalColumns)) {
+            return false;
+        }
+        if (isComputeVIFScores() != other.isComputeVIFScores()) {
             return false;
         }
         if (createEntities == null) {
@@ -387,6 +620,26 @@ public class FeatureGenerationRequest {
         } else if (!dfsDepth.equals(other.dfsDepth)) {
             return false;
         }
+        if (driverSideParallelism == null) {
+            if (other.driverSideParallelism != null) {
+                return false;
+            }
+        } else if (!driverSideParallelism.equals(other.driverSideParallelism)) {
+            return false;
+        }
+        if (numDataPartitions == null) {
+            if (other.numDataPartitions != null) {
+                return false;
+            }
+        } else if (!numDataPartitions.equals(other.numDataPartitions)) {
+            return false;
+        }
+        if (getDriverMemory() != other.getDriverMemory()) {
+            return false;
+        }
+        if (getDriverVirtualCores() != other.getDriverVirtualCores()) {
+            return false;
+        }
         if (ignoreColumns == null) {
             if (other.ignoreColumns != null) {
                 return false;
@@ -399,6 +652,12 @@ public class FeatureGenerationRequest {
                 return false;
             }
         } else if (!indexes.equals(other.indexes)) {
+            return false;
+        }
+        if (getLinearRegressionIterations() != other.getLinearRegressionIterations()) {
+            return false;
+        }
+        if (getLinearRegressionStepSize() != other.getLinearRegressionStepSize()) {
             return false;
         }
         if (multiFieldAggregationFunctionInputs == null) {
@@ -427,6 +686,15 @@ public class FeatureGenerationRequest {
                 return false;
             }
         } else if (!relationShips.equals(other.relationShips)) {
+            return false;
+        }
+        if (getResourceMemory() != other.getResourceMemory()) {
+            return false;
+        }
+        if (getResourceVirtualCore() != other.getResourceVirtualCore()) {
+            return false;
+        }
+        if (isSkipHotEncoding() != other.isSkipHotEncoding()) {
             return false;
         }
         if (targetEntity == null) {
@@ -473,12 +741,7 @@ public class FeatureGenerationRequest {
         }
         return true;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
+    
     @Override
     public String toString() {
         return "FeatureGenerationRequest [dataSchemaNames=" + dataSchemaNames + ", indexes=" + indexes
@@ -489,7 +752,32 @@ public class FeatureGenerationRequest {
                 + multiFieldTransformationFunctionInputs + ", multiFieldAggregationFunctionInputs="
                 + multiFieldAggregationFunctionInputs + ", dfsDepth=" + dfsDepth + ", trainingWindows="
                 + trainingWindows + ", windowEndTime=" + windowEndTime + ", targetEntity=" + targetEntity
-                + ", targetEntityFieldId=" + targetEntityFieldId + ", pipelineRunName=" + pipelineRunName + "]";
+                + ", targetEntityFieldId=" + targetEntityFieldId + ", pipelineRunName=" + pipelineRunName
+                + ", driverMemory=" + driverMemory + ", driverVirtualCores=" + driverVirtualCores + ", resourceMemory="
+                + resourceMemory + ", resourceVirtualCore=" + resourceVirtualCore
+                + ", categoricalColumnDictionaryLimit=" + categoricalColumnDictionaryLimit + ", skipHotEncoding="
+                + skipHotEncoding + ", linearRegressionIterations=" + linearRegressionIterations
+                + ", linearRegressionStepSize=" + linearRegressionStepSize + ", computeVIFScores=" + computeVIFScores
+                + ", numDataPartitions=" + numDataPartitions + ", driverSideParallelism=" + driverSideParallelism + "]";
     }
-
+    
+    /**
+     * @return the driverSideParallelism
+     */
+    public Integer getDriverSideParallelism() {
+        if (driverSideParallelism != null) {
+            return driverSideParallelism;
+        } else {
+            return 20;
+        }
+    }
+    
+    /**
+     * @param driverSideParallelism
+     *            the driverSideParallelism to set
+     */
+    public void setDriverSideParallelism(Integer driverSideParallelism) {
+        this.driverSideParallelism = driverSideParallelism;
+    }
+    
 }

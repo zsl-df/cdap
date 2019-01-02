@@ -32,13 +32,13 @@ import co.cask.cdap.featureengineer.pipeline.pojo.Schema;
 import co.cask.cdap.featureengineer.pipeline.pojo.SchemaField;
 import co.cask.cdap.featureengineer.pipeline.pojo.SchemaFieldName;
 import co.cask.cdap.featureengineer.pipeline.pojo.StagePipelineNode;
+import co.cask.cdap.featureengineer.proto.FeatureGenerationRequest;
 import co.cask.cdap.featureengineer.request.pojo.Relation;
 import co.cask.cdap.featureengineer.request.pojo.SchemaColumn;
 import co.cask.cdap.proto.artifact.PluginSummary;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -106,14 +106,14 @@ public class CDAPPipelineDynamicSchemaGenerator {
     private Map<String, String> createEntitiesMap;
     private List<SchemaColumn> timestampColumns;
     private String targetEntityStageName;
-    
+    private FeatureGenerationRequest featureGenerationRequest;
     private int globalUniqueID;
     private static final String STAGE_NAME = "stage";
     private final Map<String, String> generatedStageMap;
     private final Map<String, String> generatedReverseStageMap;
     
-    private static final String NUM_PARTITIONS = "5";
-    private static final boolean enablePartitions = false;
+    private String numDataPartitions;
+    private boolean enablePartitions = false;
     
     /**
      * @param transformPluginFunctionMap
@@ -134,6 +134,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
      * @param relationShips
      * @param createEntities
      * @param timestampColumns
+     * @param featureGenerationRequest
      * 
      */
     public CDAPPipelineDynamicSchemaGenerator(Map<String, PluginSummary> aggregatePluginFunctionMap,
@@ -145,7 +146,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
             Map<String, Map<String, List<String>>> appliedAggFunctionsWithArguments,
             Map<String, Map<String, List<String>>> appliedTransFunctionsWithArguments, List<SchemaColumn> indexes,
             String pipelineName, List<Relation> relationShips, List<SchemaColumn> createEntities,
-            List<SchemaColumn> timestampColumns) {
+            List<SchemaColumn> timestampColumns, FeatureGenerationRequest featureGenerationRequest) {
         this.stageMap = new LinkedHashMap<String, BasePipelineNode>();
         this.connections = new LinkedHashMap<String, Set<String>>();
         this.systemArtifact = new Artifact();
@@ -168,6 +169,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
                 createEntitiesMap.put(col.getTable(), col.getColumn());
             }
         }
+        this.featureGenerationRequest = featureGenerationRequest;
         this.timestampColumns = timestampColumns;
         this.pipelineName = pipelineName;
         globalUniqueID = 0;
@@ -214,6 +216,10 @@ public class CDAPPipelineDynamicSchemaGenerator {
             this.windowEndTime = formatter.parseDateTime(windowEndTime);
         }
         this.trainingWindows = trainingWindows;
+        if (featureGenerationRequest.getNumDataPartitions() != null) {
+            this.enablePartitions = true;
+            this.numDataPartitions = "" + featureGenerationRequest.getNumDataPartitions();
+        }
     }
     
     private String getNextUniqueIdForStage(final String stage) {
@@ -326,12 +332,12 @@ public class CDAPPipelineDynamicSchemaGenerator {
         pipeLineConfiguration.setSchedule("9 15 2 7 *");
         pipeLineConfiguration.setPostActions(new LinkedList<BasePipelineNode>());
         Map<String, Integer> driverResources = new HashMap<String, Integer>();
-        driverResources.put("memoryMB", 3072);
-        driverResources.put("virtualCores", 1);
+        driverResources.put("memoryMB", featureGenerationRequest.getDriverMemory());
+        driverResources.put("virtualCores", featureGenerationRequest.getDriverVirtualCores());
         pipeLineConfiguration.setDriverResources(driverResources);
         Map<String, Integer> resources = new HashMap<String, Integer>();
-        resources.put("memoryMB", 10240);
-        resources.put("virtualCores", 3);
+        resources.put("memoryMB", featureGenerationRequest.getResourceMemory());
+        resources.put("virtualCores", featureGenerationRequest.getResourceVirtualCore());
         pipeLineConfiguration.setResources(resources);
         
         createSourceStages(inputDataSourceInfoMap, wranglerPluginConfigMap, pipeLineConfiguration);
@@ -357,18 +363,15 @@ public class CDAPPipelineDynamicSchemaGenerator {
             }
             String sourceTempTableName = takeOuterjoinOfAllTempTables(lastStagesForEachTrainingWindow,
                     targetEntityIdField);
-            String statsComputeStageName = createStatsComputeStage(sourceTempTableName);
             // String joinedStatsTableName =
             // takeOuterjoinOfAllTempTables(statsStagesForEachTrainingWindow, "Statistic");
             // getElasticSearchSinkNode("StatsElasticsearch", "statsDataSink",
             // "stats_index_" + System.currentTimeMillis(),
             // "stats", "Statistic", joinedStatsTableName);
-            getCDAPTableSinkNode("FeatureStats", statsComputeStageName);
             // getFileSinkNode("StatsFileSink", "statsDataSink", "stats_index_",
             // joinedStatsTableName);
             // lastStageMapForTable.put(targetEntity, sourceTempTableName);
-            addEncodingAndCorrelationStages(sourceTempTableName);
-            completePipelineAndSerializeIt(pipeLineConfiguration);
+            completePipelineAndSerializeIt(pipeLineConfiguration, sourceTempTableName);
             
         } else {
             generatePipelineStagesAndCreateConnections(pipeLineConfiguration, featureDag);
@@ -376,12 +379,17 @@ public class CDAPPipelineDynamicSchemaGenerator {
         return pipeLineConfiguration;
     }
     
-    private void addEncodingAndCorrelationStages(String sourceTempTableName) {
-        String finalMergedTableStageName = takeOuterJoinOfTwoTables(this.targetEntityStageName, sourceTempTableName,
+    private void addEncodingAndCorrelationStages(String lastStageName) {
+        String finalMergedTableStageName = takeOuterJoinOfTwoTables(this.targetEntityStageName, lastStageName,
                 this.targetEntityIdField, this.targetEntityIdField, -1);
-        String hotEncodedStage = addHotEncodingStage(finalMergedTableStageName);
-        addVIFCalculationStageWithCDAPSink(hotEncodedStage);
-        addCorrelationMatrixStageWithCDAPSink(hotEncodedStage);
+        lastStageName = finalMergedTableStageName;
+        if (!featureGenerationRequest.isSkipHotEncoding()) {
+            lastStageName = addHotEncodingStage(finalMergedTableStageName);
+        }
+        if (featureGenerationRequest.isComputeVIFScores()) {
+            addVIFCalculationStageWithCDAPSink(lastStageName);
+        }
+        addCorrelationMatrixStageWithCDAPSink(lastStageName);
     }
     
     private String addCorrelationMatrixStageWithCDAPSink(String currentStageName) {
@@ -396,6 +404,11 @@ public class CDAPPipelineDynamicSchemaGenerator {
         Artifact esArtifact = featureEngineeringArtifact;
         pluginNode.setArtifact(esArtifact);
         Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put("numPartitions", numDataPartitions);
+        properties.put("noOfParallelThreads", featureGenerationRequest.getDriverSideParallelism() + "");
+        properties.put("categoricalDictionaryThreshold",
+                featureGenerationRequest.getCategoricalColumnDictionaryLimit() + "");
+        properties.put("discardedColumns", getTimestampColumnsSerialized());
         pluginNode.setProperties(properties);
         putInConnection(currentStageName, stageName);
         stageMap.put(stageName, stageNode);
@@ -442,10 +455,12 @@ public class CDAPPipelineDynamicSchemaGenerator {
         Map<String, Object> properties = new HashMap<String, Object>();
         pluginNode.setProperties(properties);
         properties.put("selectionThreshold", "0.999999999");
-        properties.put("numIterations", "1000");
+        properties.put("numIterations", featureGenerationRequest.getLinearRegressionIterations() + "");
         properties.put("linearRegressionIterations", "2000000000");
-        properties.put("stepSize", "0.001");
-        properties.put("skipEncodedFeaturesInVIF", "true");
+        properties.put("stepSize", featureGenerationRequest.getLinearRegressionStepSize() + "");
+        properties.put("numPartitions", numDataPartitions);
+        properties.put("skipEncodedFeaturesInVIF", "false");
+        properties.put("noOfParallelThreads", featureGenerationRequest.getDriverSideParallelism() + "");
         putInConnection(currentStageName, stageName);
         stageMap.put(stageName, stageNode);
         isUsedStage.add(currentStageName);
@@ -490,7 +505,9 @@ public class CDAPPipelineDynamicSchemaGenerator {
         pluginNode.setArtifact(esArtifact);
         Map<String, Object> properties = new HashMap<String, Object>();
         pluginNode.setProperties(properties);
-        properties.put("categoricalDictionaryThreshold", "1000");
+        properties.put("categoricalDictionaryThreshold",
+                featureGenerationRequest.getCategoricalColumnDictionaryLimit() + "");
+        properties.put("numPartitions", numDataPartitions);
         properties.put("discardedColumns", getTimestampColumnsSerialized());
         putInConnection(currentStageName, stageName);
         stageMap.put(stageName, stageNode);
@@ -665,16 +682,19 @@ public class CDAPPipelineDynamicSchemaGenerator {
     private void generatePipelineStagesAndCreateConnections(PipelineConfiguration pipeLineConfiguration,
             String featureDag) {
         populateStagesFromOperations(featureDag);
-        completePipelineAndSerializeIt(pipeLineConfiguration);
+        completePipelineAndSerializeIt(pipeLineConfiguration, lastStageMapForTable.get(targetEntity));
     }
     
-    private void completePipelineAndSerializeIt(PipelineConfiguration pipeLineConfiguration) {
+    private void completePipelineAndSerializeIt(PipelineConfiguration pipeLineConfiguration, String lastStageName) {
         // getElasticSearchSinkNode("Elasticsearch", "dataSink",
         // targetEntity.toLowerCase() + "_index_" + System.currentTimeMillis(),
         // targetEntity.toLowerCase(),
         // targetEntityIdField, lastStageMapForTable.get(targetEntity));
         // getFileSinkNode("FileSink", "dataSink", targetEntity.toLowerCase() +
         // "_index_", lastStageMapForTable.get(targetEntity));
+        String statsComputeStageName = createStatsComputeStage(lastStageName);
+        getCDAPTableSinkNode("FeatureStats", statsComputeStageName);
+        addEncodingAndCorrelationStages(lastStageName);
         markReachableNodesFromTargetEntity(targetEntity);
         truncateIslandNodesFromDAG();
         generateTrashSinkStage();
@@ -1329,7 +1349,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
         pluginProperties.put("selectedFields", ",");
         pluginProperties.put("keysToBeAppended", ",");
         if (enablePartitions) {
-            pluginProperties.put("numPartitions", NUM_PARTITIONS);
+            pluginProperties.put("numPartitions", numDataPartitions);
         }
         stageMap.put(stageName, pipelineNode);
         putInConnection(sourceTableLastStage, stageName);
@@ -1504,7 +1524,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
         
         pluginProperties.put("aggregates", aggregates.toString());
         if (enablePartitions) {
-            pluginProperties.put("numPartitions", NUM_PARTITIONS);
+            pluginProperties.put("numPartitions", numDataPartitions);
         }
         pluginProperties.put("groupByFields", sourceJoinKey);
         pluginProperties.put("isDynamicSchema", true);
@@ -1536,7 +1556,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
         }
         pluginProperties.put("aggregates", aggregates.toString());
         if (enablePartitions) {
-            pluginProperties.put("numPartitions", NUM_PARTITIONS);
+            pluginProperties.put("numPartitions", numDataPartitions);
         }
         pluginProperties.put("groupByFields", sourceJoinKey);
         pluginProperties.put("isDynamicSchema", true);
@@ -1576,7 +1596,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
         pluginProperties.put("groupByFields", sourceJoinKey);
         pluginProperties.put("isDynamicSchema", true);
         if (enablePartitions) {
-            pluginProperties.put("numPartitions", NUM_PARTITIONS);
+            pluginProperties.put("numPartitions", numDataPartitions);
         }
     }
     
@@ -1628,7 +1648,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
         pluginProperties.put("selectedFields", selectedFields.toString());
         pluginProperties.put("keysToBeAppended", ",");
         if (enablePartitions) {
-            pluginProperties.put("numPartitions", NUM_PARTITIONS);
+            pluginProperties.put("numPartitions", numDataPartitions);
         }
         stageMap.put(stageName, pipelineNode);
         putInConnection(sourceTableLastStage, stageName);
@@ -1723,7 +1743,7 @@ public class CDAPPipelineDynamicSchemaGenerator {
             pluginProperties.put("primitives", primitives.toString());
             pluginProperties.put("isDynamicSchema", true);
             if (enablePartitions) {
-                pluginProperties.put("numPartitions", NUM_PARTITIONS);
+                pluginProperties.put("numPartitions", numDataPartitions);
             }
         }
         putInConnection(lastStageMapForTable.get(sourceTables), stageName);
