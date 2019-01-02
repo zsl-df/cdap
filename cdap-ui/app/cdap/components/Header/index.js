@@ -158,6 +158,8 @@ export default class Header extends Component {
     let dataprepUrl = `${baseCDAPURL}/dataprep`;
     let mmdsurl = `${baseCDAPURL}/experiments`;
     let administrationURL = '/administration/configuration';
+    let featureUIUrl = `${baseCDAPURL}/featureUI`;
+
 
     let pipelinesListUrl =  window.getHydratorUrl({
       stateName: 'hydrator.list',
@@ -205,6 +207,13 @@ export default class Header extends Component {
               to={this.props.nativeLink ? `/cdap${dataprepUrl}` : dataprepUrl}
             >
               {T.translate(`features.Navbar.Dataprep`)}
+            </NavLinkWrapper>
+          </li>
+          <li>
+            <NavLinkWrapper
+              isNativeLink={false}
+              to={featureUIUrl}
+            >Feature UI
             </NavLinkWrapper>
           </li>
           <li className={classnames({
