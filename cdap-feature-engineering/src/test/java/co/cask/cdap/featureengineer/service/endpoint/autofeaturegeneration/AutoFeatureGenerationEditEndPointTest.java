@@ -161,6 +161,8 @@ public class AutoFeatureGenerationEditEndPointTest {
         trainingWindows.add(168);
         request.setTrainingWindows(trainingWindows);
         request.setWindowEndTime("2018-02-28 23:50:00");
+        request.setSkipHotEncoding(true);
+        request.setComputeVIFScores(true);
         return request;
     }
 }

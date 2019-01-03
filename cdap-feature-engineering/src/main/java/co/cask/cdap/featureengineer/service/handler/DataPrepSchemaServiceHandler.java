@@ -34,6 +34,9 @@ import co.cask.cdap.featureengineer.response.pojo.DataSchema;
 import co.cask.cdap.featureengineer.response.pojo.DataSchemaList;
 import co.cask.cdap.featureengineer.utils.JSONInputParser;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,17 +50,18 @@ import javax.ws.rs.PathParam;
  *
  */
 public class DataPrepSchemaServiceHandler extends BaseServiceHandler {
-
+    
     private static final Logger LOG = LoggerFactory.getLogger(DataPrepSchemaServiceHandler.class);
-
+    private static final Gson GSON_OBJ = new GsonBuilder().serializeSpecialFloatingPointValues().create();
+    
     @Property
     private final String dataSchemaTableName;
     @Property
     private final String pluginConfigTableName;
-
+    
     private KeyValueTable dataSchemaTable;
     private KeyValueTable pluginConfigTable;
-
+    
     /**
      * @param config
      * 
@@ -66,14 +70,14 @@ public class DataPrepSchemaServiceHandler extends BaseServiceHandler {
         this.dataSchemaTableName = config.getDataSchemaTable();
         this.pluginConfigTableName = config.getPluginConfigTable();
     }
-
+    
     @Override
     public void initialize(HttpServiceContext context) throws Exception {
         super.initialize(context);
         dataSchemaTable = context.getDataset(dataSchemaTableName);
         pluginConfigTable = context.getDataset(pluginConfigTableName);
     }
-
+    
     @POST
     @Path("featureengineering/{dataSchemaName}/wrangler/{configType}/config")
     public void persistWranglerPluginConfig(HttpServiceRequest request, HttpServiceResponder responder,
@@ -95,7 +99,7 @@ public class DataPrepSchemaServiceHandler extends BaseServiceHandler {
             error(responder, e.getMessage());
         }
     }
-
+    
     @GET
     @Path("featureengineering/dataschema/getall")
     public void getAllDataSchemas(HttpServiceRequest request, HttpServiceResponder responder) {
@@ -109,9 +113,9 @@ public class DataPrepSchemaServiceHandler extends BaseServiceHandler {
             DataSchema dataSchema = createDataSchemaFromNullableSchema(nullableSchema, schemaName);
             schemaList.addDataSchema(dataSchema);
         }
-        responder.sendJson(schemaList);
+        responder.sendString(GSON_OBJ.toJson(schemaList));
     }
-
+    
     private DataSchema createDataSchemaFromNullableSchema(NullableSchema nullableSchema, String schemaName) {
         DataSchema dataSchema = new DataSchema();
         dataSchema.setSchemaName(schemaName);
@@ -124,7 +128,7 @@ public class DataPrepSchemaServiceHandler extends BaseServiceHandler {
                 throw new DataSchemaReadException(
                         "Unable to read Column Type for column " + field.getName() + " of schema " + schemaName + " ");
             }
-
+            
             dataSchema.addSchemaColumn(column);
         }
         return dataSchema;

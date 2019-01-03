@@ -82,7 +82,7 @@ import javax.ws.rs.QueryParam;
 public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
     
     private static final Logger LOG = LoggerFactory.getLogger(ManualFeatureSelectionServiceHandler.class);
-    private static final Gson GSON_OBJ = new GsonBuilder().create();
+    private static final Gson GSON_OBJ = new GsonBuilder().serializeSpecialFloatingPointValues().create();
     
     private StatsFilter defaultFilter;
     @Property
@@ -205,7 +205,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
             }
             featureStatsObj.addFeatureStat(featureStat);
         }
-        responder.sendJson(featureStatsObj);
+        responder.sendString(GSON_OBJ.toJson(featureStatsObj));
     }
     
     @POST
@@ -236,7 +236,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
             }
             featureStatsObj.addFeatureStat(featureStat);
         }
-        responder.sendJson(featureStatsObj);
+        responder.sendString(GSON_OBJ.toJson(featureStatsObj));
     }
     
     private Set<String> getDiscardedFeaturesSet(List<String> featuresToBeDiscardedList) {
@@ -281,7 +281,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
         featureStatsList = applyLimit(featureStatsList, filterFeaturesByStatsRequest);
         SelectedFeatureStats featureStatsObj = new SelectedFeatureStats();
         featureStatsObj.setFeatureStatsList(featureStatsList);
-        responder.sendJson(featureStatsObj);
+        responder.sendString(GSON_OBJ.toJson(featureStatsObj));
     }
     
     @GET
@@ -319,7 +319,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
             featureCorrelationRow.setFeatureCorrelationScores(coefficientScores);
             featureCorrelationMatrix.addFeatureCorrelationRow(featureCorrelationRow);
         }
-        responder.sendJson(featureCorrelationMatrix);
+        responder.sendString(GSON_OBJ.toJson(featureCorrelationMatrix));
     }
     
     @GET
@@ -347,7 +347,7 @@ public class ManualFeatureSelectionServiceHandler extends BaseServiceHandler {
             featureVIFIterationRow.setAllVIFScores(vifScores);
             featureVIFIterationScores.addFeatureVIFIterationRow(featureVIFIterationRow);
         }
-        responder.sendJson(featureVIFIterationScores);
+        responder.sendString(GSON_OBJ.toJson(featureVIFIterationScores));
     }
     
     private boolean isValidCorrelationCoefficient(String correlationCofficient) {

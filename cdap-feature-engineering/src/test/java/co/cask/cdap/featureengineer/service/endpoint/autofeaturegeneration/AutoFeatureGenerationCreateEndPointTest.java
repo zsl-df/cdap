@@ -42,19 +42,19 @@ import java.util.List;
  *
  */
 public class AutoFeatureGenerationCreateEndPointTest {
-
+    
     private static final String USER_AGENT = "Mozilla/5.0";
     static final Gson GSON_OBJ = new GsonBuilder().setPrettyPrinting().create();
     static final String ERROR_TABLE = "errors";
     static final String ACCOUNT_TABLE = "accounts";
-
+    
     public static void main(String args[]) throws ClientProtocolException, IOException {
         String url = "http://localhost:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/"
                 + "AutoFeatureGenerationService/methods/featureengineering/InputX1ErrorTestPipeline/features/create";
         System.out.println("url = " + url);
         HttpClient client = new DefaultHttpClient();
         HttpPost post = new HttpPost(url);
-
+        
         // // add header
         post.setHeader("User-Agent", USER_AGENT);
         post.setHeader("Content-Type", "application/json");
@@ -72,7 +72,7 @@ public class AutoFeatureGenerationCreateEndPointTest {
         }
         System.out.println(result.toString());
     }
-
+    
     private static FeatureGenerationRequest createNewRequest() {
         FeatureGenerationRequest request = new FeatureGenerationRequest();
         request.setPipelineRunName("InputX1ErrorTestPipeline");
@@ -147,7 +147,7 @@ public class AutoFeatureGenerationCreateEndPointTest {
         rel.setColumn2(new SchemaColumn(ERROR_TABLE, "account_id"));
         relationShips.add(rel);
         request.setRelationShips(relationShips);
-
+        
         request.setTargetEntity(ACCOUNT_TABLE);
         request.setTargetEntityFieldId("account_id");
         // errors.event_date_time,errors.ets_timestamp,errors.date_hour
@@ -162,6 +162,8 @@ public class AutoFeatureGenerationCreateEndPointTest {
         trainingWindows.add(168);
         request.setTrainingWindows(trainingWindows);
         request.setWindowEndTime("2018-02-28 23:50:00");
+        request.setSkipHotEncoding(true);
+        request.setComputeVIFScores(false);
         return request;
     }
 }

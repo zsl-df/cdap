@@ -28,6 +28,9 @@ import co.cask.cdap.featureengineer.FeatureEngineeringApp.FeatureEngineeringConf
 import co.cask.cdap.featureengineer.response.pojo.PipelineInfo;
 import co.cask.cdap.featureengineer.response.pojo.PipelineInfoList;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +45,7 @@ import javax.ws.rs.QueryParam;
 public class FeatureEngineeringPipelineServiceHandler extends BaseServiceHandler {
     
     private static final Logger LOG = LoggerFactory.getLogger(FeatureEngineeringPipelineServiceHandler.class);
+    private static final Gson GSON_OBJ = new GsonBuilder().serializeSpecialFloatingPointValues().create();
     
     @Property
     private final String pipelineNameTableName;
@@ -82,7 +86,7 @@ public class FeatureEngineeringPipelineServiceHandler extends BaseServiceHandler
                 pipelineInfoList.addPipelineInfo(pipelineInfo);
             }
         }
-        responder.sendJson(pipelineInfoList);
+        responder.sendString(GSON_OBJ.toJson(pipelineInfoList));
     }
     
 }

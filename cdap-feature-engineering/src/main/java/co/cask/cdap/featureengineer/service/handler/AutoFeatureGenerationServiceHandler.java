@@ -36,6 +36,9 @@ import co.cask.cdap.featureengineer.response.pojo.PipelineGenerationInfo;
 import co.cask.cdap.featureengineer.response.pojo.PipelineInfo;
 import co.cask.cdap.featureengineer.utils.JSONInputParser;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +62,7 @@ import javax.ws.rs.QueryParam;
 public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
     
     private static final Logger LOG = LoggerFactory.getLogger(AutoFeatureGenerationServiceHandler.class);
+    private static final Gson GSON_OBJ = new GsonBuilder().serializeSpecialFloatingPointValues().create();
     
     @Property
     private final String dataSchemaTableName;
@@ -181,7 +185,7 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
             pipelineGenerationInfo = new PipelineGenerationInfo(featureGenerationRequest, pipelineInfo.getStatus(),
                     pipelineInfo.getLastStartEpochTime(), pipelineInfo.getLastRunId());
         }
-        responder.sendJson(pipelineGenerationInfo);
+        responder.sendString(GSON_OBJ.toJson(pipelineGenerationInfo));
     }
     
     @GET
@@ -215,6 +219,6 @@ public class AutoFeatureGenerationServiceHandler extends BaseServiceHandler {
                 configParamList.addConfigParam(param);
             }
         }
-        responder.sendJson(configParamList);
+        responder.sendString(GSON_OBJ.toJson(configParamList));
     }
 }

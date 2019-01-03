@@ -66,7 +66,7 @@ public class CDAPPipelineGenerator {
     
     private static final Logger LOG = LoggerFactory.getLogger(CDAPPipelineGenerator.class);
     
-    private static final Gson GSON_OBJ = new GsonBuilder().setPrettyPrinting().create();
+    private static final Gson GSON_OBJ = new GsonBuilder().serializeSpecialFloatingPointValues().create();
     private final Map<String, BasePipelineNode> stageMap;
     private final Map<String, Schema> schemaMap;
     private final Map<String, Set<String>> connections;

@@ -364,7 +364,8 @@ public class CDAPSubDagGenerator {
                 multiInputAggregatePluginFunctionMap, multiInputTransformPluginFunctionMap,
                 appliedAggFunctionsWithArguments, appliedTransFunctionsWithArguments,
                 featureGenerationRequest.getIndexes(), dagGeneratorOutputMap, featureSelectionPipeline,
-                featureGenerationRequest.getRelationShips(), featureGenerationRequest.getCreateEntities(), featureGenerationRequest);
+                featureGenerationRequest.getRelationShips(), featureGenerationRequest.getCreateEntities(), 
+                featureGenerationRequest);
 
         CDAPPipelineInfo pipelineInfo = pipelineGenerator.generateCDAPPipeline(this.dataSchema,
                 wranglerPluginConfigMap);
