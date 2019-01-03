@@ -157,11 +157,13 @@ public class AutoFeatureGenerator {
                 multiInputAggregatePluginFunctionMap);
         
         String pythonScript = new FeatureToolCodeGenerator().generateFeatureToolCode(entityNames, dataSchemaList,
-                featureGenerationRequest.getIndexes(), featureGenerationRequest.getRelationShips(), aggregatePrimitives,
-                transformPrimitives, featureGenerationRequest.getDfsDepth(), featureGenerationRequest.getTargetEntity(),
-                timestampColumns, featureGenerationRequest.getCategoricalColumns(),
-                featureGenerationRequest.getIgnoreColumns(), appliedTransFunctionsWithArguments,
-                appliedAggFunctionsWithArguments, transformPluginFunctionMap, aggregatePluginFunctionMap);
+                featureGenerationRequest.getIndexes(), featureGenerationRequest.getRelationShips(), 
+                aggregatePrimitives,
+                transformPrimitives, featureGenerationRequest.getDfsDepth(),
+                featureGenerationRequest.getTargetEntity().getTable(), timestampColumns,
+                featureGenerationRequest.getCategoricalColumns(), featureGenerationRequest.getIgnoreColumns(),
+                appliedTransFunctionsWithArguments, appliedAggFunctionsWithArguments, transformPluginFunctionMap,
+                aggregatePluginFunctionMap);
         
         LOG.debug("Generated Python Script = " + pythonScript);
         File pythonScriptFile = writeDataToTempFile(pythonScript, "python");
@@ -170,7 +172,8 @@ public class AutoFeatureGenerator {
         LOG.info("Generated Feature Engineering DAG = " + featureEngineeringDag);
         CDAPPipelineDynamicSchemaGenerator pipelineGenerator = new CDAPPipelineDynamicSchemaGenerator(
                 aggregatePluginFunctionMap, transformPluginFunctionMap, entityNames,
-                featureGenerationRequest.getTargetEntity(), featureGenerationRequest.getTargetEntityFieldId(),
+                featureGenerationRequest.getTargetEntity().getTable(),
+                featureGenerationRequest.getTargetEntity().getColumn(),
                 featureGenerationRequest.getCategoricalColumns(), featureGenerationRequest.getWindowEndTime(),
                 featureGenerationRequest.getTrainingWindows(), featureGenerationRequest.getTimeIndexColumns(),
                 multiInputAggregatePluginFunctionMap, multiInputTransformPluginFunctionMap,

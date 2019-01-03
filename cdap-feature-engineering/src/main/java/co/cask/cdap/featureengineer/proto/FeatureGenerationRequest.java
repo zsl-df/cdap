@@ -44,8 +44,7 @@ public class FeatureGenerationRequest {
     private Integer dfsDepth;
     private List<Integer> trainingWindows;
     private String windowEndTime;
-    private String targetEntity;
-    private String targetEntityFieldId;
+    private SchemaColumn targetEntity;
     private String pipelineRunName;
     private Integer driverMemory;
     private Integer driverVirtualCores;
@@ -473,7 +472,7 @@ public class FeatureGenerationRequest {
     /**
      * @return the targetEntity
      */
-    public String getTargetEntity() {
+    public SchemaColumn getTargetEntity() {
         return targetEntity;
     }
     
@@ -481,23 +480,8 @@ public class FeatureGenerationRequest {
      * @param targetEntity
      *            the targetEntity to set
      */
-    public void setTargetEntity(String targetEntity) {
+    public void setTargetEntity(SchemaColumn targetEntity) {
         this.targetEntity = targetEntity;
-    }
-    
-    /**
-     * @return the targetEntityFieldId
-     */
-    public String getTargetEntityFieldId() {
-        return targetEntityFieldId;
-    }
-    
-    /**
-     * @param targetEntityFieldId
-     *            the targetEntityFieldId to set
-     */
-    public void setTargetEntityFieldId(String targetEntityFieldId) {
-        this.targetEntityFieldId = targetEntityFieldId;
     }
     
     /**
@@ -557,7 +541,6 @@ public class FeatureGenerationRequest {
         result = prime * result + getResourceVirtualCore();
         result = prime * result + (isSkipHotEncoding() ? 1231 : 1237);
         result = prime * result + ((targetEntity == null) ? 0 : targetEntity.hashCode());
-        result = prime * result + ((targetEntityFieldId == null) ? 0 : targetEntityFieldId.hashCode());
         result = prime * result + ((timeIndexColumns == null) ? 0 : timeIndexColumns.hashCode());
         result = prime * result + ((timestampColumns == null) ? 0 : timestampColumns.hashCode());
         result = prime * result + ((trainingWindows == null) ? 0 : trainingWindows.hashCode());
@@ -704,13 +687,6 @@ public class FeatureGenerationRequest {
         } else if (!targetEntity.equals(other.targetEntity)) {
             return false;
         }
-        if (targetEntityFieldId == null) {
-            if (other.targetEntityFieldId != null) {
-                return false;
-            }
-        } else if (!targetEntityFieldId.equals(other.targetEntityFieldId)) {
-            return false;
-        }
         if (timeIndexColumns == null) {
             if (other.timeIndexColumns != null) {
                 return false;
@@ -752,11 +728,10 @@ public class FeatureGenerationRequest {
                 + multiFieldTransformationFunctionInputs + ", multiFieldAggregationFunctionInputs="
                 + multiFieldAggregationFunctionInputs + ", dfsDepth=" + dfsDepth + ", trainingWindows="
                 + trainingWindows + ", windowEndTime=" + windowEndTime + ", targetEntity=" + targetEntity
-                + ", targetEntityFieldId=" + targetEntityFieldId + ", pipelineRunName=" + pipelineRunName
-                + ", driverMemory=" + driverMemory + ", driverVirtualCores=" + driverVirtualCores + ", resourceMemory="
-                + resourceMemory + ", resourceVirtualCore=" + resourceVirtualCore
-                + ", categoricalColumnDictionaryLimit=" + categoricalColumnDictionaryLimit + ", skipHotEncoding="
-                + skipHotEncoding + ", linearRegressionIterations=" + linearRegressionIterations
+                + ", pipelineRunName=" + pipelineRunName + ", driverMemory=" + driverMemory + ", driverVirtualCores="
+                + driverVirtualCores + ", resourceMemory=" + resourceMemory + ", resourceVirtualCore="
+                + resourceVirtualCore + ", categoricalColumnDictionaryLimit=" + categoricalColumnDictionaryLimit
+                + ", skipHotEncoding=" + skipHotEncoding + ", linearRegressionIterations=" + linearRegressionIterations
                 + ", linearRegressionStepSize=" + linearRegressionStepSize + ", computeVIFScores=" + computeVIFScores
                 + ", numDataPartitions=" + numDataPartitions + ", driverSideParallelism=" + driverSideParallelism + "]";
     }

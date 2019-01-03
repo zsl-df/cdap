@@ -49,7 +49,7 @@ public class AutoFeatureGenerationCreateEndPointTest {
     static final String ACCOUNT_TABLE = "accounts";
     
     public static void main(String args[]) throws ClientProtocolException, IOException {
-        String url = "http://localhost:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/"
+        String url = "http://192.168.156.36:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/"
                 + "AutoFeatureGenerationService/methods/featureengineering/InputX1ErrorTestPipeline/features/create";
         System.out.println("url = " + url);
         HttpClient client = new DefaultHttpClient();
@@ -148,8 +148,7 @@ public class AutoFeatureGenerationCreateEndPointTest {
         relationShips.add(rel);
         request.setRelationShips(relationShips);
         
-        request.setTargetEntity(ACCOUNT_TABLE);
-        request.setTargetEntityFieldId("account_id");
+        request.setTargetEntity(new SchemaColumn(ACCOUNT_TABLE, "account_id"));
         // errors.event_date_time,errors.ets_timestamp,errors.date_hour
         List<SchemaColumn> timestampColumns = new LinkedList<SchemaColumn>();
         timestampColumns.add(new SchemaColumn(ERROR_TABLE, "event_date_time"));

@@ -40,7 +40,7 @@ public class AutoFeatureGenerationDeleteEndPointTest {
     static final String ACCOUNT_TABLE = "accounts";
     
     public static void main(String args[]) throws ClientProtocolException, IOException {
-        String url = "http://bhupesh-goel.local:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/"
+        String url = "http://192.168.156.36:11015/v3/namespaces/default/apps/FeatureEngineeringApp/services/"
                 + "AutoFeatureGenerationService/methods/featureengineering/InputX1ErrorTestPipeline/features/delete";
         System.out.println("url = " + url);
         HttpClient client = new DefaultHttpClient();

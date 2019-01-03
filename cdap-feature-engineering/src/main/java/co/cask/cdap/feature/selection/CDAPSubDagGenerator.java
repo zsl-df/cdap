@@ -53,9 +53,9 @@ import java.util.Set;
  *
  */
 public class CDAPSubDagGenerator {
-
+    
     private static final Logger LOG = LoggerFactory.getLogger(CDAPSubDagGenerator.class);
-
+    
     static final Gson GSON_OBJ = new GsonBuilder().setPrettyPrinting().create();
     private Map<String, Set<String>> columnDictionarySet;
     private Map<String, Set<String>> multiColumnDictionarySet;
@@ -69,7 +69,7 @@ public class CDAPSubDagGenerator {
     private FeatureGenerationRequest featureGenerationRequest;
     private String featureDag;
     private Map<String, CDAPPipelineInfo> wranglerPluginConfigMap;
-
+    
     private CDAPSubDagGeneratorOutput emitOutputAndInitState(String featureDag, String trainingWindow) {
         List<String> categoricalColumnDictionary = createCategoricalDictionary(columnDictionarySet);
         CDAPSubDagGeneratorOutput output = new CDAPSubDagGeneratorOutput(categoricalColumnDictionary,
@@ -82,7 +82,7 @@ public class CDAPSubDagGenerator {
         this.multiInputColumnSet = new HashSet<>();
         return output;
     }
-
+    
     /**
      * 
      * @author bhupesh.goel
@@ -96,7 +96,7 @@ public class CDAPSubDagGenerator {
         private Set<String> multiInputColumnSet;
         private String trainingWindow;
         private String featureSubDag;
-
+        
         public CDAPSubDagGeneratorOutput(List<String> categoricalColumnDictionary,
                 Map<String, Set<String>> multiColumnDictionarySet, Map<String, String> multiInputColumnTableMap,
                 Set<String> multiInputColumnSet, Map<String, Set<String>> featureDagEntryDictionaryMap) {
@@ -106,14 +106,14 @@ public class CDAPSubDagGenerator {
             this.multiInputColumnSet = multiInputColumnSet;
             this.featureDagEntryDictionaryMap = featureDagEntryDictionaryMap;
         }
-
+        
         /**
          * @return the featureDagEntryDictionaryMap
          */
         public Map<String, Set<String>> getFeatureDagEntryDictionaryMap() {
             return featureDagEntryDictionaryMap;
         }
-
+        
         /**
          * @param featureDagEntryDictionaryMap
          *            the featureDagEntryDictionaryMap to set
@@ -121,14 +121,14 @@ public class CDAPSubDagGenerator {
         public void setFeatureDagEntryDictionaryMap(Map<String, Set<String>> featureDagEntryDictionaryMap) {
             this.featureDagEntryDictionaryMap = featureDagEntryDictionaryMap;
         }
-
+        
         /**
          * @return the columnDictionarySet
          */
         public List<String> getCategoricalColumnDictionary() {
             return categoricalColumnDictionary;
         }
-
+        
         /**
          * @param categoricalColumnDictionary
          *            the columnDictionarySet to set
@@ -136,14 +136,14 @@ public class CDAPSubDagGenerator {
         public void setCategoricalColumnDictionary(List<String> categoricalColumnDictionary) {
             this.categoricalColumnDictionary = categoricalColumnDictionary;
         }
-
+        
         /**
          * @return the multiColumnDictionarySet
          */
         public Map<String, Set<String>> getMultiColumnDictionarySet() {
             return multiColumnDictionarySet;
         }
-
+        
         /**
          * @param multiColumnDictionarySet
          *            the multiColumnDictionarySet to set
@@ -151,14 +151,14 @@ public class CDAPSubDagGenerator {
         public void setMultiColumnDictionarySet(Map<String, Set<String>> multiColumnDictionarySet) {
             this.multiColumnDictionarySet = multiColumnDictionarySet;
         }
-
+        
         /**
          * @return the multiInputColumnTableMap
          */
         public Map<String, String> getMultiInputColumnTableMap() {
             return multiInputColumnTableMap;
         }
-
+        
         /**
          * @param multiInputColumnTableMap
          *            the multiInputColumnTableMap to set
@@ -166,14 +166,14 @@ public class CDAPSubDagGenerator {
         public void setMultiInputColumnTableMap(Map<String, String> multiInputColumnTableMap) {
             this.multiInputColumnTableMap = multiInputColumnTableMap;
         }
-
+        
         /**
          * @return the multiInputColumnSet
          */
         public Set<String> getMultiInputColumnSet() {
             return multiInputColumnSet;
         }
-
+        
         /**
          * @param multiInputColumnSet
          *            the multiInputColumnSet to set
@@ -181,14 +181,14 @@ public class CDAPSubDagGenerator {
         public void setMultiInputColumnSet(Set<String> multiInputColumnSet) {
             this.multiInputColumnSet = multiInputColumnSet;
         }
-
+        
         /**
          * @return the trainingWindow
          */
         public String getTrainingWindow() {
             return trainingWindow;
         }
-
+        
         /**
          * @param trainingWindow
          *            the trainingWindow to set
@@ -196,14 +196,14 @@ public class CDAPSubDagGenerator {
         public void setTrainingWindow(String trainingWindow) {
             this.trainingWindow = trainingWindow;
         }
-
+        
         /**
          * @return the featureSubDag
          */
         public String getFeatureSubDag() {
             return featureSubDag;
         }
-
+        
         /**
          * @param featureSubDag
          *            the featureSubDag to set
@@ -211,9 +211,9 @@ public class CDAPSubDagGenerator {
         public void setFeatureSubDag(String featureSubDag) {
             this.featureSubDag = featureSubDag;
         }
-
+        
     }
-
+    
     public CDAPSubDagGenerator(final String featureDag, Map<String, NullableSchema> dataSchemaMap,
             Map<String, CDAPPipelineInfo> wranglerPluginConfigMap, FeatureGenerationRequest featureGenerationRequest,
             String[] hostAndPort) {
@@ -238,7 +238,7 @@ public class CDAPSubDagGenerator {
         this.autoFeatureGenerator = new AutoFeatureGenerator(featureGenerationRequest, dataSchemaMap,
                 wranglerPluginConfigMap);
     }
-
+    
     /**
      * @param features
      * @param featureSelectionPipeline
@@ -252,8 +252,7 @@ public class CDAPSubDagGenerator {
      * @throws UnauthenticatedException
      * @throws InterruptedException
      */
-    public void triggerCDAPPipelineGeneration(List<String> features, String featureSelectionPipeline)
-            throws Exception {
+    public void triggerCDAPPipelineGeneration(List<String> features, String featureSelectionPipeline) throws Exception {
         Set<String> manualMultiInputFeatures = getManualMultiInputFeatures();
         Map<String, CDAPSubDagGeneratorOutput> dagGeneratorOutputMap = generateFilteredFeatureDag(featureDag, features,
                 manualMultiInputFeatures);
@@ -262,29 +261,29 @@ public class CDAPSubDagGenerator {
             LOG.debug("Original Feature Dag length=" + featureDag.length() + "\nNew feature dag length="
                     + entry.getValue().featureSubDag.length() + " for timewindow=" + entry.getKey());
         }
-
+        
         LOG.debug("multiInputColumnSet=" + this.multiInputColumnSet);
         generateCDAPPipelineForDAG(dagGeneratorOutputMap, featureSelectionPipeline);
     }
-
+    
     private Set<String> getManualMultiInputFeatures()
             throws UnauthenticatedException, ArtifactNotFoundException, IOException, UnauthorizedException {
         Map<String, PluginSummary> multiInputAggregatePluginFunctionMap = new HashMap<String, PluginSummary>();
         Map<String, PluginSummary> aggregatePluginFunctionMap = new HashMap<String, PluginSummary>();
-
+        
         Set<String> typeSet = new HashSet<String>();
         List<String> entityNames = new LinkedList<String>();
         List<NullableSchema> dataSchemaList = new LinkedList<NullableSchema>();
         autoFeatureGenerator.parseDataSchemaInJson(typeSet, entityNames, dataSchemaList);
-
+        
         List<PluginSummary> pluginSummariesBatchAggregator = new LinkedList<PluginSummary>();
         List<PluginSummary> pluginSummariesTransform = new LinkedList<PluginSummary>();
         autoFeatureGenerator.getCDAPPluginSummary(pluginSummariesBatchAggregator, pluginSummariesTransform,
                 clientConfig);
-
+        
         autoFeatureGenerator.getPrimitives(pluginSummariesBatchAggregator, typeSet, aggregatePluginFunctionMap,
                 this.featureGenerationRequest.getCategoricalColumns(), multiInputAggregatePluginFunctionMap, false);
-
+        
         Map<String, Map<String, List<String>>> appliedAggFunctionsWithArguments = autoFeatureGenerator
                 .findMatchingMultiInputPrimitives(
                         this.featureGenerationRequest.getMultiFieldAggregationFunctionInputs(),
@@ -295,12 +294,12 @@ public class CDAPSubDagGenerator {
         }
         return set;
     }
-
+    
     private static List<String> createCategoricalDictionary(Map<String, Set<String>> columnDictionarySet) {
         List<String> categoricalColumnDictionary = new LinkedList<>();
-
+        
         for (Map.Entry<String, Set<String>> entry : columnDictionarySet.entrySet()) {
-
+            
             Set<String> dictionarySet = entry.getValue();
             if (dictionarySet != null && !dictionarySet.isEmpty()) {
                 StringBuilder sb = new StringBuilder();
@@ -323,30 +322,30 @@ public class CDAPSubDagGenerator {
         }
         return categoricalColumnDictionary;
     }
-
+    
     private void generateCDAPPipelineForDAG(Map<String, CDAPSubDagGeneratorOutput> dagGeneratorOutputMap,
             String featureSelectionPipeline) throws Exception {
         Map<String, PluginSummary> aggregatePluginFunctionMap = new HashMap<String, PluginSummary>();
         Map<String, PluginSummary> transformPluginFunctionMap = new HashMap<String, PluginSummary>();
-
+        
         Map<String, PluginSummary> multiInputAggregatePluginFunctionMap = new HashMap<String, PluginSummary>();
         Map<String, PluginSummary> multiInputTransformPluginFunctionMap = new HashMap<String, PluginSummary>();
-
+        
         Set<String> typeSet = new HashSet<String>();
         List<String> entityNames = new LinkedList<String>();
         List<NullableSchema> dataSchemaList = new LinkedList<NullableSchema>();
         autoFeatureGenerator.parseDataSchemaInJson(typeSet, entityNames, dataSchemaList);
-
+        
         List<PluginSummary> pluginSummariesBatchAggregator = new LinkedList<PluginSummary>();
         List<PluginSummary> pluginSummariesTransform = new LinkedList<PluginSummary>();
         autoFeatureGenerator.getCDAPPluginSummary(pluginSummariesBatchAggregator, pluginSummariesTransform,
                 clientConfig);
-
+        
         autoFeatureGenerator.getPrimitives(pluginSummariesBatchAggregator, typeSet, aggregatePluginFunctionMap,
                 this.featureGenerationRequest.getCategoricalColumns(), multiInputAggregatePluginFunctionMap, false);
         autoFeatureGenerator.getPrimitives(pluginSummariesTransform, typeSet, transformPluginFunctionMap, null,
                 multiInputTransformPluginFunctionMap, false);
-
+        
         Map<String, Map<String, List<String>>> appliedTransFunctionsWithArguments = autoFeatureGenerator
                 .findMatchingMultiInputPrimitives(
                         this.featureGenerationRequest.getMultiFieldTransformationFunctionInputs(),
@@ -355,24 +354,24 @@ public class CDAPSubDagGenerator {
                 .findMatchingMultiInputPrimitives(
                         this.featureGenerationRequest.getMultiFieldAggregationFunctionInputs(),
                         multiInputAggregatePluginFunctionMap);
-
+        
         LOG.debug("Merged Feature Dag = " + mergeFeatureDag(dagGeneratorOutputMap));
         CDAPPipelineGenerator pipelineGenerator = new CDAPPipelineGenerator(aggregatePluginFunctionMap,
-                transformPluginFunctionMap, entityNames, featureGenerationRequest.getTargetEntity(),
-                featureGenerationRequest.getTargetEntityFieldId(), featureGenerationRequest.getWindowEndTime(),
+                transformPluginFunctionMap, entityNames, featureGenerationRequest.getTargetEntity().getTable(),
+                featureGenerationRequest.getTargetEntity().getColumn(), featureGenerationRequest.getWindowEndTime(),
                 featureGenerationRequest.getTrainingWindows(), featureGenerationRequest.getTimeIndexColumns(),
                 multiInputAggregatePluginFunctionMap, multiInputTransformPluginFunctionMap,
                 appliedAggFunctionsWithArguments, appliedTransFunctionsWithArguments,
                 featureGenerationRequest.getIndexes(), dagGeneratorOutputMap, featureSelectionPipeline,
-                featureGenerationRequest.getRelationShips(), featureGenerationRequest.getCreateEntities(), 
+                featureGenerationRequest.getRelationShips(), featureGenerationRequest.getCreateEntities(),
                 featureGenerationRequest);
-
+        
         CDAPPipelineInfo pipelineInfo = pipelineGenerator.generateCDAPPipeline(this.dataSchema,
                 wranglerPluginConfigMap);
-
+        
         File cdapPipelineFile = writeDataToTempFile(GSON_OBJ.toJson(pipelineInfo), "cdap-pipeline");
         String cdapPipelineFileName = cdapPipelineFile.getAbsolutePath();
-
+        
         try {
             autoFeatureGenerator.uploadPipelineFileToCDAP(cdapPipelineFileName, clientConfig, pipelineInfo.getName());
             LOG.info("successfully uploaded cdap pipeline " + pipelineInfo.getName() + " to CDAP server. ");
@@ -384,11 +383,11 @@ public class CDAPSubDagGenerator {
                 LOG.error("Got error while generating subdag for selected features", ex);
                 throw ex;
             }
-
+            
         }
-
+        
     }
-
+    
     File writeDataToTempFile(String data, String key) throws IOException {
         File tmpFile = File.createTempFile("temp-feature-selection-key", ".tmp");
         FileWriter writer = new FileWriter(tmpFile);
@@ -396,7 +395,7 @@ public class CDAPSubDagGenerator {
         writer.close();
         return tmpFile;
     }
-
+    
     private static String mergeFeatureDag(Map<String, CDAPSubDagGeneratorOutput> dagGeneratorOutputMap) {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, CDAPSubDagGeneratorOutput> entry : dagGeneratorOutputMap.entrySet()) {
@@ -405,7 +404,7 @@ public class CDAPSubDagGenerator {
         }
         return sb.toString();
     }
-
+    
     private Map<String, String> populateMultiInputColumnMap(
             List<MultiSchemaColumn> multiFieldTransformationFunctionInputs,
             List<MultiFieldAggregationInput> multiFieldAggregationFunctionInputs) {
@@ -441,7 +440,7 @@ public class CDAPSubDagGenerator {
         }
         return multiInputMap;
     }
-
+    
     public Map<String, CDAPSubDagGeneratorOutput> generateFilteredFeatureDag(final String featureDag,
             final List<String> originalFeatureSet, Set<String> manualMultiInputFeatures) throws IOException {
         if (featureDag == null || featureDag.isEmpty()) {
@@ -455,13 +454,13 @@ public class CDAPSubDagGenerator {
             CDAPSubDagGeneratorOutput output = emitOutputAndInitState(filteredFeatureDag, entry.getKey());
             dagGeneratorOutputMap.put(entry.getKey(), output);
         }
-
+        
         LOG.debug("Single column dictionary = " + columnDictionarySet);
         LOG.debug("Multi Input Column Dictionary = " + multiColumnDictionarySet + "\nfeatureDagEntryDictionaryMap="
                 + featureDagEntryDictionaryMap);
         return dagGeneratorOutputMap;
     }
-
+    
     private Map<String, Set<String>> breakRandomFeatureSetTrainingWindowWise(List<String> randomFeatureSet) {
         Map<String, Set<String>> trainingWiseFeatureSet = new HashMap<>();
         String singleKey = "0";
@@ -485,7 +484,7 @@ public class CDAPSubDagGenerator {
         }
         return trainingWiseFeatureSet;
     }
-
+    
     private Integer getLastSuffixedNumber(String feature) {
         int index = feature.length() - 1;
         while (index > -1 && Character.isDigit(feature.charAt(index))) {
@@ -496,7 +495,7 @@ public class CDAPSubDagGenerator {
         }
         return Integer.parseInt(feature.substring(index + 1));
     }
-
+    
     private String getFilteredFeatureDag(String featureDag, Set<String> randomFeatureList,
             Set<String> manualMultiInputFeatures) {
         StringBuilder sb = new StringBuilder();
@@ -545,13 +544,13 @@ public class CDAPSubDagGenerator {
                     }
                 }
                 sb.append("]\n");
-
+                
                 i++;
             }
         }
         return sb.toString();
     }
-
+    
     private boolean presentInSelectedFeatures(String featureDagEntry, Set<String> randomFeatureList, String sourceTable,
             String sourceFeature, Set<String> manualMultiInputFeatures) {
         int matchingCount = 0;
@@ -569,7 +568,7 @@ public class CDAPSubDagGenerator {
         }
         return matchingCount > 0 ? true : false;
     }
-
+    
     private void processFeatureDagEntry(String feature, int index, String featureDagEntry, String sourceTable,
             String sourceFeature) {
         String dictionaryPartOfFeature = feature.substring(index + featureDagEntry.length());
@@ -582,7 +581,7 @@ public class CDAPSubDagGenerator {
         }
         List<String> matchingTableColumnsInFeature = new ArrayList<String>();
         List<Integer> matchingTableColumnPositionsInFeature = new ArrayList<Integer>();
-
+        
         List<String> columns = getColumnNames(dataSchema.get(sourceTable).getFields());
         String currentSourceTable = getLastIndexOfTableName(feature.substring(0, index + featureDagEntry.length()),
                 dataSchema.keySet());
@@ -616,7 +615,7 @@ public class CDAPSubDagGenerator {
             }
         }
         if (matchingTableColumnPositionsInFeature.size() != dictionary.length && dictionary.length > 0) {
-
+            
             throw new IllegalStateException(
                     "Identified columns doesn't match with identified dictionary elements. featuredagenty="
                             + featureDagEntry + " feature = " + feature + " dictionaryPartOnly=" + dictionaryPartOnly
@@ -638,7 +637,7 @@ public class CDAPSubDagGenerator {
                     if (i > 0) {
                         columnSb.append(" ");
                         dictSb.append("__");
-
+                        
                     }
                     columnSb.append(column);
                     dictSb.append(dictionary[i]);
@@ -657,7 +656,7 @@ public class CDAPSubDagGenerator {
             }
         }
     }
-
+    
     private List<String> getColumnNames(NullableSchemaField[] fields) {
         List<String> columnList = new LinkedList<String>();
         for (NullableSchemaField field : fields) {
@@ -665,7 +664,7 @@ public class CDAPSubDagGenerator {
         }
         return columnList;
     }
-
+    
     private void addEntryInMapSet(Map<String, Set<String>> map, String mapKey, String value) {
         Set<String> dictionarySet = map.get(mapKey);
         if (dictionarySet == null) {
@@ -674,7 +673,7 @@ public class CDAPSubDagGenerator {
         }
         dictionarySet.add(value);
     }
-
+    
     private String getLastIndexOfTableName(String featureSubstring, Set<String> keySet) {
         int maxIndex = -1;
         String toReturnTable = "";
@@ -687,7 +686,7 @@ public class CDAPSubDagGenerator {
         }
         return toReturnTable;
     }
-
+    
     private void sortColumnsPositionsByIndex(List<String> matchingTableColumnsInFeature,
             List<Integer> matchingTableColumnPositionsInFeature) {
         for (int i = 0; i < matchingTableColumnPositionsInFeature.size(); i++) {
@@ -704,7 +703,7 @@ public class CDAPSubDagGenerator {
             }
         }
     }
-
+    
     private String trimByChar(String dictionaryPartOfFeature, char trimChar) {
         int st = 0, end = dictionaryPartOfFeature.length() - 1;
         while (st < dictionaryPartOfFeature.length() && dictionaryPartOfFeature.charAt(st) == trimChar) {
@@ -723,23 +722,23 @@ public class CDAPSubDagGenerator {
         }
         return dictionaryPartOfFeature.substring(st, end + 1);
     }
-
+    
     private String normalizeString(final String input) {
         return input.replaceAll("[\\.()]", "_").toLowerCase();
     }
-
+    
     public Map<String, Set<String>> getColumnDictionarySet() {
         return columnDictionarySet;
     }
-
+    
     public void setColumnDictionarySet(Map<String, Set<String>> columnDictionarySet) {
         this.columnDictionarySet = columnDictionarySet;
     }
-
+    
     public Map<String, Set<String>> getMultiColumnDictionarySet() {
         return multiColumnDictionarySet;
     }
-
+    
     public void setMultiColumnDictionarySet(Map<String, Set<String>> multiColumnDictionarySet) {
         this.multiColumnDictionarySet = multiColumnDictionarySet;
     }

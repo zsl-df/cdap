@@ -147,8 +147,7 @@ public class AutoFeatureGenerationEditEndPointTest {
         relationShips.add(rel);
         request.setRelationShips(relationShips);
         
-        request.setTargetEntity(ACCOUNT_TABLE);
-        request.setTargetEntityFieldId("account_id");
+        request.setTargetEntity(new SchemaColumn(ACCOUNT_TABLE, "account_id"));
         // errors.event_date_time,errors.ets_timestamp,errors.date_hour
         List<SchemaColumn> timestampColumns = new LinkedList<SchemaColumn>();
         timestampColumns.add(new SchemaColumn(ERROR_TABLE, "event_date_time"));
