@@ -2808,7 +2808,6 @@
         <module>cdap-test</module>
         <module>cdap-integration-test</module>
         <module>cdap-ui</module>
-        <module>cdap-feature-engineering</module>
       </modules>
     </profile>
     <profile>
