@@ -206,7 +206,7 @@ export default class DataPrepTopPanel extends Component {
     },
     {
       label: T.translate(`${PREFIX}.persistViewSchemaBtnLabel`),
-      iconName: 'icon-info-circle',
+      iconName: 'icon-upload',
       onClick: this.togglePersistViewSchemaModal
     }
   ];

@@ -21,7 +21,7 @@ let dataSrc = DataSourceConfigurer.getInstance();
 
 const appPath = '/namespaces/:namespace/apps/FeatureEngineeringApp';
 const baseServicePath = `${appPath}/services/DataPrepSchemaService`;
-const basepath = `${baseServicePath}/methods/featureengineering/:workspaceId`;
+const basepath = `${baseServicePath}/methods/featureengineering/:datasetName`;
 
 
 const MyFeatureEngineeringApi = {

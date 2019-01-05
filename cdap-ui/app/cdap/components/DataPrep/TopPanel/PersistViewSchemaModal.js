@@ -55,7 +55,9 @@ export default class PersistViewSchemaModel extends Component {
       realtimeConfig: null,
       batchConfig: null,
       schema: [],
-      response: null
+      response: null,
+      datasetName: null,
+      formloaded: false
     };
   }
 
@@ -65,21 +67,21 @@ export default class PersistViewSchemaModel extends Component {
   }
 
   persistViewSchema() {
-    if(!this.state.loading) {
+    if (!this.state.loading) {
       return;
     }
 
     let config = this.state.realtimeConfig;
     let configType = 'realTime';
-    if(!this.state.batchUrl) {
+    if (!this.state.batchUrl) {
       configType = 'batch';
       config = this.state.batchConfig;
     }
-    let workspaceId = DataPrepStore.getState().dataprep.workspaceId;
+    let datasetName = this.state.datasetName;
     let namespace = NamespaceStore.getState().selectedNamespace;
     let requestObj = {
         namespace: namespace,
-        workspaceId: workspaceId,
+        datasetName: datasetName,
         configType: configType
       };
      let requestBody = viewSchemaPersistRequestBodyCreator(JSON.stringify([getSchemaObjFromFieldsArray(this.state.schema)], null, 4),JSON.stringify(config));
@@ -136,6 +138,17 @@ export default class PersistViewSchemaModel extends Component {
     );
   }
 
+  handleChange = (e) => {
+    this.setState({datasetName: e.target.value});
+  }
+  
+ 
+  handleSubmit = (e) => {
+    this.setState({formloaded: true});
+    e.preventDefault();
+    this.persistViewSchema();
+  }
+  
   getSchema() {
     let state = DataPrepStore.getState().dataprep;
     let workspaceId = state.workspaceId;
@@ -166,10 +179,31 @@ export default class PersistViewSchemaModel extends Component {
 
   render() {
     let content;
-    if(!this.state.configloading && !this.state.schemaloading) {
-      this.persistViewSchema();
-    }
-    if (this.state.loading) {
+    let headerContent;
+    if(!this.state.configloading && !this.state.schemaloading && !this.state.formloaded) {
+        content = (
+        <div className="text-xs-center">		
+          <form onSubmit={this.handleSubmit}>
+            <label>
+              Dataset Name:
+              <input type="text" value={this.state.datasetName} onChange={this.handleChange} size="70" />
+            </label>
+            <input type="submit" value="Submit" />
+          </form>
+        </div>
+    );
+        headerContent = (
+        <div className="text-xs-center">	
+          <p><b>Enter Dataset Name</b></p>
+        </div>
+    );
+    } else {
+      headerContent = (
+        <div className="text-xs-center">	
+         <p><b>Result</b></p>
+        </div>
+      );        
+      if (this.state.loading) {
       content = (
         <div className="text-xs-center">
           <h4>
@@ -200,6 +234,7 @@ export default class PersistViewSchemaModel extends Component {
           {this.state.response}
         </div>
       );
+     }
     }
 
     return (
@@ -212,7 +247,7 @@ export default class PersistViewSchemaModel extends Component {
       >
         <ModalHeader>
           <span>
-            Result
+             {headerContent}
           </span>
 
           <div
