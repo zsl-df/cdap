@@ -4,24 +4,29 @@ import './GridHeader.scss';
 
 class GridHeader extends Component {
 
-  constructor(props){
+  constructor(props) {
     super(props)
-    this.state = {dummy:"hello"}
+    this.state = { dummy: "hello" }
   }
 
   render() {
 
-    return(
+    return (
       <div className="grid-header-box">
-      <div className="title-box">
-      <h3>Feature Selection</h3>
-
-      </div>
-      <label className="subtitle">Pipeline: </label>
-      {
-        this.props.selectedPipeline &&
-          <label>{this.props.selectedPipeline.pipelineName}</label>
-      }
+        <div className="title-box">
+          <h3>Feature Selection</h3>
+          <div className="subtitle">
+            <label className="subtitle-label">Pipeline: </label>
+            {
+              this.props.selectedPipeline &&
+              <label className="pipeline-name">{this.props.selectedPipeline.pipelineName}</label>
+            }
+          </div>
+        </div>
+        <div className="header-control">
+          <button className = "feature-button left-margin" onClick={this.props.backnavigation}>Back</button>
+          <button className = "feature-button left-margin" onClick={this.navigateToParentWindow}>Save</button>
+        </div>
       </div>
     )
   }

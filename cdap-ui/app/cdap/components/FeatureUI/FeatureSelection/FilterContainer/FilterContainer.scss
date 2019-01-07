@@ -7,6 +7,30 @@
     padding-left: 15px;
     padding-top: 20px;
 
+    .control-box {
+      display: inline-flex;
+    }
+
+    .limit-box {
+      display: inline-flex;
+      width: 100%;
+      .limit-label{
+        padding-right: 10px
+      }
+
+      .limit-input{
+        width: 50px;
+        height: 25px;
+      }
+
+      .value-seperator{
+        padding-left: 5px;
+        padding-right: 5px;
+      }
+
+
+    }
+
   }
 
   .orderby-box{
