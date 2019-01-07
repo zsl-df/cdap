@@ -54,7 +54,8 @@ class LandingPage extends React.Component {
       pipelineTypes: PIPELINE_TYPES,
       selectedPipelineType: 'All',
       displayFeatureSelection: false,
-      pipeLineData: this.sampleData
+      pipeLineData: this.sampleData,
+      selectedPipeline:{}
     }
   }
   componentWillMount() {
@@ -125,24 +126,24 @@ class LandingPage extends React.Component {
   viewPipeline(pipeline) {
     this.currentPipeline = pipeline;
     let request = SERVER_IP + GET_PIPE_LINE_DATA + pipeline.pipelineName;
-    // fetch(request)
-    //   .then(res => res.json())
-    //   .then(
-    //     (result) => {
-    //       if (isNil(result) || isNil(result["pipelineInfoList"])) {
-    //         alert("Pipeline Data Error");
-    //       } else {
-    //         this.setState({
-    //           data: result["pipelineInfoList"]
-    //         });
-    //       }
-    //     },
-    //     (error) => {
-    //       this.handleError(error, GET_PIPELINE);
-    //     }
-    //   )
-    this.setState({ displayFeatureSelection: true })
-
+    fetch(request)
+      .then(res => res.json())
+      .then(
+        (result) => {
+          if (isNil(result) || isNil(result["featureStatsList"])) {
+            alert("Pipeline Data Error");
+          } else {
+            this.setState({
+              pipeLineData:result["featureStatsList"],
+              data: result["featureStatsList"],
+              selectedPipeline:this.currentPipeline,
+              displayFeatureSelection: true })
+          }
+        },
+        (error) => {
+          this.handleError(error, GET_PIPELINE);
+        }
+      )
   }
 
   editPipeline(pipeline) {
@@ -396,11 +397,16 @@ class LandingPage extends React.Component {
 
   render() {
     return (
+      // <div className="feature-selection">
+      //         <FeatureSelection nagivateToParent={this.viewFeatureGeneration}
+      //           pipeLineData={this.state.pipeLineData}></FeatureSelection>
+      // </div>
       <div className='landing-page-container'>
         {
           this.state.displayFeatureSelection ?
             <div className="feature-selection">
               <FeatureSelection nagivateToParent={this.viewFeatureGeneration}
+                selectedPipeline={this.state.selectedPipeline}
                 pipeLineData={this.state.pipeLineData}></FeatureSelection>
             </div>
             : <div className="feature-generation">
