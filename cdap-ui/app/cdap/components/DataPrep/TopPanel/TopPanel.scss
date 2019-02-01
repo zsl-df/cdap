@@ -114,12 +114,15 @@ $success_alert_bg_color: $brand-success;
 
       .btn-primary {
         margin: 0 10px;
+        background-color: #03a9f4 !important;
+        border-color: #03a9f4 !important;
         .icon-spinner {
           margin: 0 5px;
         }
       }
 
       .plus-button {
+        display: none;
         margin: 0px 15px 51px 0;
         .popper {
           margin-right: 20px;
