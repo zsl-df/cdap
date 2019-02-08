@@ -37,7 +37,9 @@ public class LDAPAuthenticationHandler extends JAASAuthenticationHandler {
   private static final List<String> optionalConfigurables = ImmutableList.of("bindDn", "bindPassword", "useLdaps",
                                                                              "userIdAttribute", "userPasswordAttribute",
                                                                              "roleBaseDn", "roleNameAttribute",
-                                                                             "roleMemberAttribute", "roleObjectClass");
+                                                                             "roleMemberAttribute", "roleObjectClass",
+                                                                             "userSearchFilter");
+
 
   private static boolean ldapSSLVerifyCertificate = true;
 
