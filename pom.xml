@@ -1143,7 +1143,7 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-plus</artifactId>
-        <version>${jetty8.version}</version>
+        <version>${jetty8.plus.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.geronimo.components</groupId>
