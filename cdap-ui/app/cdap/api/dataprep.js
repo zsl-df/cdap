@@ -105,7 +105,13 @@ const MyDataPrepApi = {
   listDrivers: apiCreator(dataSrc, 'GET', 'REQUEST', `${baseServicePath}/methods/list/drivers`),
 
   // Connection types
-  listConnectionTypes: apiCreator(dataSrc, 'GET', 'REQUEST', connectionTypesPath)
+  listConnectionTypes: apiCreator(dataSrc, 'GET', 'REQUEST', connectionTypesPath),
+
+  // ADLS
+  adlsTestConnection: apiCreator(dataSrc, 'POST', 'REQUEST', `${connectionsPath}/adls/test`),
+  adlsFileExplorer: apiCreator(dataSrc, 'GET', 'REQUEST', `${baseServicePath}/methods/explorer/adls`),
+  adlsReadFile: apiCreator(dataSrc, 'GET', 'REQUEST', `${baseServicePath}/methods/explorer/adls/read`),
+  getAdlsSpecification: apiCreator(dataSrc, 'GET', 'REQUEST', `${connectionsPath}/:connectionId/adls/specification`),
 };
 
 export default MyDataPrepApi;

@@ -519,6 +519,22 @@ features:
           1: "{context} table"
           _: "{context} tables"
         title: Select data
+      ADLSBrowser:
+        EmptyMessage:
+          emptyDatasetList: 'No Data'
+          emptyTableList: 'No Data'
+        name: Name
+        pageTitle: '{productName} | Connections | ADLS | {connectionId}'
+        title: 'ADLS'
+        Search:
+          placeholder: Search this directory
+        TopPanel:
+          ListingInfo:
+            label: "{dirsCount} directories and {filesCount} files"
+            truncatedContentsTooltip: The bucket you are viewing contains more directories and files we can currently display.
+            truncatedLabel: "{dirsCount} directories and {fileCount} files of many"
+          selectData: Select data
+
     Directives:
       apply: Apply
       cancel: Cancel
@@ -1227,6 +1243,31 @@ features:
         projectId: Project ID
         serviceAccountKeyfile: Service account key file location
         testConnection: Test Connection
+      ADLS:
+        Buttons:
+          ADD: Add Connection
+          DUPLICATE: Duplicate Connection
+          EDIT: Save Changes
+        defaultTestErrorMessage: Cannot connect to ADLS Handler
+        ErrorMessages:
+          ADD: Failed to add connection
+          DUPLICATE: Failed to duplicate connection
+          EDIT: Failed to edit connection
+        ModalHeader:
+          ADD: "Add connection: ADLS Handler"
+          DUPLICATE: "Duplicate connection: {connection}"
+          EDIT: "Edit connection: {connection}"
+        Placeholders:
+          name: Specify a name to identify this connection
+          KVUrl: Specify Key Vault URL
+          JcekPath: Specify JCEK Path
+          ADLS_Directory: Specify Input Directory
+        JcekPath: JCEK Path
+        ADLS_Directory: Input Directory
+        name: Connection name
+        KVUrl: KeyVault URL
+        testConnection: Test Connection
+
       TestConnectionLabels:
         danger: Test connection failed
         success: Test connection succcessful
@@ -1262,7 +1303,7 @@ features:
       recordDelimiter: Record delimiter
       title: Upload data from your computer
       uploadButton: Upload
-
+    adls: "ADLS Handler ({count})"
   DatasetDetailedView:
     Tabs:
       lineage: Lineage
@@ -1426,6 +1467,27 @@ features:
     title: '{productName} | Field Level Lineage | {datasetId}'
 
   FileBrowser:
+    directory: Directory
+    EmptyMessage:
+      clearLabel: Clear
+      noFilesOrDirectories: No files or directories found in this directory
+      suggestion1: your search
+      suggestionTitle: "You can try to:"
+      title: 'No match found for "{searchText}"'
+    Table:
+      group: Group
+      last-modified: Last modified
+      name: Name
+      owner: Owner
+      permission: Permission
+      size: Size
+      type: Type
+    TopPanel:
+      directoryMetrics: "{count} files and directories"
+      searchPlaceholder: Search this directory
+      selectData: "Select file/directory to preview"
+
+  ADLSBrowser:
     directory: Directory
     EmptyMessage:
       clearLabel: Clear
