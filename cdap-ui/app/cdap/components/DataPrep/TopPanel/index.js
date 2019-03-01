@@ -259,7 +259,7 @@ export default class DataPrepTopPanel extends Component {
             </div>
           </div>
         );
-      } else if (['kafka', 's3', 'gcs', 'bigquery', 'spanner'].indexOf(info.properties.connection) !== -1) {
+      } else if (['kafka', 's3', 'gcs', 'bigquery', 'spanner', 'adls'].indexOf(info.properties.connection) !== -1) {
         return (
           <div className="data-prep-name">
             <div className="connection-type">
@@ -402,7 +402,7 @@ export default class DataPrepTopPanel extends Component {
 
   render() {
     let plusBtn = null;
-    if(Theme && Theme.showDataPrepPlusButton){
+    if (Theme && Theme.showDataPrepPlusButton) {
       plusBtn = !this.props.singleWorkspaceMode ? <DataPrepPlusButton /> : null;
     }
 

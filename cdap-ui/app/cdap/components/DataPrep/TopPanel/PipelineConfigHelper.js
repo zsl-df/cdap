@@ -336,6 +336,44 @@ function constructBigQuerySource(artifactsList, bigqueryInfo) {
   };
 }
 
+function constructAdlsSource(artifactsList, adlsInfo) {
+  if (!adlsInfo) { return null; }
+
+  let batchArtifact = find(artifactsList, {name: 'google-cloud'});
+  if (!batchArtifact) {
+    return T.translate(`${PREFIX}.adls`);
+  }
+
+  batchArtifact.version = '[0.9.2, 3.0.0)';
+  let plugin = objectQuery(adlsInfo, 'values', 0);
+
+  let pluginName = Object.keys(plugin)[0];
+
+  plugin = plugin[pluginName];
+
+  let batchPluginInfo = {
+    name: plugin.name,
+    label: plugin.name,
+    type: 'batchsource',
+    artifact: batchArtifact,
+    properties: plugin.properties
+  };
+
+  let batchStage = {
+    name: 'ADLS',
+    plugin: batchPluginInfo
+  };
+
+  return {
+    batchSource: batchStage,
+    connections: [{
+      from: 'ADLS',
+      to: 'Wrangler'
+    }]
+  };
+}
+
+
 function constructSpannerSource(artifactsList, spannerInfo) {
   if (!spannerInfo) { return null; }
 
@@ -449,6 +487,12 @@ function constructProperties(workspaceInfo, pluginVersion) {
       workspaceId
     };
     rxArray.push(MyDataPrepApi.getSpannerSpecification(specParams));
+  } else if (state.workspaceInfo.properties.connection === 'adls') {
+    let specParams = {
+      namespace,
+      workspaceId
+    };
+    rxArray.push(MyDataPrepApi.getAdlsSpecification(specParams));
   }
 
   try {
@@ -541,6 +585,8 @@ function constructProperties(workspaceInfo, pluginVersion) {
         sourceConfigs = constructBigQuerySource(res[0], res[2]);
       } else if (state.workspaceInfo.properties.connection === 'spanner') {
         sourceConfigs = constructSpannerSource(res[0], res[2]);
+      } else if (state.workspaceInfo.properties.connection === 'adls') {
+        sourceConfigs = constructAdlsSource(res[0], res[2]);
       }
 
       if (typeof sourceConfigs === 'string') {
@@ -612,3 +658,4 @@ function constructProperties(workspaceInfo, pluginVersion) {
   }
   return observable;
 }
+
