@@ -70,7 +70,8 @@ public class DirectoryClassLoader extends InterceptableClassLoader {
     Manifest manifest = null;
     try {
       try (
-        InputStream input = new FileInputStream(new File(dir, JarFile.MANIFEST_NAME.replace('/', File.separatorChar)))
+        InputStream input = new FileInputStream(new File(dir.getCanonicalPath()
+        		,JarFile.MANIFEST_NAME.replace('/', File.separatorChar)))
       ) {
         manifest = new Manifest(input);
       }

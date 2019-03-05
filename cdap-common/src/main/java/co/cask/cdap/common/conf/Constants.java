@@ -21,6 +21,7 @@ import co.cask.cdap.proto.id.NamespaceId;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.BindingAnnotation;
 
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -1015,7 +1016,7 @@ public final class Constants {
       /** Enables SSL for internal services. */
       public static final String INTERNAL_ENABLED = "ssl.internal.enabled";
       /** Password for the java keystore. */
-      public static final String KEYSTORE_PASSWORD = "ssl.internal.keystore.password";
+      public static final String KEYSTORE_PASSWORD = "ssl.internal.keystore.password"; 
       /** Validity of the self generated certificate in days */
       public static final String CERT_VALIDITY = "ssl.internal.cert.validity";
     }
@@ -1053,7 +1054,7 @@ public final class Constants {
       /** Name of the secure store file. */
       public static final String FILE_NAME = "security.store.file.name";
       /** Password to access the secure store. */
-      public static final String FILE_PASSWORD = "security.store.file.password";
+      public static final String FILE_PASSWORD = "security.store.file.password";  
       /** Backend provider for the secure store. e.g. file */
       public static final String PROVIDER = "security.store.provider";
     }
@@ -1081,10 +1082,9 @@ public final class Constants {
       /** SSL keystore type */
       public static final String SSL_KEYSTORE_TYPE = "router.ssl.keystore.type";
       /** SSL keystore key password */
-      public static final String SSL_KEYPASSWORD = "router.ssl.keystore.keypassword";
+      public static final String SSL_KEYPASSWORD = "router.ssl.keystore.keypassword"; 
       /** SSL keystore password */
-      public static final String SSL_KEYSTORE_PASSWORD = "router.ssl.keystore.password";
-
+      public static final String SSL_KEYSTORE_PASSWORD = "router.ssl.keystore.password";  
       /** Default SSL keystore type */
       public static final String DEFAULT_SSL_KEYSTORE_TYPE = "JKS";
 
@@ -1103,9 +1103,9 @@ public final class Constants {
       /** SSL keystore type */
       public static final String SSL_KEYSTORE_TYPE = "security.auth.server.ssl.keystore.type";
       /** SSL keystore key password */
-      public static final String SSL_KEYPASSWORD = "security.auth.server.ssl.keystore.keypassword";
+      public static final String SSL_KEYPASSWORD = "security.auth.server.ssl.keystore.keypassword"; 
       /** SSL keystore password */
-      public static final String SSL_KEYSTORE_PASSWORD = "security.auth.server.ssl.keystore.password";
+      public static final String SSL_KEYSTORE_PASSWORD = "security.auth.server.ssl.keystore.password";  
 
       /** Default SSL keystore type */
       public static final String DEFAULT_SSL_KEYSTORE_TYPE = "JKS";
@@ -1115,7 +1115,7 @@ public final class Constants {
       /** SSL truststore type */
       public static final String SSL_TRUSTSTORE_TYPE = "security.auth.server.ssl.truststore.type";
       /** SSL truststore password */
-      public static final String SSL_TRUSTSTORE_PASSWORD = "security.auth.server.ssl.truststore.password";
+      public static final String SSL_TRUSTSTORE_PASSWORD = "security.auth.server.ssl.truststore.password";  
     }
 
     /** Path to the Kerberos keytab file used by CDAP master */

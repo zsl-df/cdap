@@ -95,6 +95,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
@@ -488,7 +490,8 @@ public abstract class AbstractProgramTwillRunnable<T extends ProgramRunner> impl
    * Reads the content of the given file and decode it as json.
    */
   private <U> U readJsonFile(File file, Class<U> type) throws IOException {
-    try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
+	  String newPath = file.getCanonicalPath();
+    try (Reader reader = Files.newBufferedReader(Paths.get(newPath), StandardCharsets.UTF_8)) {
       return GSON.fromJson(reader, type);
     }
   }

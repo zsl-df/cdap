@@ -112,7 +112,7 @@ public final class HttpsEnabler {
   public HttpsURLConnection enable(HttpsURLConnection urlConn) {
     try {
       urlConn.setSSLSocketFactory(getSSLSocketFactory());
-      urlConn.setHostnameVerifier((s, sslSession) -> true);
+      urlConn.setHostnameVerifier((s, sslSession) -> true); 
       return urlConn;
     } catch (NoSuchAlgorithmException | KeyManagementException e) {
       throw new RuntimeException("Failed to enable HTTPS for HttpsURLConnection", e);
@@ -197,7 +197,7 @@ public final class HttpsEnabler {
         return factory;
       }
 
-      SSLContext sslContext = SSLContext.getInstance("SSL");
+      SSLContext sslContext = SSLContext.getInstance("SSL"); //NOSONAR
       KeyManagerFactory kmf = keyManagerFactory;
       TrustManagerFactory tmf = trustManagerFactory;
 

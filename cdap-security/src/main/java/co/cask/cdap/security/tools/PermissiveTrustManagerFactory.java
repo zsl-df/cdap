@@ -40,13 +40,13 @@ public class PermissiveTrustManagerFactory extends TrustManagerFactorySpi {
     public X509Certificate[] getAcceptedIssuers() {
       return new X509Certificate[0];
     }
-
+    
     @Override
     public void checkClientTrusted(X509Certificate[] chain, String authType) {
       // Trust all certificates.
       LOG.trace("Client certificate not being verified: " + chain[0].getSubjectDN());
     }
-
+    
     @Override
     public void checkServerTrusted(X509Certificate[] chain, String authType) {
       // Trust all certificates.

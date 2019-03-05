@@ -50,16 +50,17 @@ public class LDAPLoginModule extends LdapLoginModule {
 
     private TrustAllSSLSocketFactory() {
       TrustManager[] trustManagers = new TrustManager[] { new X509TrustManager() {
+    	
         @Override
         public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
           // no-op
         }
-
+    	
         @Override
         public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
           // no-op
         }
-
+    	
         @Override
         public X509Certificate[] getAcceptedIssuers() {
           return null;
@@ -67,7 +68,7 @@ public class LDAPLoginModule extends LdapLoginModule {
       }};
 
       try {
-        SSLContext sc = SSLContext.getInstance("SSL");
+        SSLContext sc = SSLContext.getInstance("SSL"); 
         sc.init(null, trustManagers, new SecureRandom());
         trustAllFactory = sc.getSocketFactory();
       } catch (GeneralSecurityException e) {
