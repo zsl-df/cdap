@@ -1262,10 +1262,16 @@ features:
           KVUrl: Specify Key Vault URL
           JcekPath: Specify JCEK Path
           ADLS_Directory: Specify Input Directory
+          clientID: Specify Client ID
+          clientKey: Specify Client Key
+          authTokenURL: Specify Auth Token URL
         JcekPath: JCEK Path
         ADLS_Directory: Input Directory
         name: Connection name
         KVUrl: KeyVault URL
+        clientID: Client ID
+        clientKey: Client Key
+        authTokenURL: Auth Token URL
         testConnection: Test Connection
 
       TestConnectionLabels:
