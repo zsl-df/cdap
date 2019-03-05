@@ -47,7 +47,8 @@ export default class ADLSBrowser extends Component {
     search: '',
     sort: 'name',
     sortOrder: 'asc',
-    searchFocus: true
+    searchFocus: true,
+    connectionId: DataPrepBrowserStore.getState().adls.connectionId
   };
 
   static defaultProps = {
@@ -82,7 +83,7 @@ export default class ADLSBrowser extends Component {
       });
       goToADLSfilePath(path);
     } else {
-      this.fetchDirectory(this.props);
+      this.fetchADLSDirectory(this.props);
     }
   }
 
@@ -97,9 +98,11 @@ export default class ADLSBrowser extends Component {
       if (this._isMounted) {
         this.setState({
           contents: adls.contents,
+          info: adls.info,
+          connectionId: adls.connectionId,
           loading: adls.loading,
           path: adls.path,
-          search: adls.search
+          search: adls.search,
         });
       }
     });
@@ -129,7 +132,7 @@ export default class ADLSBrowser extends Component {
         goToADLSfilePath(path);
       }
     } else {
-      this.fetchDirectory(nextProps);
+      this.fetchADLSDirectory(nextProps);
     }
   }
 
@@ -151,7 +154,7 @@ export default class ADLSBrowser extends Component {
 
   }
 
-  fetchDirectory(props) {
+  fetchADLSDirectory(props) {
     let hdfsPath;
 
     if (this.props.noState) {

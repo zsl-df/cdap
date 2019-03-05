@@ -73,7 +73,7 @@ export default class FileBrowser extends Component {
     browserTitle: PropTypes.string
   };
 
-  parsePath() {
+  componentDidMount() {
     this._isMounted = true;
     if (!this.props.enableRouting) {
       let path = this.getFilePath();
@@ -87,10 +87,6 @@ export default class FileBrowser extends Component {
     } else {
       this.fetchDirectory(this.props);
     }
-  }
-
-  componentDidMount() {
-    this.parsePath();
     this.browserStoreSubscription = DataPrepBrowserStore.subscribe(() => {
       let {file, activeBrowser} = DataPrepBrowserStore.getState();
       if (activeBrowser.name !== ConnectionType.FILE) {

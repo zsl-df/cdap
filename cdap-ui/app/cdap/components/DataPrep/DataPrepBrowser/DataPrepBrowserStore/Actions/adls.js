@@ -22,15 +22,99 @@ import {convertBytesToHumanReadable, HUMANREADABLESTORAGE_NODECIMAL} from 'servi
 import uuidV4 from 'uuid/v4';
 import moment from 'moment';
 import T from 'i18n-react';
+import {objectQuery} from 'services/helpers';
+
 const PREFIX = 'features.ADLSBrowser';
 const trimSuffixSlash = (path) => path.replace(/\/\//, '/');
 
 const setAdlsAsActiveBrowser = (payload) => {
-  setActiveBrowser(payload);
-  let path = payload.path ? payload.path : '/';
-  goToADLSfilePath(path);
+  let {adls, activeBrowser} = DataPrepBrowserStore.getState();
+
+  if (activeBrowser.name !== payload.name) {
+    setActiveBrowser(payload);
+  }
+
+  let {id: connectionId, path} = payload;
+
+  if (adls.connectionId === connectionId) {
+    if (path && path !== adls.prefix) {
+      setADLSPrefix(path);
+    }
+    return;
+  }
+
+  DataPrepBrowserStore.dispatch({
+    type: BrowserStoreActions.SET_ADLS_CONNECTION_ID,
+    payload: {
+      connectionId
+    }
+  });
+
+  setADLSLoading();
+
+  let namespace = NamespaceStore.getState().selectedNamespace;
+  let params = {
+    namespace,
+    connectionId
+  };
+
+  MyDataPrepApi.getConnection(params)
+    .subscribe((res) => {
+      let info = objectQuery(res, 'values', 0);
+      DataPrepBrowserStore.dispatch({
+        type: BrowserStoreActions.SET_ADLS_CONNECTION_DETAILS,
+        payload: {
+          info,
+          connectionId
+        }
+      });
+      if (path) {
+        setADLSPrefix(path);
+      } else {
+        goToADLSfilePath();
+      }
+    }, (err) => {
+      setError(err);
+    });
 };
 
+const setADLSPrefix = (prefix) => {
+  DataPrepBrowserStore.dispatch({
+    type: BrowserStoreActions.SET_ADLS_PREFIX,
+    payload: {
+      prefix
+    }
+  });
+  goToADLSfilePath(prefix);
+};
+
+const goToADLSfilePath = (path = '/') => {
+  let { connectionId, loading} = DataPrepBrowserStore.getState().adls;
+  if (!loading) {
+    setADLSLoading();
+  }
+  let {selectedNamespace: namespace} = NamespaceStore.getState();
+  if (path) {
+    path = trimSuffixSlash(path);
+    setADLSFileSystemLoading();
+    setADLSFileSystemPath(path);
+  }
+
+  MyDataPrepApi.adlsFileExplorer({
+    namespace,
+    path,
+    connectionId
+  }).subscribe((res) => {
+    DataPrepBrowserStore.dispatch({
+      type: BrowserStoreActions.SET_ADLS_FILE_SYSTEM_CONTENTS,
+      payload: {
+        contents: formatResponse(res.values)
+      }
+    });
+  }, (err) => {
+    setError(err);
+  });
+};
 
 const formatResponse = (contents) => {
   return contents.map((content) => {
@@ -47,26 +131,9 @@ const formatResponse = (contents) => {
   });
 };
 
-const goToADLSfilePath = (path) => {
-  path = trimSuffixSlash(path);
-  setADLSFileSystemLoading();
-  setADLSFileSystemPath(path);
-
-  let namespace = NamespaceStore.getState().selectedNamespace;
-
-  MyDataPrepApi.explorer({
-    namespace,
-    path,
-    hidden: true
-  }).subscribe((res) => {
-    DataPrepBrowserStore.dispatch({
-      type: BrowserStoreActions.SET_ADLS_FILE_SYSTEM_CONTENTS,
-      payload: {
-        contents: formatResponse(res.values)
-      }
-    });
-  }, (err) => {
-    setError(err);
+const setADLSLoading = () => {
+  DataPrepBrowserStore.dispatch({
+    type: BrowserStoreActions.SET_ADLS_LOADING
   });
 };
 
@@ -97,9 +164,11 @@ const setADLSFileSystemSearch = (search) => {
   });
 };
 export {
-  setAdlsAsActiveBrowser,
-  setADLSFileSystemSearch,
-  goToADLSfilePath,
   trimSuffixSlash,
-  setADLSFileSystemLoading
+  setAdlsAsActiveBrowser,
+  setADLSPrefix,
+  goToADLSfilePath,
+  setADLSLoading,
+  setADLSFileSystemLoading,
+  setADLSFileSystemSearch,
 };

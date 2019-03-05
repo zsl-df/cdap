@@ -242,7 +242,7 @@ export default class DataPrepConnections extends Component {
       activeConnectionid = browserName.id;
       activeConnectionType = ConnectionType.SPANNER;
     } else if (typeof browserName === 'object' && browserName.type === ConnectionType.ADLS) {
-      setAdlsAsActiveBrowser({name: ConnectionType.ADLS, path: '/', id: browserName.id});
+      setAdlsAsActiveBrowser({name: ConnectionType.ADLS, id: browserName.id, path: '/'});
       activeConnectionid = browserName.id;
       activeConnectionType = ConnectionType.ADLS;
     }
@@ -939,7 +939,8 @@ export default class DataPrepConnections extends Component {
         <Route
           path={`${BASEPATH}/adls/:adlsId`}
           render={({match}) => {
-            const setActiveConnection = setActiveBrowser.bind(null, {name: ConnectionType.ADLS});
+            const id  = match.params.adlsId;
+            const setActiveConnection = setAdlsAsActiveBrowser.bind(null, {name: ConnectionType.ADLS, id});
             return (
               <DataPrepBrowser
                 match={match}
