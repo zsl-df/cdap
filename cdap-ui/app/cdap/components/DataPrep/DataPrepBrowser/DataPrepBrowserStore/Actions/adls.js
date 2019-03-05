@@ -22,13 +22,13 @@ import {convertBytesToHumanReadable, HUMANREADABLESTORAGE_NODECIMAL} from 'servi
 import uuidV4 from 'uuid/v4';
 import moment from 'moment';
 import T from 'i18n-react';
-import {goToPath} from '../ActionCreator';
 const PREFIX = 'features.ADLSBrowser';
 const trimSuffixSlash = (path) => path.replace(/\/\//, '/');
 
 const setAdlsAsActiveBrowser = (payload) => {
   setActiveBrowser(payload);
-  goToPath(payload.path);
+  let path = payload.path ? payload.path : '/';
+  goToADLSfilePath(path);
 };
 
 

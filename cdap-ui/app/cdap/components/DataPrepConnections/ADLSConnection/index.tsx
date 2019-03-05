@@ -52,18 +52,25 @@ interface IADLSConnectionState {
   KVUrl?: string;
   JcekPath?: string;
   ADLS_Directory?: string;
+  clientID?: string;
+  clientKey?: string;
+  authTokenURL?: string;
   testConnectionLoading?: boolean;
   connectionResult?: {
     message?: string;
     type?: string
   };
   loading?: boolean;
+  isKVorJCEK?: boolean;
 }
 
 interface IProperties {
   KVUrl?: string;
   JcekPath?: string;
   ADLS_Directory?: string;
+  clientID?: string;
+  clientKey?: string;
+  authTokenURL?: string;
   testConnectionLoading?: boolean;
 }
 
@@ -73,12 +80,16 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
     name: '',
     KVUrl: '',
     JcekPath: '',
+    clientID: '',
+    clientKey: '',
+    authTokenURL: '',
     ADLS_Directory: '',
     testConnectionLoading: false,
     connectionResult: {
       message: '',
       type: '',
     },
+    isKVorJCEK: true,
     loading: false,
   };
 
@@ -87,7 +98,7 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
       return;
     }
 
-    this.setState({loading: true});
+    this.setState({loading: true, isKVorJCEK: true});
 
     const namespace = getCurrentNamespace();
 
@@ -99,16 +110,22 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
     MyDataPrepApi.getConnection(params)
       .subscribe((res) => {
         const info = objectQuery(res, 'values', 0);
+        const name = this.props.mode === ConnectionMode.Edit ? info.name : '';
         const JcekPath = objectQuery(info, 'properties', 'JcekPath');
         const ADLS_Directory = objectQuery(info, 'properties', 'ADLS_Directory');
-        const name = this.props.mode === ConnectionMode.Edit ? info.name : '';
         const KVUrl = objectQuery(info, 'properties', 'KVUrl');
+        const clientID = objectQuery(info, 'properties', 'clientID');
+        const clientKey = objectQuery(info, 'properties', 'clientKey');
+        const authTokenURL = objectQuery(info, 'properties', 'authTokenURL');
 
         this.setState({
           name,
           KVUrl,
           JcekPath,
           ADLS_Directory,
+          clientID,
+          clientKey,
+          authTokenURL,
           loading: false,
         });
       }, (err) => {
@@ -116,7 +133,7 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
 
         this.setState({
           loading: false,
-          error,
+          error
         });
       });
   }
@@ -124,12 +141,23 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
   private constructProperties = (): IProperties => {
     const properties: IProperties = {};
 
-    if (this.state.KVUrl && this.state.KVUrl.length > 0) {
-      properties.KVUrl = this.state.KVUrl;
-    }
-
-    if (this.state.JcekPath && this.state.JcekPath.length > 0) {
-      properties.JcekPath = this.state.JcekPath;
+    if (this.state.isKVorJCEK) {
+      if (this.state.KVUrl && this.state.KVUrl.length > 0) {
+        properties.KVUrl = this.state.KVUrl;
+      }
+      if (this.state.JcekPath && this.state.JcekPath.length > 0) {
+        properties.JcekPath = this.state.JcekPath;
+      }
+    } else {
+      if (this.state.clientID && this.state.clientID.length > 0) {
+        properties.clientID = this.state.clientID;
+      }
+      if (this.state.clientKey && this.state.clientKey.length > 0) {
+        properties.clientKey = this.state.clientKey;
+      }
+      if (this.state.authTokenURL && this.state.authTokenURL.length > 0) {
+        properties.authTokenURL = this.state.authTokenURL;
+      }
     }
 
     if (this.state.ADLS_Directory && this.state.ADLS_Directory.length > 0) {
@@ -251,8 +279,13 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
   }
 
   private renderAddConnectionButton = () => {
-    const disabled = !(this.state.name && this.state.KVUrl && this.state.JcekPath && this.state.ADLS_Directory)
-    || this.state.testConnectionLoading;
+    let check;
+    if (this.state.isKVorJCEK) {
+      check = this.state.KVUrl && this.state.JcekPath;
+    } else {
+      check = this.state.clientID && this.state.clientKey && this.state.authTokenURL;
+    }
+    const disabled = !(this.state.name && check && this.state.ADLS_Directory) || this.state.testConnectionLoading;
 
     let onClickFn = this.addConnection;
 
@@ -275,6 +308,10 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
     );
   }
 
+  private handleOptionChange = (currentTarget) => {
+    this.setState({isKVorJCEK : currentTarget.target.value === 'kvURL_jcekpath'});
+  }
+
   private renderContent() {
     if (this.state.loading) {
       return (
@@ -283,6 +320,103 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
           <LoadingSVG />
         </div>
       );
+    }
+    let renderOption;
+
+    if (this.state.isKVorJCEK) {
+      renderOption = (<div className='kvurl-jcekpath'>
+        <div className="form-group row">
+          <label className={LABEL_COL_CLASS}>
+            {T.translate(`${PREFIX}.KVUrl`)}
+            <span className="asterisk">*</span>
+          </label>
+          <div className={INPUT_COL_CLASS}>
+            <div className="input-text">
+              <input
+                type="text"
+                className="form-control"
+                value={this.state.KVUrl}
+                onChange={this.handleChange.bind(this, 'KVUrl')}
+                placeholder={T.translate(`${PREFIX}.Placeholders.KVUrl`).toString()}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-group row">
+          <label className={LABEL_COL_CLASS}>
+            {T.translate(`${PREFIX}.JcekPath`)}
+            <span className="asterisk">*</span>
+          </label>
+          <div className={INPUT_COL_CLASS}>
+            <div className="input-text">
+              <input
+                type="text"
+                className="form-control"
+                value={this.state.JcekPath}
+                onChange={this.handleChange.bind(this, 'JcekPath')}
+                placeholder={T.translate(`${PREFIX}.Placeholders.JcekPath`).toString()}
+              />
+            </div>
+          </div>
+        </div>
+      </div>);
+    } else {
+      renderOption = (<div className='clientID'>
+        <div className="form-group row">
+          <label className={LABEL_COL_CLASS}>
+            {T.translate(`${PREFIX}.clientID`)}
+            <span className="asterisk">*</span>
+          </label>
+          <div className={INPUT_COL_CLASS}>
+            <div className="input-text">
+              <input
+                type="text"
+                className="form-control"
+                value={this.state.clientID}
+                onChange={this.handleChange.bind(this, 'clientID')}
+                placeholder={T.translate(`${PREFIX}.Placeholders.clientID`).toString()}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-group row">
+          <label className={LABEL_COL_CLASS}>
+            {T.translate(`${PREFIX}.clientKey`)}
+            <span className="asterisk">*</span>
+          </label>
+          <div className={INPUT_COL_CLASS}>
+            <div className="input-text">
+              <input
+                type="text"
+                className="form-control"
+                value={this.state.clientKey}
+                onChange={this.handleChange.bind(this, 'clientKey')}
+                placeholder={T.translate(`${PREFIX}.Placeholders.clientKey`).toString()}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-group row">
+          <label className={LABEL_COL_CLASS}>
+            {T.translate(`${PREFIX}.authTokenURL`)}
+            <span className="asterisk">*</span>
+          </label>
+          <div className={INPUT_COL_CLASS}>
+            <div className="input-text">
+              <input
+                type="text"
+                className="form-control"
+                value={this.state.authTokenURL}
+                onChange={this.handleChange.bind(this, 'authTokenURL')}
+                placeholder={T.translate(`${PREFIX}.Placeholders.authTokenURL`).toString()}
+              />
+            </div>
+          </div>
+        </div>
+      </div>);
     }
 
     return (
@@ -309,42 +443,6 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
 
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
-              {T.translate(`${PREFIX}.KVUrl`)}
-              <span className="asterisk">*</span>
-            </label>
-            <div className={INPUT_COL_CLASS}>
-              <div className="input-text">
-                <input
-                  type="text"
-                  className="form-control"
-                  value={this.state.KVUrl}
-                  onChange={this.handleChange.bind(this, 'KVUrl')}
-                  placeholder={T.translate(`${PREFIX}.Placeholders.KVUrl`).toString()}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="form-group row">
-            <label className={LABEL_COL_CLASS}>
-              {T.translate(`${PREFIX}.JcekPath`)}
-              <span className="asterisk">*</span>
-            </label>
-            <div className={INPUT_COL_CLASS}>
-              <div className="input-text">
-                <input
-                  type="text"
-                  className="form-control"
-                  value={this.state.JcekPath}
-                  onChange={this.handleChange.bind(this, 'JcekPath')}
-                  placeholder={T.translate(`${PREFIX}.Placeholders.JcekPath`).toString()}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="form-group row">
-            <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.ADLS_Directory`)}
               <span className="asterisk">*</span>
             </label>
@@ -361,6 +459,24 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
             </div>
           </div>
 
+          <div className="form-group row">
+            <label className={LABEL_COL_CLASS}></label>
+            <div>
+              <input
+                type="radio"
+                value="kvURL_jcekpath"
+                name="option"
+                checked={this.state.isKVorJCEK}
+                onChange={this.handleOptionChange.bind(this)}/> kvURL_jcekpath
+              <input
+                type="radio"
+                value="clientID"
+                name="option"
+                checked={!this.state.isKVorJCEK}
+                onChange={this.handleOptionChange.bind(this)}/> clientID
+            </div>
+          </div>
+          {renderOption}
         </div>
       </div>
     );

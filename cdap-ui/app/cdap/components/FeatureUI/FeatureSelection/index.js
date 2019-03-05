@@ -105,7 +105,7 @@ class FeatureSelection extends Component {
   }
 
   storeGridInfo(isFilter, columDefs, rows) {
-    if(isFilter){
+    if (isFilter) {
       this.filterColumnDefs = cloneDeep(columDefs);
       this.filterGridRows = cloneDeep(rows);
     }
@@ -194,9 +194,9 @@ class FeatureSelection extends Component {
 
   toggle(tab) {
     if (this.state.activeTab !== tab) {
-      if(tab == '1'){
+      if (tab == '1') {
         this.setState({ gridColumnDefs: this.filterColumnDefs, gridRowData: this.filterGridRows, activeTab: tab });
-      }else {
+      } else {
         this.setState({ gridColumnDefs: this.correlationColumnDefs, gridRowData: this.correlationGridRows, activeTab: tab });
       }
     }
@@ -277,9 +277,9 @@ class FeatureSelection extends Component {
           this.handleError(result, GET_PIPE_LINE_DATA);
         } else {
           const data = this.dataParser(result["featureStatsList"]);
-          if(!isFilter){
+          if (!isFilter) {
             this.storeGridInfo(false, data.gridColumnDefs, data.gridRowData);
-            this.setState({gridColumnDefs:data.gridColumnDefs, gridRowData: data.gridRowData });
+            this.setState({ gridColumnDefs: data.gridColumnDefs, gridRowData: data.gridRowData });
           }
         }
       },

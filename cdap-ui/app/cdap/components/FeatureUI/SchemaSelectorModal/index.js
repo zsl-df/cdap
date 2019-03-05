@@ -79,7 +79,7 @@ class SchemaSelectorModal extends React.Component {
 
   onSchemaChecked(item, event) {
     const isChecked = event.target.checked;
-    if(isChecked) {
+    if (isChecked) {
       this.checkedList.add(item.schemaName);
     } else {
       this.checkedList.delete(item.schemaName);

@@ -191,7 +191,7 @@ class FilterContainer extends Component {
       }
     }
 
-    //check limit range
+    // check limit range
     if (this.state.hasLimitError || !isValidFilterItems) {
       this.setState({ activeApplyBtn: false });
     } else {

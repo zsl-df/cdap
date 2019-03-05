@@ -939,9 +939,7 @@ export default class DataPrepConnections extends Component {
         <Route
           path={`${BASEPATH}/adls/:adlsId`}
           render={({match}) => {
-            let id  = match.params.adlsId;
-            let path = '/';
-            const setActiveConnection = setAdlsAsActiveBrowser.bind(null, {name: ConnectionType.ADLS, id, path});
+            const setActiveConnection = setActiveBrowser.bind(null, {name: ConnectionType.ADLS});
             return (
               <DataPrepBrowser
                 match={match}
