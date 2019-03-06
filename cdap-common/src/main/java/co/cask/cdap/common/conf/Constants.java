@@ -15,19 +15,15 @@
  */
 
 package co.cask.cdap.common.conf;
-
 import co.cask.cdap.api.common.Bytes;
 import co.cask.cdap.proto.id.NamespaceId;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.BindingAnnotation;
-
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**

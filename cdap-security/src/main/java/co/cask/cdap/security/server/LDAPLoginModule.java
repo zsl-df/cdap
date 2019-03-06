@@ -68,7 +68,7 @@ public class LDAPLoginModule extends LdapLoginModule {
       }};
 
       try {
-        SSLContext sc = SSLContext.getInstance("SSL"); 
+        SSLContext sc = SSLContext.getInstance("SSL");
         sc.init(null, trustManagers, new SecureRandom());
         trustAllFactory = sc.getSocketFactory();
       } catch (GeneralSecurityException e) {

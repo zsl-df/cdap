@@ -178,9 +178,7 @@ public final class DirUtils {
    * Returns list of files under the given directory that are accepted by the given filter.
    * An empty list will be returned if the given file is not a directory.
    */
-  @SuppressWarnings("squid:S2083")
   public static List<File> listFiles(File directory, FilenameFilter filenameFilter) {
-	  
     return listOf(directory.listFiles(filenameFilter)); 
   }
 
