@@ -19,7 +19,7 @@ import MyDataPrepApi from 'api/dataprep';
 import NamespaceStore from 'services/NamespaceStore';
 import classnames from 'classnames';
 import {Link} from 'react-router-dom';
-import FilePath from 'components/FileBrowser/FilePath';
+import ADLSPath from 'components/DataPrep/DataPrepBrowser/ADLSBrowser/ADLSPath';
 import {preventPropagation as preventPropagationService, objectQuery} from 'services/helpers';
 import DataPrepBrowserStore from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore';
 import {setError, goToADLSfilePath, trimSuffixSlash} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
@@ -191,6 +191,7 @@ export default class ADLSBrowser extends Component {
       });
     }
   }
+
   ingestFile(content) {
     let namespace = NamespaceStore.getState().selectedNamespace;
     let {scope} = this.props;
@@ -198,7 +199,8 @@ export default class ADLSBrowser extends Component {
       namespace,
       path: content.path,
       lines: 10000,
-      sampler: 'first'
+      sampler: 'first',
+      fraction: 10
     };
 
     if (scope) {
@@ -216,7 +218,7 @@ export default class ADLSBrowser extends Component {
       'Content-Type': content.type
     };
 
-    MyDataPrepApi.readFile(params, null, headers)
+    MyDataPrepApi.adlsReadFile(params, null, headers)
       .subscribe((res) => {
         let workspaceId = res.values[0].id;
 
@@ -508,7 +510,7 @@ export default class ADLSBrowser extends Component {
 
         <div className="sub-panel">
           <div className="path-container">
-            <FilePath
+            <ADLSPath
               baseStatePath={this.state.statePath}
               fullpath={this.state.path}
               enableRouting={this.props.enableRouting}

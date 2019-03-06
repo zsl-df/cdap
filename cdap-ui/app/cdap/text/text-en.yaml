@@ -1260,19 +1260,25 @@ features:
           EDIT: "Edit connection: {connection}"
         Placeholders:
           name: Specify a name to identify this connection
-          KVUrl: Specify Key Vault URL
-          JcekPath: Specify JCEK Path
-          ADLS_Directory: Specify Input Directory
+          kvURL: Specify Key Vault URL
+          clientIDKey: Specify Key name for ADLS Client ID
+          clientSecretKey: Specify Key name for ADLS Client Secret key
+          endPointURLKey: Specify Key name for ADLS Tenant ID
+          accountFQDN: Specify Input Directory
           clientID: Specify Client ID
-          clientKey: Specify Client Key
-          authTokenURL: Specify Auth Token URL
-        JcekPath: JCEK Path
-        ADLS_Directory: Input Directory
+          clientSecret: Specify Client Key
+          refreshURL: Specify End Point Refresh URL
+        clientIDKey: Key Name for ADLS Client ID
+        clientSecretKey: Key Name for ADLS Client Secret Key
+        endPointURLKey: Key Name for ADLS Tenant ID
+        accountFQDN: Input Directory
         name: Connection name
-        KVUrl: KeyVault URL
+        kvURL: KeyVault URL
         clientID: Client ID
-        clientKey: Client Key
-        authTokenURL: Auth Token URL
+        clientSecret: Client Key
+        refreshURL: End Point Refresh URL
+        usingJcekFile: Using JCEK File
+        adlsGen1Credentials: ADLS Gen1 Credentials
         testConnection: Test Connection
 
       TestConnectionLabels:
