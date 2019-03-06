@@ -49,28 +49,32 @@ interface IADLSConnectionProps {
 interface IADLSConnectionState {
   error?: string | object | null;
   name?: string;
-  KVUrl?: string;
-  JcekPath?: string;
-  ADLS_Directory?: string;
+  kvURL?: string;
+  clientIDKey?: string;
+  clientSecretKey?: string;
+  endPointURLKey?: string;
+  accountFQDN?: string;
   clientID?: string;
-  clientKey?: string;
-  authTokenURL?: string;
+  clientSecret?: string;
+  refreshURL?: string;
   testConnectionLoading?: boolean;
   connectionResult?: {
     message?: string;
     type?: string
   };
   loading?: boolean;
-  isKVorJCEK?: boolean;
+  isUsingJCEKfile?: boolean;
 }
 
 interface IProperties {
-  KVUrl?: string;
-  JcekPath?: string;
-  ADLS_Directory?: string;
+  kvURL?: string;
+  clientIDKey?: string;
+  clientSecretKey?: string;
+  endPointURLKey?: string;
+  accountFQDN?: string;
   clientID?: string;
-  clientKey?: string;
-  authTokenURL?: string;
+  clientSecret?: string;
+  refreshURL?: string;
   testConnectionLoading?: boolean;
 }
 
@@ -78,18 +82,20 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
   public state: IADLSConnectionState = {
     error: null,
     name: '',
-    KVUrl: '',
-    JcekPath: '',
+    kvURL: '',
+    clientIDKey: '',
+    clientSecretKey: '',
+    endPointURLKey: '',
     clientID: '',
-    clientKey: '',
-    authTokenURL: '',
-    ADLS_Directory: '',
+    clientSecret: '',
+    refreshURL: '',
+    accountFQDN: '',
     testConnectionLoading: false,
     connectionResult: {
       message: '',
       type: '',
     },
-    isKVorJCEK: true,
+    isUsingJCEKfile: true,
     loading: false,
   };
 
@@ -98,7 +104,7 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
       return;
     }
 
-    this.setState({loading: true, isKVorJCEK: true});
+    this.setState({loading: true, isUsingJCEKfile: true});
 
     const namespace = getCurrentNamespace();
 
@@ -111,21 +117,25 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
       .subscribe((res) => {
         const info = objectQuery(res, 'values', 0);
         const name = this.props.mode === ConnectionMode.Edit ? info.name : '';
-        const JcekPath = objectQuery(info, 'properties', 'JcekPath');
-        const ADLS_Directory = objectQuery(info, 'properties', 'ADLS_Directory');
-        const KVUrl = objectQuery(info, 'properties', 'KVUrl');
+        const clientIDKey = objectQuery(info, 'properties', 'clientIDKey');
+        const clientSecretKey = objectQuery(info, 'properties', 'clientSecretKey');
+        const endPointURLKey = objectQuery(info, 'properties', 'endPointURLKey');
+        const accountFQDN = objectQuery(info, 'properties', 'accountFQDN');
+        const kvURL = objectQuery(info, 'properties', 'kvURL');
         const clientID = objectQuery(info, 'properties', 'clientID');
-        const clientKey = objectQuery(info, 'properties', 'clientKey');
-        const authTokenURL = objectQuery(info, 'properties', 'authTokenURL');
+        const clientSecret = objectQuery(info, 'properties', 'clientSecret');
+        const refreshURL = objectQuery(info, 'properties', 'refreshURL');
 
         this.setState({
           name,
-          KVUrl,
-          JcekPath,
-          ADLS_Directory,
+          kvURL,
+          clientIDKey,
+          clientSecretKey,
+          endPointURLKey,
+          accountFQDN,
           clientID,
-          clientKey,
-          authTokenURL,
+          clientSecret,
+          refreshURL,
           loading: false,
         });
       }, (err) => {
@@ -133,7 +143,7 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
 
         this.setState({
           loading: false,
-          error
+          error,
         });
       });
   }
@@ -141,27 +151,33 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
   private constructProperties = (): IProperties => {
     const properties: IProperties = {};
 
-    if (this.state.isKVorJCEK) {
-      if (this.state.KVUrl && this.state.KVUrl.length > 0) {
-        properties.KVUrl = this.state.KVUrl;
+    if (this.state.isUsingJCEKfile) {
+      if (this.state.kvURL && this.state.kvURL.length > 0) {
+        properties.kvURL = this.state.kvURL;
       }
-      if (this.state.JcekPath && this.state.JcekPath.length > 0) {
-        properties.JcekPath = this.state.JcekPath;
+      if (this.state.clientIDKey && this.state.clientIDKey.length > 0) {
+        properties.clientIDKey = this.state.clientIDKey;
+      }
+      if (this.state.clientSecretKey && this.state.clientSecretKey.length > 0) {
+        properties.clientSecretKey = this.state.clientSecretKey;
+      }
+      if (this.state.endPointURLKey && this.state.endPointURLKey.length > 0) {
+        properties.endPointURLKey = this.state.endPointURLKey;
       }
     } else {
       if (this.state.clientID && this.state.clientID.length > 0) {
         properties.clientID = this.state.clientID;
       }
-      if (this.state.clientKey && this.state.clientKey.length > 0) {
-        properties.clientKey = this.state.clientKey;
+      if (this.state.clientSecret && this.state.clientSecret.length > 0) {
+        properties.clientSecret = this.state.clientSecret;
       }
-      if (this.state.authTokenURL && this.state.authTokenURL.length > 0) {
-        properties.authTokenURL = this.state.authTokenURL;
+      if (this.state.refreshURL && this.state.refreshURL.length > 0) {
+        properties.refreshURL = this.state.refreshURL;
       }
     }
 
-    if (this.state.ADLS_Directory && this.state.ADLS_Directory.length > 0) {
-      properties.ADLS_Directory = this.state.ADLS_Directory;
+    if (this.state.accountFQDN && this.state.accountFQDN.length > 0) {
+      properties.accountFQDN = this.state.accountFQDN;
     }
 
     return properties;
@@ -280,12 +296,12 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
 
   private renderAddConnectionButton = () => {
     let check;
-    if (this.state.isKVorJCEK) {
-      check = this.state.KVUrl && this.state.JcekPath;
+    if (this.state.isUsingJCEKfile) {
+      check = this.state.kvURL && this.state.clientIDKey && this.state.clientSecretKey && this.state.endPointURLKey;
     } else {
-      check = this.state.clientID && this.state.clientKey && this.state.authTokenURL;
+      check = this.state.clientID && this.state.clientSecret && this.state.refreshURL;
     }
-    const disabled = !(this.state.name && check && this.state.ADLS_Directory) || this.state.testConnectionLoading;
+    const disabled = !(this.state.name && check && this.state.accountFQDN) || this.state.testConnectionLoading;
 
     let onClickFn = this.addConnection;
 
@@ -309,7 +325,7 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
   }
 
   private handleOptionChange = (currentTarget) => {
-    this.setState({isKVorJCEK : currentTarget.target.value === 'kvURL_jcekpath'});
+    this.setState({isUsingJCEKfile : currentTarget.target.value === 'usingJCEKfile'});
   }
 
   private renderContent() {
@@ -323,11 +339,11 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
     }
     let renderOption;
 
-    if (this.state.isKVorJCEK) {
-      renderOption = (<div className='kvurl-jcekpath'>
+    if (this.state.isUsingJCEKfile) {
+      renderOption = (<div className='using-jcek-file'>
         <div className="form-group row">
           <label className={LABEL_COL_CLASS}>
-            {T.translate(`${PREFIX}.KVUrl`)}
+            {T.translate(`${PREFIX}.kvURL`)}
             <span className="asterisk">*</span>
           </label>
           <div className={INPUT_COL_CLASS}>
@@ -335,9 +351,9 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
               <input
                 type="text"
                 className="form-control"
-                value={this.state.KVUrl}
-                onChange={this.handleChange.bind(this, 'KVUrl')}
-                placeholder={T.translate(`${PREFIX}.Placeholders.KVUrl`).toString()}
+                value={this.state.kvURL}
+                onChange={this.handleChange.bind(this, 'kvURL')}
+                placeholder={T.translate(`${PREFIX}.Placeholders.kvURL`).toString()}
               />
             </div>
           </div>
@@ -345,7 +361,7 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
 
         <div className="form-group row">
           <label className={LABEL_COL_CLASS}>
-            {T.translate(`${PREFIX}.JcekPath`)}
+            {T.translate(`${PREFIX}.clientIDKey`)}
             <span className="asterisk">*</span>
           </label>
           <div className={INPUT_COL_CLASS}>
@@ -353,16 +369,52 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
               <input
                 type="text"
                 className="form-control"
-                value={this.state.JcekPath}
-                onChange={this.handleChange.bind(this, 'JcekPath')}
-                placeholder={T.translate(`${PREFIX}.Placeholders.JcekPath`).toString()}
+                value={this.state.clientIDKey}
+                onChange={this.handleChange.bind(this, 'clientIDKey')}
+                placeholder={T.translate(`${PREFIX}.Placeholders.clientIDKey`).toString()}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-group row">
+          <label className={LABEL_COL_CLASS}>
+            {T.translate(`${PREFIX}.clientSecretKey`)}
+            <span className="asterisk">*</span>
+          </label>
+          <div className={INPUT_COL_CLASS}>
+            <div className="input-text">
+              <input
+                type="text"
+                className="form-control"
+                value={this.state.clientSecretKey}
+                onChange={this.handleChange.bind(this, 'clientSecretKey')}
+                placeholder={T.translate(`${PREFIX}.Placeholders.clientSecretKey`).toString()}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-group row">
+          <label className={LABEL_COL_CLASS}>
+            {T.translate(`${PREFIX}.endPointURLKey`)}
+            <span className="asterisk">*</span>
+          </label>
+          <div className={INPUT_COL_CLASS}>
+            <div className="input-text">
+              <input
+                type="text"
+                className="form-control"
+                value={this.state.endPointURLKey}
+                onChange={this.handleChange.bind(this, 'endPointURLKey')}
+                placeholder={T.translate(`${PREFIX}.Placeholders.endPointURLKey`).toString()}
               />
             </div>
           </div>
         </div>
       </div>);
     } else {
-      renderOption = (<div className='clientID'>
+      renderOption = (<div className='adls-gen1'>
         <div className="form-group row">
           <label className={LABEL_COL_CLASS}>
             {T.translate(`${PREFIX}.clientID`)}
@@ -383,7 +435,7 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
 
         <div className="form-group row">
           <label className={LABEL_COL_CLASS}>
-            {T.translate(`${PREFIX}.clientKey`)}
+            {T.translate(`${PREFIX}.clientSecret`)}
             <span className="asterisk">*</span>
           </label>
           <div className={INPUT_COL_CLASS}>
@@ -391,9 +443,9 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
               <input
                 type="text"
                 className="form-control"
-                value={this.state.clientKey}
-                onChange={this.handleChange.bind(this, 'clientKey')}
-                placeholder={T.translate(`${PREFIX}.Placeholders.clientKey`).toString()}
+                value={this.state.clientSecret}
+                onChange={this.handleChange.bind(this, 'clientSecret')}
+                placeholder={T.translate(`${PREFIX}.Placeholders.clientSecret`).toString()}
               />
             </div>
           </div>
@@ -401,7 +453,7 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
 
         <div className="form-group row">
           <label className={LABEL_COL_CLASS}>
-            {T.translate(`${PREFIX}.authTokenURL`)}
+            {T.translate(`${PREFIX}.refreshURL`)}
             <span className="asterisk">*</span>
           </label>
           <div className={INPUT_COL_CLASS}>
@@ -409,9 +461,9 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
               <input
                 type="text"
                 className="form-control"
-                value={this.state.authTokenURL}
-                onChange={this.handleChange.bind(this, 'authTokenURL')}
-                placeholder={T.translate(`${PREFIX}.Placeholders.authTokenURL`).toString()}
+                value={this.state.refreshURL}
+                onChange={this.handleChange.bind(this, 'refreshURL')}
+                placeholder={T.translate(`${PREFIX}.Placeholders.refreshURL`).toString()}
               />
             </div>
           </div>
@@ -443,7 +495,7 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
 
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
-              {T.translate(`${PREFIX}.ADLS_Directory`)}
+              {T.translate(`${PREFIX}.accountFQDN`)}
               <span className="asterisk">*</span>
             </label>
             <div className={INPUT_COL_CLASS}>
@@ -451,9 +503,9 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
                 <input
                   type="text"
                   className="form-control"
-                  value={this.state.ADLS_Directory}
-                  onChange={this.handleChange.bind(this, 'ADLS_Directory')}
-                  placeholder={T.translate(`${PREFIX}.Placeholders.ADLS_Directory`).toString()}
+                  value={this.state.accountFQDN}
+                  onChange={this.handleChange.bind(this, 'accountFQDN')}
+                  placeholder={T.translate(`${PREFIX}.Placeholders.accountFQDN`).toString()}
                 />
               </div>
             </div>
@@ -462,18 +514,25 @@ export default class ADLSConnection extends React.PureComponent<IADLSConnectionP
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}></label>
             <div>
-              <input
-                type="radio"
-                value="kvURL_jcekpath"
-                name="option"
-                checked={this.state.isKVorJCEK}
-                onChange={this.handleOptionChange.bind(this)}/> kvURL_jcekpath
-              <input
-                type="radio"
-                value="clientID"
-                name="option"
-                checked={!this.state.isKVorJCEK}
-                onChange={this.handleOptionChange.bind(this)}/> clientID
+              <label className='radio-label'>
+                <input
+                  type="radio"
+                  value="usingJCEKfile"
+                  name="option"
+                  checked={this.state.isUsingJCEKfile}
+                  onChange={this.handleOptionChange.bind(this)}/>
+                  {T.translate(`${PREFIX}.usingJcekFile`).toString()}
+              </label>
+              <label className='radio-label'>
+                <input
+                  type="radio"
+                  value="clientID"
+                  name="option"
+                  checked={!this.state.isUsingJCEKfile}
+                  onChange={this.handleOptionChange.bind(this)}/>
+                  {T.translate(`${PREFIX}.adlsGen1Credentials`).toString()}
+              </label>
+
             </div>
           </div>
           {renderOption}

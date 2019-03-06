@@ -53,5 +53,11 @@ $asterisk-color: $red-02;
       vertical-align: middle;
       margin-left: 5px;
     }
+    .radio-label {
+      margin-right: 20px;
+      input[type='radio'] {
+        margin-right: 5px;
+      }
+    }
   }
 }
