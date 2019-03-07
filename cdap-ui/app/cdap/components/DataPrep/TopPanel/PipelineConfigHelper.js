@@ -339,7 +339,7 @@ function constructBigQuerySource(artifactsList, bigqueryInfo) {
 function constructAdlsSource(artifactsList, adlsInfo) {
   if (!adlsInfo) { return null; }
 
-  let batchArtifact = find(artifactsList, {name: 'google-cloud'});
+  let batchArtifact = find(artifactsList, {name: 'adls-plugins'});
   if (!batchArtifact) {
     return T.translate(`${PREFIX}.adls`);
   }
@@ -360,14 +360,14 @@ function constructAdlsSource(artifactsList, adlsInfo) {
   };
 
   let batchStage = {
-    name: 'ADLS',
+    name: 'ADLS Batch Source',
     plugin: batchPluginInfo
   };
 
   return {
     batchSource: batchStage,
     connections: [{
-      from: 'ADLS',
+      from: 'ADLS Batch Source',
       to: 'Wrangler'
     }]
   };
@@ -490,7 +490,9 @@ function constructProperties(workspaceInfo, pluginVersion) {
   } else if (state.workspaceInfo.properties.connection === 'adls') {
     let specParams = {
       namespace,
-      workspaceId
+      workspaceId,
+      path: state.workspaceUri,
+      connectionId: state.workspaceInfo.properties.connectionid,
     };
     rxArray.push(MyDataPrepApi.getAdlsSpecification(specParams));
   }
