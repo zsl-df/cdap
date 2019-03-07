@@ -110,7 +110,7 @@ const MyDataPrepApi = {
   // ADLS
   adlsTestConnection: apiCreator(dataSrc, 'POST', 'REQUEST', `${connectionsPath}/adls/test`),
   adlsFileExplorer: apiCreator(dataSrc, 'GET', 'REQUEST', `${connectionsPath}/:connectionId/adls/explore`),
-  adlsReadFile: apiCreator(dataSrc, 'GET', 'REQUEST', `${connectionsPath}/:connectionId/adls/read`),
+  adlsReadFile: apiCreator(dataSrc, 'POST', 'REQUEST', `${connectionsPath}/:connectionId/adls/read`),
   getAdlsSpecification: apiCreator(dataSrc, 'GET', 'REQUEST', `${connectionsPath}/:connectionId/adls/specification`),
 };
 

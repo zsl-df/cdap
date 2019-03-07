@@ -72,6 +72,7 @@ const Actions = {
   SET_ADLS_PROPERTIES: 'SET_ADLS_PROPERTIES',
   SET_ADLS_CONNECTION_ID: 'SET_ADLS_CONNECTION_ID',
   SET_ADLS_LOADING: 'SET_ADLS_LOADING',
+  SET_ADLS_PREFIX: 'SET_ADLS_PREFIX',
   SET_ADLS_CONNECTION_DETAILS: 'SET_ADLS_CONNECTION_DETAILS',
   SET_ADLS_FILE_SYSTEM_CONTENTS: 'SET_ADLS_FILE_SYSTEM_CONTENTS',
   SET_ADLS_FILE_SYSTEM_PATH: 'SET_ADLS_FILE_SYSTEM_PATH',
@@ -543,6 +544,11 @@ const adls = (state = defaultADLSValue, action = defaultAction) => {
       return {
         ...state,
         loading: false
+      };
+    case Actions.SET_ADLS_PREFIX:
+      return {
+        ...state,
+        prefix: action.payload.prefix
       };
     case Actions.SET_ACTIVEBROWSER:
       return defaultADLSValue;

@@ -1042,6 +1042,7 @@ features:
       databaseTitle: "Table: {name}"
       file: File System
       gcs: Google Cloud Storage
+      adls: ADLS File System
       invalidFieldNameMessage: Invalid column name "{fieldName}"
       invalidFieldNameRemedies1: "Spaces and special characters other than - or _ are not allowed in column names."
       invalidFieldNameRemedies2: "You can try to "

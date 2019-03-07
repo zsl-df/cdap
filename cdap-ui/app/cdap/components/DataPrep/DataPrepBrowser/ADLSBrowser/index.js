@@ -15,11 +15,12 @@
  */
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import {Provider} from 'react-redux';
 import MyDataPrepApi from 'api/dataprep';
 import NamespaceStore from 'services/NamespaceStore';
 import classnames from 'classnames';
 import {Link} from 'react-router-dom';
-import ADLSPath from 'components/DataPrep/DataPrepBrowser/ADLSBrowser/ADLSPath';
+// import ADLSPath from 'components/DataPrep/DataPrepBrowser/ADLSBrowser/ADLSPath';
 import {preventPropagation as preventPropagationService, objectQuery} from 'services/helpers';
 import DataPrepBrowserStore from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore';
 import {setError, goToADLSfilePath, trimSuffixSlash} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
@@ -32,7 +33,8 @@ import lastIndexOf from 'lodash/lastIndexOf';
 import isNil from 'lodash/isNil';
 import DataprepBrowserTopPanel from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserTopPanel';
 import {ConnectionType} from 'components/DataPrepConnections/ConnectionType';
-
+import DataPrepBrowserPageTitle from 'components/DataPrep/DataPrepBrowser/PageTitle';
+import FilePath from 'components/FileBrowser/FilePath';
 const BASEPATH = '/';
 const PREFIX = 'features.ADLSBrowser';
 require('./ADLSBrowser.scss');
@@ -198,9 +200,10 @@ export default class ADLSBrowser extends Component {
     let params = {
       namespace,
       path: content.path,
-      lines: 10000,
-      sampler: 'first',
-      fraction: 10
+      lines: 1000,
+      sampler: '',
+      fraction: 10,
+      connectionId: DataPrepBrowserStore.getState().adls.connectionId
     };
 
     if (scope) {
@@ -215,7 +218,7 @@ export default class ADLSBrowser extends Component {
     }
 
     let headers = {
-      'Content-Type': content.type
+      'Content-Type': 'text/plain'
     };
 
     MyDataPrepApi.adlsReadFile(params, null, headers)
@@ -328,7 +331,7 @@ export default class ADLSBrowser extends Component {
       );
     }
 
-    let linkPath = `${this.state.statePath}${content.path}`;
+    let linkPath = `${this.state.statePath}${content.path}/`;
     linkPath = trimSuffixSlash(linkPath);
     return (
       <Link
@@ -491,6 +494,7 @@ export default class ADLSBrowser extends Component {
         <div className="content-body clearfix">
           {
             displayContent.map((content) => {
+              content.wrangle = true;
               return this.renderRow(content);
             })
           }
@@ -500,7 +504,7 @@ export default class ADLSBrowser extends Component {
   }
 
   render() {
-    return (
+   /*  return (
       <div className="file-browser-container">
         <DataprepBrowserTopPanel
           allowSidePanelToggle={this.props.allowSidePanelToggle}
@@ -510,12 +514,7 @@ export default class ADLSBrowser extends Component {
 
         <div className="sub-panel">
           <div className="path-container">
-            <ADLSPath
-              baseStatePath={this.state.statePath}
-              fullpath={this.state.path}
-              enableRouting={this.props.enableRouting}
-              onPathChange={goToADLSfilePath}
-            />
+
           </div>
 
           <div
@@ -543,6 +542,60 @@ export default class ADLSBrowser extends Component {
 
         {this.renderContent()}
       </div>
+    ); */
+
+    return (
+      <Provider store={DataPrepBrowserStore}>
+        <div className="adls-browser file-browser-container">
+          {
+            this.props.enableRouting ?
+              <DataPrepBrowserPageTitle
+                browserI18NName="ADLSBrowser"
+                browserStateName="adls"
+                locationToPathInState={['prefix']}
+              />
+            :
+              null
+          }
+          <DataprepBrowserTopPanel
+            allowSidePanelToggle={true}
+            toggle={this.props.toggle}
+            browserTitle={this.props.browserTitle}
+          />
+          <div className={classnames("sub-panel", {'routing-disabled': !this.props.enableRouting})}>
+            <div className="path-container">
+              <FilePath
+                baseStatePath={this.props.enableRouting ? this.props.match.url : '/'}
+                enableRouting={this.props.enableRouting}
+                fullpath={this.state.path}
+                onPathChange={goToADLSfilePath}
+              />
+            </div>
+            <div className="info-container"
+                title={T.translate(`${PREFIX}.TopPanel.directoryMetrics`, {count: this.state.contents.length})}>
+              <div className="info">
+                <span>
+                  {T.translate(`${PREFIX}.TopPanel.directoryMetrics`, {count: this.state.contents.length})}
+                </span>
+              </div>
+
+              <div className="search-container">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder={T.translate(`${PREFIX}.TopPanel.searchPlaceholder`)}
+                  value={this.state.search}
+                  onChange={this.handleSearch}
+                  autoFocus={this.state.searchFocus}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="adls-content">
+            {this.renderContent()}
+          </div>
+        </div>
+      </Provider>
     );
   }
 }
