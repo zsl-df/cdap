@@ -36,7 +36,6 @@ import DataPrepBrowserPageTitle from 'components/DataPrep/DataPrepBrowser/PageTi
 import FilePath from 'components/FileBrowser/FilePath';
 const BASEPATH = '/';
 const PREFIX = 'features.ADLSBrowser';
-require('./ADLSBrowser.scss');
 
 export default class ADLSBrowser extends Component {
 
