@@ -585,9 +585,9 @@ function constructProperties(workspaceInfo, pluginVersion) {
         sourceConfigs = constructGCSSource(res[0], res[2]);
       } else if (connectionType === 'bigquery') {
         sourceConfigs = constructBigQuerySource(res[0], res[2]);
-      } else if (state.workspaceInfo.properties.connection === 'spanner') {
+      } else if (connectionType === 'spanner') {
         sourceConfigs = constructSpannerSource(res[0], res[2]);
-      } else if (state.workspaceInfo.properties.connection === 'adls') {
+      } else if (connectionType === 'adls') {
         sourceConfigs = constructAdlsSource(res[0], res[2]);
       }
 
