@@ -20,7 +20,6 @@ import MyDataPrepApi from 'api/dataprep';
 import NamespaceStore from 'services/NamespaceStore';
 import classnames from 'classnames';
 import {Link} from 'react-router-dom';
-// import ADLSPath from 'components/DataPrep/DataPrepBrowser/ADLSBrowser/ADLSPath';
 import {preventPropagation as preventPropagationService, objectQuery} from 'services/helpers';
 import DataPrepBrowserStore from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore';
 import {setError, goToADLSfilePath, trimSuffixSlash} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
