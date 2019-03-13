@@ -1,0 +1,3 @@
+nimble
+pytest
+pytest-html

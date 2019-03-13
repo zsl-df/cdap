@@ -1,0 +1,232 @@
+defaults:
+  project: accelerators
+  build: nightly
+  customer: diane
+  mail_to: deepanshu.ahuja@guavus.com
+  status_wait_duration: 1800
+  headers: True
+  aggregate: False
+  delimiter: ","
+  file_name_flag: False
+jobs:
+  elastic_search_sink:
+    schedule:
+      source: cdap
+      type: create_and_start
+      pipeline_name: randynamic_pipeline_name
+      overwrite_pipeline: False
+      payload_file: randynamic_pipeline_payload
+    input:
+      input1:
+        source: file_server
+        base_path: modules/accelerators/cdap/elasticsearch/input/
+        file_format: csv
+    output:
+      output1:
+        actual:
+          source: elasticsearch
+          es_index: randynamic_index
+
+  hive_data_sink:
+    schedule:
+      source: cdap
+      type: create_and_start
+      pipeline_name: randynamic_pipeline_name
+      overwrite_pipeline: False
+      payload_file: randynamic_pipeline_payload
+    input:
+      input1:
+        source: file_server
+        base_path: modules/accelerators/cdap/hive_data_sink/input/
+        file_format: csv
+    output:
+      output1:
+        actual:
+          source: hive
+          db_name: randynamic_db_name
+          table_name: randynamic_table_name
+
+  join_plugin:
+    schedule:
+      source: cdap
+      type: create_and_start
+      pipeline_name: randynamic_pipeline_name
+      overwrite_pipeline: False
+      payload_file: randynamic_pipeline_payload
+    input:
+      input1:
+        source: file_server
+        base_path: modules/accelerators/cdap/JoinPlugin/input/sample100.csv
+        file_format: csv
+      input2:
+        source: file_server
+        base_path: modules/accelerators/cdap/JoinPlugin/input/mdn_list1
+        file_format: csv
+    output:
+      output1:
+        actual:
+          source: cdap_dataset
+          cdap_query: "select * from default.dataset_randynamic_dataset"
+          cdap_query_timeout: 60
+  outerjoin_plugin:
+    schedule:
+      source: cdap
+      type: create_and_start
+      pipeline_name: randynamic_pipeline_name
+      overwrite_pipeline: False
+      payload_file: randynamic_pipeline_payload
+    input:
+      input1:
+        source: file_server
+        base_path: modules/accelerators/cdap/JoinPlugin/input/sample100.csv
+        file_format: csv
+      input2:
+        source: file_server
+        base_path: modules/accelerators/cdap/JoinPlugin/input/mdn_list1
+        file_format: csv
+    output:
+      output1:
+        actual:
+          source: cdap_dataset
+          cdap_query: "select * from default.dataset_randynamic_dataset"
+          cdap_query_timeout: 60
+          headers: False
+          delimiter: "\t"
+          ignore_diff_column_indexes: 40
+
+  redis_enrich:
+    schedule:
+      source: cdap
+      type: create_and_start
+      pipeline_name: randynamic_pipeline_name
+      overwrite_pipeline: False
+      payload_file: randynamic_pipeline_payload
+    input:
+      input1:
+        source: file_server
+        base_path: modules/accelerators/cdap/redisEnrich/input/
+        file_format: csv
+      input2:
+        source: file_server
+        base_path: modules/accelerators/cdap/redisEnrich/redisinput/
+        file_format: csv
+        headers: False
+    output:
+      output1:
+        actual:
+          source: cdap_dataset
+          cdap_query: "select * from default.dataset_randynamic_dataset"
+          cdap_query_timeout: 60
+
+
+  kafka_source:
+    schedule:
+      source: cdap
+      type: create_and_start
+      pipeline_name: randynamic_pipeline_name
+      overwrite_pipeline: False
+      payload_file: randynamic_pipeline_payload
+    input:
+      input1:
+        source: file_server
+        base_path: modules/accelerators/cdap/kafka_source/input/differendatatypes.txt
+        file_format: json
+    output:
+      output1:
+        actual:
+          source: cdap_dataset
+          cdap_query: "select * from default.dataset_randynamic_dataset limit 2"
+          cdap_query_timeout: 60
+
+
+  kafka_source_text:
+    schedule:
+      source: cdap
+      type: create_and_start
+      pipeline_name: randynamic_pipeline_name
+      overwrite_pipeline: False
+      payload_file: randynamic_pipeline_payload
+    input:
+      input_text:
+        source: file_server
+        base_path: modules/accelerators/cdap/kafka_source/input/differendatatypes.txt
+        file_format: text
+        headers: False
+    output:
+      output_text:
+        actual:
+          source: cdap_dataset
+          cdap_query: "select * from default.dataset_randynamic_dataset"
+          cdap_query_timeout: 60
+          delimiter: "\t"
+          headers: False
+
+  kafka_sink_json:
+    schedule:
+      source: cdap
+      type: create_and_start
+      pipeline_name: randynamic_pipeline_name
+      overwrite_pipeline: False
+      payload_file: randynamic_pipeline_payload
+    input:
+      input1:
+        source: file_server
+        base_path: modules/accelerators/cdap/kafka_sink/input/sample1.txt
+        file_format: csv
+        headers: True
+        file_name_flag: False
+    output:
+      output1:
+        actual:
+          source: kafka
+          kafka_topic : randynamic_topic
+          value_deserializer_type: json
+
+
+
+  kafka_sink_csv:
+    schedule:
+      source: cdap
+      type: create_and_start
+      pipeline_name: randynamic_pipeline_name
+      overwrite_pipeline: False
+      payload_file: randynamic_pipeline_payload
+    input:
+      input1:
+        source: file_server
+        base_path: modules/accelerators/cdap/kafka_sink/input/sample1.txt
+        file_format: csv
+        headers: True
+        file_name_flag: False
+    output:
+      output1:
+        actual:
+          source: kafka
+          kafka_topic: randynamic_topic
+          value_deserializer_type: csv
+          headers: False
+          delimiter: ","
+
+
+
+  kafka_sink_registry_less_avro:
+    schedule:
+      source: cdap
+      type: create_and_start
+      pipeline_name: randynamic_pipeline_name
+      overwrite_pipeline: False
+      payload_file: randynamic_pipeline_payload
+    input:
+      input1:
+        source: file_server
+        base_path: modules/accelerators/cdap/kafka_sink/input/sample1.txt
+        file_format: csv
+        headers: True
+        file_name_flag: False
+    output:
+      output1:
+        actual:
+          source: kafka
+          kafka_topic: randynamic_topic
+          value_deserializer_type: registry_less_avro
+          value_schema_path: modules/accelerators/cdap/kafka_source/input/schema.json
