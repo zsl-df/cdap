@@ -15,9 +15,9 @@
  * the License.
  */
 
-/* eslint react/prop-types: 0 */
 import React from 'react';
 import isEmpty from 'lodash/isEmpty';
+import PropTypes from 'prop-types';
 
 require("./List.scss");
 
@@ -49,3 +49,9 @@ class List extends React.Component {
   }
 }
 export default List;
+List.propTypes = {
+  dataProvider: PropTypes.array,
+  header: PropTypes.string,
+  headerClass: PropTypes.string,
+  onHeaderClick: PropTypes.func
+};
