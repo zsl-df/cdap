@@ -55,5 +55,5 @@ GridHeader.propTypes = {
   selectedPipeline: PropTypes.object,
   backnavigation: PropTypes.func,
   save: PropTypes.func,
-  enableSave: PropTypes.func
+  enableSave: PropTypes.any
 };

@@ -118,7 +118,7 @@ class SaveFeatureModal extends React.Component {
 export default SaveFeatureModal;
 SaveFeatureModal.propTypes = {
   onClose: PropTypes.func,
-  open: PropTypes.boolean,
+  open: PropTypes.any,
   selectedPipeline: PropTypes.object,
   selectedFeatures: PropTypes.array
 };
