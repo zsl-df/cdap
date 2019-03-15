@@ -461,7 +461,7 @@ class PropertySelector extends React.Component {
 
 export default PropertySelector;
 PropertySelector.propTypes = {
-  selectedSchemas: PropTypes.object,
+  selectedSchemas: PropTypes.array,
   detectedProperties: PropTypes.array,
   availableProperties: PropTypes.array,
   setDetectedProperties: PropTypes.func,
