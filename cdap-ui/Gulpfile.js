@@ -320,6 +320,7 @@ gulp.task('html:partials', function() {
     './app/features/{userprofile,}/**/*.html',
     '!./app/tracker/tracker.html',
     '!./app/hydrator/hydrator.html',
+    '!./app/hydrator/fePipeline.html',
     '!./app/logviewer/logviewer.html'
     ])
       .pipe(plug.htmlmin({ removeComments: true }))
@@ -330,6 +331,7 @@ gulp.task('html:main', function() {
   return gulp.src([
     './app/tracker/tracker.html',
     './app/hydrator/hydrator.html',
+    './app/hydrator/fePipeline.html',
     './app/logviewer/logviewer.html',
   ])
     .pipe(plug.htmlmin({ removeComments: true }))

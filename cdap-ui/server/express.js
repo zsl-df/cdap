@@ -613,6 +613,23 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
      res.sendFile(DIST_PATH + '/hydrator.html');
     }
   ]);
+
+  // any other path, serve index.html
+  app.all(['/fePipeline', '/fePipeline*'], [
+    function (req, res) {
+      // BCookie is the browser cookie, that is generated and will live for a year.
+      // This cookie is always generated to provide unique id for the browser that
+      // is being used to interact with the CDAP backend.
+      var date = new Date();
+      date.setDate(date.getDate() + 365); // Expires after a year.
+      if (!req.cookies.bcookie) {
+        res.cookie('bcookie', uuidV4(), { expires: date });
+      } else {
+        res.cookie('bcookie', req.cookies.bcookie, { expires: date });
+      }
+     res.sendFile(DIST_PATH + '/fePipeline.html');
+    }
+  ]);
   app.all(['/metadata', '/metadata*'], [
     function (req, res) {
       // BCookie is the browser cookie, that is generated and will live for a year.

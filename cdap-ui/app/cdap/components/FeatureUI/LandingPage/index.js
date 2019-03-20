@@ -39,6 +39,7 @@ import {
 } from '../config';
 import { Observable } from 'rxjs/Observable';
 import AlertModal from '../AlertModal';
+import ViewPipelineModal from '../ViewPipelineModal';
 import FeatureSelection from '../FeatureSelection';
 import { getPropertyUpdateObj, updatePropertyMapWithObj, getFeatureObject, checkResponseError } from '../util';
 import NamespaceStore from 'services/NamespaceStore';
@@ -73,6 +74,7 @@ class LandingPage extends React.Component {
       dropdownOpen: false,
       showFeatureWizard: false,
       openAlertModal: false,
+      openViewPipelineModal: false,
       alertMessage: "",
       pipelineTypes: PIPELINE_TYPES,
       selectedPipelineType: 'All',
@@ -226,7 +228,11 @@ class LandingPage extends React.Component {
   }
 
   viewPipeline(pipeline) {
-    let navigatePath = `${window.location.origin}/pipelines/ns/${NamespaceStore.getState().selectedNamespace}/view/${pipeline.pipelineName}`;
+    let navigatePath = `${window.location.origin}/fePipeline/ns/${NamespaceStore.getState().selectedNamespace}/view/${pipeline.pipelineName}`;
+   /*  this.setState({
+      openViewPipelineModal: true
+    }); */
+    console.log(navigatePath);
     window.location.href = navigatePath;
   }
 
@@ -665,6 +671,7 @@ class LandingPage extends React.Component {
               onSubmit={this.saveFeature.bind(this)} />
             <AlertModal open={this.state.openAlertModal} message={this.state.alertMessage}
               onClose={this.onAlertClose.bind(this)} />
+            <ViewPipelineModal open={this.state.openViewPipelineModal}></ViewPipelineModal>
           </div>
       }
       </div>
