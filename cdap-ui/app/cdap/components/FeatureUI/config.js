@@ -15,7 +15,7 @@
 */
 
 import { getEpochDateString } from "./GridFormatters";
-export const REMOTE_IP = "http://192.168.156.36:11015";
+export const REMOTE_IP = "http://192.168.133.249:11015";
 const SERVICE_PORT = "11015";
 
 export const SERVER_IP = (window.location.hostname == "localhost") ? REMOTE_IP : (window.location.protocol + "//" + window.location.hostname + ":" + SERVICE_PORT);
@@ -57,7 +57,7 @@ export const ERROR_MESSAGES = {
 
 
 export const IS_OFFLINE = false;
-export const USE_REMOTE_SERVER = false;
+export const USE_REMOTE_SERVER = true;
 
 export const PIPELINE_RUN_NAME = "pipelineRunName";
 export const PIPELINE_SCHEMAS = "dataSchemaNames";

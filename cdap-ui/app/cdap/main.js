@@ -54,6 +54,7 @@ import OverlayFocus from 'components/OverlayFocus';
 import {Theme} from 'services/ThemeHelper';
 import AuthRefresher from 'components/AuthRefresher';
 import { getClassNameForHeaderFooter } from 'components/FeatureUI/util';
+import setupPlugins from './setup/setupPlugins.js';
 
 const SampleTSXComponent = Loadable({
   loader: () => import (/* webpackChunkName: "SampleTSXComponent" */ 'components/SampleTSXComponent'),
@@ -193,6 +194,7 @@ const className = getClassNameForHeaderFooter();
 if (className) {
   appContainer.classList.add(className);
 }
+setupPlugins();
 
 ReactDOM.render(
   <CDAP />,

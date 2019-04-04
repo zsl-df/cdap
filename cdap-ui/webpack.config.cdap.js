@@ -187,7 +187,7 @@ var rules = [
     ]
   },
   {
-    test: /\.(ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+    test: /\.(ttf|eot|png)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
     use: 'url-loader'
   },
   {

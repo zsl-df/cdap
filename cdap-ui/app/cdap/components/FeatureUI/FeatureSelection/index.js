@@ -17,8 +17,8 @@
 import React, { Component } from 'react';
 import FilterContainer from './FilterContainer';
 import './FeatureSelection.scss';
-import GridHeader from './GridHeader';
-import GridContainer from './GridContainer';
+/* import GridHeader from './GridHeader';
+import GridContainer from './GridContainer'; */
 import { isNil, cloneDeep } from 'lodash';
 import {
   GET_PIPE_LINE_FILTERED,
@@ -34,6 +34,8 @@ import NamespaceStore from 'services/NamespaceStore';
 import { checkResponseError } from '../util';
 import SaveFeatureModal from './SaveFeatureModal';
 import PropTypes from 'prop-types';
+// import { Histogram, withScreenSize, BarSeries, XAxis, YAxis } from '@data-ui/histogram';
+import { SuperChart } from '@superset-ui/chart';
 
 class FeatureSelection extends Component {
 
@@ -333,15 +335,116 @@ class FeatureSelection extends Component {
 
 
   render() {
+    const arr = this.state.gridRowData;
+
+   /* const ResponsiveHistogram = withScreenSize(({ screenWidth, ...rest }) => (
+      <Histogram
+        width={Math.min(1000, screenWidth / 1.3)}
+        height={Math.min(1000 / 1.8, screenWidth / 1.3 / 1.8)}
+        {...rest}
+      >
+      </Histogram>
+    ));
+    const dataUI = (<ResponsiveHistogram
+      ariaLabel="My histogram of ..."
+      orientation="vertical"
+      cumulative={false}
+      normalized={true}
+      binCount={25}
+      valueAccessor={datum => datum['Num of Non Zeros']}
+      binType="numeric"
+      >
+
+      <BarSeries
+        fillOpacity={0.15}
+        rawData={arr}
+      />
+      <XAxis />
+      <YAxis />
+    </ResponsiveHistogram>);
+    console.log(dataUI); */
+      const data = [
+        {
+          key: 'Entrance exam',
+          values: [
+            0.87,
+            0.944,
+            1.0,
+            0.879,
+            0.69,
+            0.667,
+            0.794,
+            0.838,
+            0.875,
+            0.385,
+            0.968,
+            0.804,
+            1.0,
+            0.943,
+            0.96,
+            0.333,
+            0.5,
+            0.929,
+            0.863,
+            0.75,
+            0.957,
+            0.914,
+            1.0,
+            0.909,
+            0.742,
+            0.964,
+            0.25,
+            0.75,
+            0.5,
+            0.867,
+            0.909,
+            0.333,
+            0.867,
+            0.952,
+            0.857,
+            0.949,
+            0.857,
+            0.333,
+            0.8,
+            0.707,
+            0.833,
+            0.75,
+            0.88,
+            0.771,
+            1.0,
+            1.0,
+            0.769,
+            1.0,
+            0.769,
+            0.622,
+            0.909,
+            0.725,
+            0.951,
+            1.0,
+          ],
+        },
+      ];
+
     return (
       <div className="feature-selection-box">
         <div className="grid-box">
-          <GridHeader selectedPipeline={this.props.selectedPipeline} backnavigation={this.navigateToParentWindow}
-            save={this.onSaveClick} enableSave={this.state.enableSave}></GridHeader>
-          <GridContainer gridColums={this.state.gridColumnDefs}
-            rowData={this.state.gridRowData}
-            selectionChange={this.gridRowSelectionChange}
-          ></GridContainer>
+        <SuperChart
+          chartType="histogram"
+          chartProps={{
+            formData: {
+              colorScheme: 'd3Category10',
+              globalOpacity: 1,
+              linkLength: 15, // binCount
+              normalized: false,
+              xAxisLabel: 'Score',
+              yAxisLabel: 'Count',
+            },
+            height: 400,
+            payload: { data },
+            width: 400,
+          }}
+        />
+
         </div>
         <div className="filter-box">
           <Nav tabs className="tab-header">

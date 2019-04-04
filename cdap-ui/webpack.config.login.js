@@ -164,6 +164,10 @@ var rules = [
   {
     test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
     use: 'file-loader'
+  },
+  {
+    test: /\.png?$/,
+    use: 'url-loader'
   }
 ];
 var webpackConfig = {
