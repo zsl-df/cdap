@@ -293,7 +293,7 @@ export default class ColumnActionsDropdown extends Component {
           },
           preventOverflow: {
             boundariesElement: tableContainer,
-            priority: ['top', 'bottom'],
+            priority: ['top'],
             escapeWithReference: true
           }
         }}
