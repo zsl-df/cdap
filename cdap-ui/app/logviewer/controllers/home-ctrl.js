@@ -57,6 +57,7 @@ class LogsAppHomeController {
     if (document.title.indexOf('started at') === -1 && this.startTime) {
       document.title = document.title + ' (started at ' + this.moment.utc(this.startTime * 1000).format('MM/DD/YYYY HH:mm:ss')+ ' )';
     }
+    document.title = document.title.replace("CDAP |", "Data Playbook |");
   }
 
   checkValidQueryParams() {
