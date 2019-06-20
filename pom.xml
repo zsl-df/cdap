@@ -2378,18 +2378,6 @@
                     <goal>run</goal>
                   </goals>
                 </execution>
-                <execution>
-                  <id>rpm-log-permission</id>
-                  <phase>prepare-package</phase>
-                  <configuration>
-                    <target>
-                      <chmod file="${stage.dir}/etc/logrotate.d/**" perm="644"/>
-                    </target>
-                  </configuration>
-                  <goals>
-                    <goal>run</goal>
-                  </goals>
-                </execution>
               </executions>
             </plugin>
           </plugins>
@@ -2487,18 +2475,6 @@
                   <configuration>
                     <target>
                       <chmod file="${stage.dir}-deb/opt/cdap/${package.name}/bin/**" perm="755"/>
-                    </target>
-                  </configuration>
-                  <goals>
-                    <goal>run</goal>
-                  </goals>
-                </execution>
-                <execution>
-                  <id>deb-log-permission</id>
-                  <phase>prepare-package</phase>
-                  <configuration>
-                    <target>
-                      <chmod file="${stage.dir}-deb/etc/logrotate.d/**" perm="644"/>
                     </target>
                   </configuration>
                   <goals>
