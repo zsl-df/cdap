@@ -63,8 +63,9 @@
                 placeholder="Enter a description for your pipeline."
                 ng-if="HydratorPlusPlusTopPanelCtrl.metadataExpanded"></textarea>
       <div class="btn-group pull-left" ng-if="HydratorPlusPlusTopPanelCtrl.metadataExpanded">
-        <button type="button" class="btn btn-primary save-button" ng-click="HydratorPlusPlusTopPanelCtrl.saveMetadata($event)">Save</button>
+        <button type="button" class="btn btn-primary save-button" ng-click="HydratorPlusPlusTopPanelCtrl.saveMetadata($event)" ng-disabled="!HydratorPlusPlusTopPanelCtrl.state.metadata['name']">Save</button>
         <button type="button" class="btn btn-secondary cancel-button" ng-click="HydratorPlusPlusTopPanelCtrl.resetMetadata($event)">Cancel</button>
+        <div class="error-message" ng-if="HydratorPlusPlusTopPanelCtrl.isSomeInputError()">{{ HydratorPlusPlusTopPanelCtrl.getSomeInputErrorMessage() }}</div>
       </div>
     </div>
   </div>

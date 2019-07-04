@@ -68,6 +68,17 @@ class HydratorPlusPlusTopPanelCtrl {
     this.showIcon = window.CaskCommon.ThemeHelper.Theme.showPipelineCreateButton;
     $scope.getClassName = window.CaskCommon.Util.getClassNameForHeaderFooter();
 
+    this.dom_sanitizer = window['DOMPurify'].sanitize;
+    this.TEMPLATES = {
+      'simple': {
+          ALLOWED_TAGS: [],
+      },
+    };
+    this.inputErrors = {
+      'metadataName': null,
+      'metadataDescription': null
+    };
+
     if ($stateParams.isClone) {
       this.openMetadata();
     }
@@ -199,10 +210,22 @@ class HydratorPlusPlusTopPanelCtrl {
   resetMetadata(event) {
     this.setState();
     this.metadataExpanded = false;
+    Object.keys(this.inputErrors).map(x => this.inputErrors[x] = null);
     event.preventDefault();
     event.stopPropagation();
   }
   saveMetadata(event) {
+    // TODO: use map if possible
+    const sanitizedName = this.inputSanitize(this.state.metadata.name);
+    this.inputErrors['metadataName'] = sanitizedName['error'];
+    const sanitizedDescription = this.inputSanitize(this.state.metadata.description);
+    this.inputErrors['metadataDescription'] = sanitizedDescription['error'];
+    // If there are any input errors don't save metadata
+    if (this.isSomeInputError()) {
+      console.error(this.getSomeInputErrorMessage());
+      return;
+    }
+
     this.HydratorPlusPlusConfigActions.setMetadataInfo(this.state.metadata.name, this.state.metadata.description);
     if (this.state.metadata.description) {
       this.parsedDescription = this.state.metadata.description.replace(/\n/g, ' ');
@@ -219,11 +242,27 @@ class HydratorPlusPlusTopPanelCtrl {
     // Save when user hits ENTER key.
     if (event.keyCode === 13) {
       this.saveMetadata(event);
-      this.metadataExpanded = false;
+      //  this.metadataExpanded = false;
     } else if (event.keyCode === 27) {
       // Reset if the user hits ESC key.
       this.resetMetadata(event);
     }
+  }
+
+  inputSanitize(dirty, config = 'simple') {
+      const clean = this.dom_sanitizer(dirty, this.TEMPLATES[config]);
+      // TODO: need a better error code!
+      const error = 'Invalid Input';
+      return {
+          'clean': clean,
+          'error': clean !== dirty ? error : null,
+      };
+  }
+  isSomeInputError() {
+    return Object.keys(this.inputErrors).some(x => this.inputErrors[x] !== null);
+  }
+  getSomeInputErrorMessage() {
+    return this.inputErrors[Object.keys(this.inputErrors).find(x => this.inputErrors[x] !== null)];
   }
 
   onImport() {
