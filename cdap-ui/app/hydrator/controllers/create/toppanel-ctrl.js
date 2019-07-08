@@ -216,9 +216,9 @@ class HydratorPlusPlusTopPanelCtrl {
   }
   saveMetadata(event) {
     // TODO: use map if possible
-    const sanitizedName = this.inputSanitize(this.state.metadata.name);
+    const sanitizedName = this.inputSanitize(this.state.metadata.name, 'metadataName');
     this.inputErrors['metadataName'] = sanitizedName['error'];
-    const sanitizedDescription = this.inputSanitize(this.state.metadata.description);
+    const sanitizedDescription = this.inputSanitize(this.state.metadata.description, 'metadataDescription');
     this.inputErrors['metadataDescription'] = sanitizedDescription['error'];
     // If there are any input errors don't save metadata
     if (this.isSomeInputError()) {
@@ -249,10 +249,10 @@ class HydratorPlusPlusTopPanelCtrl {
     }
   }
 
-  inputSanitize(dirty, config = 'simple') {
+  inputSanitize(dirty, inputName = '', config = 'simple') {
       const clean = this.dom_sanitizer(dirty, this.TEMPLATES[config]);
       // TODO: need a better error code!
-      const error = 'Invalid Input';
+      const error = 'Invalid Input' + (inputName ? ': '  + inputName : inputName);
       return {
           'clean': clean,
           'error': clean !== dirty ? error : null,
@@ -262,7 +262,8 @@ class HydratorPlusPlusTopPanelCtrl {
     return Object.keys(this.inputErrors).some(x => this.inputErrors[x] !== null);
   }
   getSomeInputErrorMessage() {
-    return this.inputErrors[Object.keys(this.inputErrors).find(x => this.inputErrors[x] !== null)];
+    const idx = Object.keys(this.inputErrors).filter(x => this.inputErrors[x] !== null);
+    return idx.map(i => this.inputErrors[i]).join(' | ');
   }
 
   onImport() {

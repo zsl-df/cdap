@@ -37,6 +37,7 @@ import isEmpty from 'lodash/isEmpty';
 import cloneDeep from 'lodash/cloneDeep';
 import {Observable} from 'rxjs/Observable';
 import CardActionFeedback from 'components/CardActionFeedback';
+import inputSanitizer from 'services/input-sanitizer';
 
 require('./IngestDataFromDataPrep.scss');
 
@@ -87,6 +88,7 @@ export default class IngestDataFromDataPrep extends Component {
       sinkPluginsForDataset: {},
       batchPipelineConfig: {},
       datasetName: '',
+      inputError: null,
       copyingSteps: [...copyingSteps],
       copyInProgress: false,
       // This is to enable closing the modal on workflow start.
@@ -358,6 +360,15 @@ export default class IngestDataFromDataPrep extends Component {
   }
 
   submitForm = () => {
+    const cleanedDatasetName = inputSanitizer({
+      dirty: this.state.datasetName,
+      inputName: 'dataset name'
+    });
+    if (cleanedDatasetName['error'] !== null) {
+      // found an error so not saving the input.
+      this.setState({inputError: cleanedDatasetName['error']});
+      return;
+    }
     let steps = cloneDeep(copyingSteps);
     let {dataprep} = DataPrepStore.getState();
     let workspaceProps = objectQuery(dataprep, 'workspaceInfo', 'properties');
@@ -733,6 +744,12 @@ export default class IngestDataFromDataPrep extends Component {
                 id="dataset-name-info-icon"
                 name="icon-info-circle"
               />
+              {
+                this.state.inputError !== null &&
+                <div className="text-danger">
+                  <span className="fa fa-exclamation-triangle">{ this.state.inputError }</span>
+                </div>
+              }
               <UncontrolledTooltip target="dataset-name-info-icon" delay={{show: 250, hide: 0}}>
                 {T.translate(`${PREFIX}.Form.datasetTooltip`)}
               </UncontrolledTooltip>
