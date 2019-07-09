@@ -27,6 +27,7 @@ import {objectQuery} from 'services/helpers';
 import BtnWithLoading from 'components/BtnWithLoading';
 import ee from 'event-emitter';
 import {ConnectionType} from 'components/DataPrepConnections/ConnectionType';
+import inputSanitizer from 'services/input-sanitizer';
 const PREFIX = 'features.DataPrepConnections.AddConnections.S3';
 const ADDCONN_PREFIX = 'features.DataPrepConnections.AddConnections';
 
@@ -112,6 +113,11 @@ export default class S3Connection extends Component {
       connectionResult: {
         type: null,
         message: null
+      },
+      inputErrors: {
+        'name': null,
+        'accessKeyId': null,
+        'accessSecretKey': null
       }
     };
 
@@ -159,6 +165,10 @@ export default class S3Connection extends Component {
   }
 
   addConnection() {
+    if (this.testInputs()) {
+      return;
+    }
+
     let namespace = NamespaceStore.getState().selectedNamespace;
 
     let requestBody = {
@@ -185,6 +195,10 @@ export default class S3Connection extends Component {
   }
 
   editConnection() {
+    if (this.testInputs()) {
+      return;
+    }
+
     let namespace = NamespaceStore.getState().selectedNamespace;
 
     let params = {
@@ -218,6 +232,10 @@ export default class S3Connection extends Component {
   }
 
   testConnection() {
+    if (this.testInputs()) {
+      return;
+    }
+
     this.setState({
       testConnectionLoading: true,
       connectionResult: {
@@ -261,6 +279,60 @@ export default class S3Connection extends Component {
           testConnectionLoading: false
         });
       });
+  }
+
+  /** Set input errors and return true if there is some error. */
+  testInputs() {
+
+    this.setState({
+      connectionResult: {
+        type: null,
+        message: null
+      },
+      error: null
+    });
+
+    const inputsList = Object.keys(this.state.inputErrors);
+    // updatedInputErrors exists because setState() is async.
+    let updatedInputErrors = {};
+
+    inputsList.forEach(key => {
+      let cleanedInput;
+      if (['accessKeyId', 'accessSecretKey'].includes(key)) {
+        const configUsed = (key === 'accessKeyId' ? 'aws_access_key_id' : 'aws_secret_access_key');
+        cleanedInput = inputSanitizer({dirty: this.state[key], inputName: key, config: configUsed});
+      }
+      if (key === 'name') {
+        cleanedInput = inputSanitizer({dirty: this.state[key], inputName: key});
+      }
+      updatedInputErrors[key] = cleanedInput['error'];
+    });
+
+    this.setState(prevState => ({
+      ...prevState,
+      inputErrors: updatedInputErrors
+    }), () => {
+      if (inputsList.some(key => updatedInputErrors[key] !== null)) {
+        this.renderInputErrors();
+      }
+    });
+
+    return (inputsList.some(key => updatedInputErrors[key] !== null) ? true : false);
+  }
+
+  /** Render input errors. Only gets called if there is some input error.
+  No checks are done to see if there actually has been an input error.
+  Such check must be done before calling this method. */
+  renderInputErrors() {
+    let errorMessage = Object.values(this.state.inputErrors).join(' ');
+    console.log(errorMessage);
+    this.setState({
+      error: errorMessage,
+      connectionResult: {
+        type: CARD_ACTION_TYPES.DANGER,
+        message: errorMessage
+      }
+    });
   }
 
   handleChange(key, e) {
