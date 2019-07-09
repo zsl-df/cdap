@@ -25,6 +25,7 @@ import CardActionFeedback, {CARD_ACTION_TYPES} from 'components/CardActionFeedba
 import {objectQuery} from 'services/helpers';
 import ee from 'event-emitter';
 import BtnWithLoading from 'components/BtnWithLoading';
+import inputSanitizer from 'services/input-sanitizer';
 
 const PREFIX = 'features.DataPrepConnections.AddConnections.BigQuery';
 const ADDCONN_PREFIX = 'features.DataPrepConnections.AddConnections';
@@ -52,6 +53,28 @@ export default class BigQueryConnection extends Component {
     connectionResult: {
       message: null,
       type: null
+    },
+    inputFields: {
+      'name': {
+        'error': null,
+        'required': true,
+        'config': 'simple'
+      },
+      'projectId': {
+        'error': null,
+        'required': false,
+        'config': 'gcs_project_id'
+      },
+      'bucket': {
+        'error': null,
+        'required': false,
+        'config': 'gcs_bucket'
+      },
+      'serviceAccountKeyfile': {
+        'error': null,
+        'required': false,
+        'config': 'simple'
+      }
     }
   };
 
@@ -112,6 +135,10 @@ export default class BigQueryConnection extends Component {
   }
 
   addConnection = () => {
+    if (this.testInputs()) {
+      return;
+    }
+
     let namespace = NamespaceStore.getState().selectedNamespace;
 
     let requestBody = {
@@ -134,6 +161,10 @@ export default class BigQueryConnection extends Component {
   };
 
   editConnection = () => {
+    if (this.testInputs()) {
+      return;
+    }
+
     let namespace = NamespaceStore.getState().selectedNamespace;
 
     let params = {
@@ -163,6 +194,10 @@ export default class BigQueryConnection extends Component {
   };
 
   testConnection = () => {
+    if (this.testInputs()) {
+      return;
+    }
+
     this.setState({
       testConnectionLoading: true,
       connectionResult: {
@@ -203,6 +238,64 @@ export default class BigQueryConnection extends Component {
         });
       });
   };
+
+  /** Set input errors and return true if there is some error. */
+  testInputs() {
+
+    this.setState({
+      connectionResult: {
+        type: null,
+        message: null
+      },
+      error: null
+    });
+
+    const inputsList = Object.keys(this.state.inputFields);
+    // updatedInputFields exists because setState() is async.
+    let updatedInputFields = {};
+
+    inputsList.forEach(key => {
+      let cleanedInput;
+      const inputField = this.state.inputFields[key];
+      if (!this.state[key]) {
+        // don't sanitize if field is empty and not required
+        if (!inputField['required']) {
+          cleanedInput = {'error': null};
+        }
+      } else {
+        cleanedInput = inputSanitizer({dirty: this.state[key], inputName: key, config: inputField['config']});
+      }
+      updatedInputFields[key] = {
+        ...inputField,
+        'error': cleanedInput['error']
+      };
+    });
+
+    this.setState(prevState => ({
+      ...prevState,
+      inputFields: updatedInputFields
+    }), () => {
+      if (inputsList.some(key => updatedInputFields[key]['error'] !== null)) {
+        this.renderInputErrors();
+      }
+    });
+
+    return (inputsList.some(key => updatedInputFields[key]['error'] !== null) ? true : false);
+  }
+
+  /** Render input errors. Only gets called if there is some input error.
+  No checks are done to see if there actually has been an input error.
+  Such check must be done before calling this method. */
+  renderInputErrors() {
+    let errorMessage = Object.values(this.state.inputFields).map(x => x['error']).join(' ');
+    this.setState({
+      error: errorMessage,
+      connectionResult: {
+        type: CARD_ACTION_TYPES.DANGER,
+        message: errorMessage
+      }
+    });
+  }
 
   handleChange = (key, e) => {
     this.setState({
@@ -365,7 +458,7 @@ export default class BigQueryConnection extends Component {
 
   renderModalFooter= () => {
     if (this.state.error) {
-      return this.renderError();
+      // return this.renderError();
     }
     return this.renderAddConnectionButton();
   };
