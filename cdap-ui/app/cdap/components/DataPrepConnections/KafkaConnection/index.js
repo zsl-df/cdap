@@ -29,6 +29,7 @@ import ee from 'event-emitter';
 import CardActionFeedback, {CARD_ACTION_TYPES} from 'components/CardActionFeedback';
 import BtnWithLoading from 'components/BtnWithLoading';
 import {ConnectionType} from 'components/DataPrepConnections/ConnectionType';
+import inputSanitizer from 'services/input-sanitizer';
 
 const PREFIX = 'features.DataPrepConnections.AddConnections.Kafka';
 const ADDCONN_PREFIX = 'features.DataPrepConnections.AddConnections';
@@ -136,6 +137,10 @@ export default class KafkaConnection extends Component {
   }
 
   addConnection() {
+    if (this.testInputs()) {
+      return;
+    }
+
     let namespace = NamespaceStore.getState().selectedNamespace;
 
     let requestBody = {
@@ -160,6 +165,10 @@ export default class KafkaConnection extends Component {
   }
 
   editConnection() {
+    if (this.testInputs()) {
+      return;
+    }
+
     let namespace = NamespaceStore.getState().selectedNamespace;
 
     let params = {
@@ -191,6 +200,10 @@ export default class KafkaConnection extends Component {
   }
 
   testConnection() {
+    if (this.testInputs()) {
+      return;
+    }
+
     this.setState({
       testConnectionLoading: true,
       connectionResult: {
@@ -232,6 +245,51 @@ export default class KafkaConnection extends Component {
           testConnectionLoading: false
         });
       });
+  }
+
+  /** Set input errors and return true if there is some error. */
+  testInputs() {
+
+    this.setState({
+      connectionResult: {
+        type: null,
+        message: null
+      },
+      error: null
+    });
+
+    const cleanName = inputSanitizer({dirty: this.state['name'], inputName: 'name', config: 'simple'});
+    const nameError = cleanName['error'];
+
+    const brokerErrorsList = [];
+    this.state.brokersList.forEach(broker => {
+      const cleanBrokerHost = inputSanitizer({dirty: broker.host, inputName: 'hostname', config: 'hostname_rfc1123'});
+      brokerErrorsList.push({
+        ...broker,
+        error: cleanBrokerHost['error']
+      });
+    });
+
+    if (nameError !== null || brokerErrorsList.some(broker => broker.error !== null)) {
+      this.renderInputErrors(nameError, brokerErrorsList);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /** Render input errors. Only gets called if there is some input error.
+  No checks are done to see if there actually has been an input error.
+  Such check must be done before calling this method. */
+  renderInputErrors(nameError, brokerErrorsList) {
+    let errorMessage = (nameError === null ? '' : nameError + '\n') + brokerErrorsList.map(broker => broker.error).join('\n');
+    this.setState({
+      error: errorMessage,
+      connectionResult: {
+        type: CARD_ACTION_TYPES.DANGER,
+        message: errorMessage
+      }
+    });
   }
 
   handleChange(key, e) {
