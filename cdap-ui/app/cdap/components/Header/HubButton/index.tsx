@@ -25,6 +25,7 @@ export default function HubButton() {
   }
 
   const featureName = Theme.featureNames.hub;
+  const localHubName = Theme.featureNames.localHub;
 
   return (
     <li
@@ -32,7 +33,8 @@ export default function HubButton() {
       className="with-pointer"
     >
       <CaskMarketButton>
-        <span className="hub-text-wrapper">{featureName}</span>
+        <span className="hub-text-wrapper left-button">{featureName}</span>
+        <span className="hub-text-wrapper">{localHubName}</span>
       </CaskMarketButton>
     </li>
   );

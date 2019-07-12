@@ -15,7 +15,7 @@
  */
 
 import React, {Component} from 'react';
-// import SearchTextBox from '../SearchTextBox';
+ import SearchTextBox from '../../SearchTextBox';
 import MarketPlaceEntity from 'components/MarketPlaceEntity';
 import T from 'i18n-react';
 import MarketStore from 'components/Market/store/market-store.js';
@@ -29,12 +29,13 @@ export default class AllTabContents extends Component {
     this.state = {
       searchStr: '',
       entities: this.getFilteredEntities(),
+      filterEntites: this.getFilteredEntities(),
       loading: MarketStore.getState().loading,
       isError: MarketStore.getState().isError
     };
 
     this.unsub = MarketStore.subscribe(() => {
-      this.setState({entities: this.getFilteredEntities()});
+      this.setState({entities: this.getFilteredEntities(), filterEntites: this.getFilteredEntities(), searchStr: ''});
       const {loading, isError} = MarketStore.getState();
       this.setState({loading, isError});
     });
@@ -66,8 +67,16 @@ export default class AllTabContents extends Component {
   }
 
   onSearch(changeEvent) {
+    let searchStr = changeEvent.target.value;
     // For now just save. Eventually we will make a backend call to get the search result.
-    this.setState({searchStr: changeEvent.target.value});
+
+    var results = this.state.entities;
+    if (searchStr!="") {
+      results = this.state.entities.filter(function(value) {
+        return value.label.toLowerCase().indexOf(searchStr.toLowerCase()) >= 0;
+      });
+    }
+    this.setState({searchStr: changeEvent.target.value,filterEntites: results});
   }
 
 
@@ -81,7 +90,7 @@ export default class AllTabContents extends Component {
     );
     const empty = <h3>{T.translate('features.Market.tabs.emptyTab')}</h3>;
     const entities = (
-      this.state.entities
+      this.state.filterEntites
         .map((e) => (
           <MarketPlaceEntity
             key={e.id}
@@ -94,7 +103,7 @@ export default class AllTabContents extends Component {
 
     if (this.state.loading) {
       return loadingElem;
-    } else if (this.state.entities.length === 0) {
+    } else if (this.state.filterEntites.length === 0) {
       return empty;
     } else {
       return entities;
@@ -113,13 +122,11 @@ export default class AllTabContents extends Component {
 
     return (
       <div className="all-tab-content">
-        {/*
           <SearchTextBox
             placeholder={T.translate('features.Market.search-placeholder')}
             value={this.state.searchStr}
             onChange={this.onSearch.bind(this)}
           />
-        */}
         <div className={classnames("body-section text-xs-center", {'empty-section': this.state.entities.length === 0 })}>
           {error}
           {this.handleBodyRender()}

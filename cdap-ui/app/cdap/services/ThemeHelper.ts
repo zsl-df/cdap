@@ -142,6 +142,7 @@ interface IFeatureNames {
   featureEngineering: string;
   entities: string;
   hub: string;
+  localHub: string;
   metadata: string;
   pipelines: string;
   reports: string;
@@ -228,6 +229,7 @@ function parse1Point0Spec(themeJSON: IOnePoint0SpecJSON): IThemeObj {
         featureEngineering: 'Feature Engineering',
         entities: 'Entities',
         hub: 'Hub',
+        localHub: themeJSON['local-hub-name'],
         metadata: 'Metadata',
         pipelines: 'Pipelines',
         reports: 'Reports',

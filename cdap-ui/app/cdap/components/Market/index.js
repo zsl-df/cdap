@@ -16,7 +16,7 @@
 
 import React, {Component} from 'react';
 import ConfigurableTab from '../ConfigurableTab';
-import {MyMarketApi} from 'api/market';
+import {MyMarketApi, setMarketPath} from 'api/market';
 import MarketAction from './action/market-action.js';
 import find from 'lodash/find';
 import MarketStore from 'components/Market/store/market-store.js';
@@ -33,14 +33,17 @@ export default class Market extends Component {
     this.state = {
       tabsList: [],
       tabConfig: null,
-      activeTab: 1
+      activeTab: 1,
+      marketType: props.marketType
     };
   }
 
   componentDidMount() {
+    setMarketPath(this.state.marketType);
+
     this.sub = MarketStore.subscribe(() => {
       let activeFilter = MarketStore.getState().filter;
-      let filter = find(this.state.tabConfig.tabs, { filter: activeFilter });
+      let filter = this.state.tabConfig ? find(this.state.tabConfig.tabs, { filter: activeFilter }) : null;
 
       if (filter && filter.id !== this.state.activeTab) {
         this.setState({
@@ -207,3 +210,7 @@ export default class Market extends Component {
     );
   }
 }
+
+Market.propTypes = {
+  marketType: 'Hub'
+};
