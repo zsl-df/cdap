@@ -78,6 +78,7 @@ var socketDataSource = angular.module(PKG.name+'.services');
             method: resource.method,
             suppressErrors: resource.suppressErrors || false
           };
+          console.log('socket-datasource pollStart URL::  '+re.url);
           if (resource.interval) {
             re.interval = resource.interval;
           }
@@ -113,6 +114,7 @@ var socketDataSource = angular.module(PKG.name+'.services');
             suppressErrors: resource.suppressErrors || false
           };
         }
+        console.log('socket-datasource pollStop URL::  '+re.url);
         if (resource.header) {
           re.header = resource.header;
         }

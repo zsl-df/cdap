@@ -32,7 +32,9 @@ import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/debounceTime';
 
+
 export default class Datasource {
+
   constructor(genericResponseHandlers = [() => true]) {
     let socketData = Socket.getObservable();
     this.bindings = {};
@@ -93,9 +95,11 @@ export default class Datasource {
     }
     if (!resource.url) {
       resource.url = Datasource.constructUrl(resource);
+      console.log('dataSource Request URL::  '+resource.url);
     }
 
     generatedResource.url = this.buildUrl(resource.url, resource.params);
+    console.log('dataSource Request generatedResource URL::  '+generatedResource.url);
 
     let subject = new Subject();
 
@@ -134,9 +138,11 @@ export default class Datasource {
 
     if (!resource.url) {
       resource.url = Datasource.constructUrl(resource);
+      console.log('dataSource Poll URL::  '+resource.url);
     }
 
     generatedResource.url = this.buildUrl(resource.url, resource.params);
+    console.log('dataSource Poll generatedResource URL::  '+generatedResource.url);
 
     let subject = new Subject();
 

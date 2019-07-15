@@ -37,6 +37,7 @@ angular.module(PKG.name + '.services')
 
       if (!resource.url) {
         resource.url = myCdapUrl.constructUrl(resource);
+        console.log('data startpoll URL::  '+resource.url);
       }
 
       return this.MyDataSource.poll(resource, cb, errorCb);
@@ -61,6 +62,7 @@ angular.module(PKG.name + '.services')
       }
       if (!resource.url) {
         resource.url = myCdapUrl.constructUrl(resource);
+        console.log('data stoppoll URL::  '+resource.url);
       }
 
       return this.MyDataSource.request(resource, cb, errorCb);
