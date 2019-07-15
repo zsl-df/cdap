@@ -32,6 +32,7 @@ interface IJsonFeatureNames {
   "feature-engineering"?: string;
   "entities"?: string;
   "hub"?: string;
+  "localHub"?: string;
   "metadata"?: string;
   "pipelines"?: string;
   "reports"?: string;
