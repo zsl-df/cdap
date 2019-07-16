@@ -8,7 +8,8 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupText,
-  Col
+  Col,
+  UncontrolledTooltip,
 } from 'reactstrap';
 
 export default function ValidatedInput(props) {
@@ -27,10 +28,13 @@ export default function ValidatedInput(props) {
         </Label>
         <Col sm={10}>
         <InputGroup>
-          <Input {...moreProps} invalid={invalidProp} id={label}/>
+          <Input {...moreProps} invalid={invalidProp}/>
           <InputGroupAddon addonType="append">
-            <InputGroupText>
-              <span title={inputInfo}>info</span>
+            <InputGroupText id={label.replace(/\s/g,'')}>
+              <span className="fa fa-info-circle"></span>
+              <UncontrolledTooltip placement="left" target={label.replace(/\s/g,'')}>
+                {inputInfo}
+              </UncontrolledTooltip>
             </InputGroupText>
           </InputGroupAddon>
         </InputGroup>
