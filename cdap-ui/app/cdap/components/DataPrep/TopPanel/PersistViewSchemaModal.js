@@ -29,7 +29,8 @@ import NamespaceStore from 'services/NamespaceStore';
 import { directiveRequestBodyCreator, viewSchemaPersistRequestBodyCreator } from 'components/DataPrep/helper';
 import isNil from 'lodash/isNil';
 import cookie from 'react-cookie';
-import inputSanitizer from 'services/input-sanitizer';
+import types from 'services/inputValidationTemplates';
+import ValidatedInput from 'components/ValidatedInput';
 const PREFIX = 'features.DataPrep.TopPanel';
 const mapErrorToMessage = (message) => {
   if (message.indexOf('invalid field name') !== -1) {
@@ -61,7 +62,8 @@ export default class PersistViewSchemaModal extends Component {
       datasetName: "",
       formloaded: false,
       navigateFE: false,
-      inputError: null
+      inputError: '',
+      inputTemplate: 'NAME'
     };
   }
 
@@ -74,7 +76,7 @@ export default class PersistViewSchemaModal extends Component {
     this.setState({
       error: false,
       loading: true,
-      inputError: null
+      inputError: ''
     });
 
     let config = this.state.realtimeConfig;
@@ -150,22 +152,25 @@ export default class PersistViewSchemaModal extends Component {
   }
 
   handleChange = (e) => {
-    this.setState({ datasetName: e.target.value });
+    const isValid = types[this.state.inputTemplate].validate(e.target.value);
+    let errorMsg = '';
+    if (e.target.value && !isValid) {
+      errorMsg = 'Invalid Input, see help.';
+    }
+    if (!e.target.value) {
+      errorMsg = 'You are required to fill this.';
+    }
+    this.setState({
+      datasetName: e.target.value,
+      inputError: errorMsg
+    });
   }
 
 
   handleSubmit = () => {
-    const cleanedDatasetName = inputSanitizer({
-        dirty: this.state.datasetName,
-        inputName: 'dataset name'
-      });
-    if (cleanedDatasetName['error'] !== null) {
-      // found an error so not saving the input.
-      this.setState({inputError: cleanedDatasetName['error']});
+    if (this.state.inputError) {
       return;
     }
-    // uri satnitize the dataset name 
-    this.setState({ datasetName: inputSanitizer({dirty: this.state.datasetName, config: 'uri'})['clean']});
     this.setState({ formloaded: true,error: false,loading: true, });
     this.persistViewSchema();
   }
@@ -207,7 +212,6 @@ export default class PersistViewSchemaModal extends Component {
 
   render() {
     let content;
-    let inputError;
 
     if (!this.state.configloading && !this.state.schemaloading && !this.state.formloaded) {
       content = null;
@@ -246,16 +250,6 @@ export default class PersistViewSchemaModal extends Component {
       }
     }
 
-    if (this.state.inputError === null) {
-      inputError = null;
-    } else {
-      inputError = (
-        <div className="text-danger">
-          <span className="fa fa-exclamation-triangle">{this.state.inputError}</span>
-        </div>
-      );
-    }
-
     return (
       <Modal
         isOpen={true}
@@ -267,15 +261,19 @@ export default class PersistViewSchemaModal extends Component {
         <ModalHeader>Persist Dataset</ModalHeader>
         <ModalBody>
           <div className="text-xs-left">
-            <label>
-              Dataset Name:
-                <input type="text" className='input-style' value={this.state.datasetName} onChange={this.handleChange} />
-            </label>
+            <ValidatedInput
+              type="text"
+              label="Dataset Name"
+              inputInfo={types[this.state.inputTemplate]['info']}
+              validationError={this.state.inputError}
+              required={true}
+              value={this.state.datasetName}
+              onChange={this.handleChange}
+            />
           </div>
         </ModalBody>
         <ModalFooter>
           {content}
-          {inputError}
           <fieldset className='buttons-container' disabled={this.state.loading}>
             {
               this.state.navigateFE ?

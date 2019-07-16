@@ -37,7 +37,8 @@ import isEmpty from 'lodash/isEmpty';
 import cloneDeep from 'lodash/cloneDeep';
 import {Observable} from 'rxjs/Observable';
 import CardActionFeedback from 'components/CardActionFeedback';
-import inputSanitizer from 'services/input-sanitizer';
+import ValidatedInput from 'components/ValidatedInput';
+import types from 'services/inputValidationTemplates';
 
 require('./IngestDataFromDataPrep.scss');
 
@@ -88,7 +89,8 @@ export default class IngestDataFromDataPrep extends Component {
       sinkPluginsForDataset: {},
       batchPipelineConfig: {},
       datasetName: '',
-      inputError: null,
+      inputError: '',
+      inputTemplate: 'NAME',
       copyingSteps: [...copyingSteps],
       copyInProgress: false,
       // This is to enable closing the modal on workflow start.
@@ -157,8 +159,17 @@ export default class IngestDataFromDataPrep extends Component {
   }
 
   handleDatasetNameChange = (e) => {
+    const isValid = types[this.state.inputTemplate].validate(e.target.value);
+    let errorMsg = '';
+    if (e.target.value && !isValid) {
+      errorMsg = 'Invalid Input, see help.';
+    }
+    if (!e.target.value) {
+      errorMsg = 'You are required to fill this.';
+    }
     this.setState({
-      datasetName: e.target.value
+      datasetName: e.target.value,
+      inputError: errorMsg
     });
   }
 
@@ -360,13 +371,8 @@ export default class IngestDataFromDataPrep extends Component {
   }
 
   submitForm = () => {
-    const cleanedDatasetName = inputSanitizer({
-      dirty: this.state.datasetName,
-      inputName: 'dataset name'
-    });
-    if (cleanedDatasetName['error'] !== null) {
+    if (this.state.inputError) {
       // found an error so not saving the input.
-      this.setState({inputError: cleanedDatasetName['error']});
       return;
     }
     let steps = cloneDeep(copyingSteps);
@@ -736,7 +742,12 @@ export default class IngestDataFromDataPrep extends Component {
                 {T.translate(`${PREFIX}.Form.requiredLabel`)}
                 <span className="text-danger">*</span>
               </p>
-              <Input
+              <ValidatedInput
+                type="text"
+                label="name"
+                inputInfo={types[this.state.inputTemplate]['info']}
+                validationError={this.state.inputError}
+                required={true}
                 value={this.state.datasetName}
                 onChange={this.handleDatasetNameChange}
               />
@@ -744,12 +755,6 @@ export default class IngestDataFromDataPrep extends Component {
                 id="dataset-name-info-icon"
                 name="icon-info-circle"
               />
-              {
-                this.state.inputError !== null &&
-                <div className="text-danger">
-                  <span className="fa fa-exclamation-triangle">{ this.state.inputError }</span>
-                </div>
-              }
               <UncontrolledTooltip target="dataset-name-info-icon" delay={{show: 250, hide: 0}}>
                 {T.translate(`${PREFIX}.Form.datasetTooltip`)}
               </UncontrolledTooltip>

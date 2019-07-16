@@ -13,7 +13,7 @@ import {
 
 export default function ValidatedInput(props) {
   const {validationError, inputInfo, label, required, ...moreProps} = props;
-  const invalidProp = validationError ? 'invalid' : '';
+  const invalidProp = validationError ? true : false;
 
   return (
       <FormGroup row>
