@@ -78,7 +78,6 @@
       "PKG": true,
       "angular": true,
       "d3": true,
-      "DOMPurify": true,
       "c3": true,
       "dagre": true,
       "dagreD3": true,

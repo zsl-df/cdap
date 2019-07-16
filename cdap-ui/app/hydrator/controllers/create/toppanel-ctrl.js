@@ -68,15 +68,24 @@ class HydratorPlusPlusTopPanelCtrl {
     this.showIcon = window.CaskCommon.ThemeHelper.Theme.showPipelineCreateButton;
     $scope.getClassName = window.CaskCommon.Util.getClassNameForHeaderFooter();
 
-    this.dom_sanitizer = window['DOMPurify'].sanitize;
     this.TEMPLATES = {
-      'simple': {
-          ALLOWED_TAGS: [],
+      'NAME': {
+        regex: RegExp('^[a-zA-Z][-/\._()a-zA-Z0-9 ]{1,253}[)/a-zA-Z0-9]$'),
+        info: 'Input needs to between 3 and 255 characters. May contain spaces, underscore, hyphen, period, forward slash, and parentheses. Can start with alphabets only. Can end with alphanumeric characters, forward slash, and closing parentheses.',
+        validate: function(val) {
+            return this.regex.test(val) ? true : false;
+        }
       },
     };
-    this.inputErrors = {
-      'metadataName': null,
-      'metadataDescription': null
+    this.inputs = {
+      'name': {
+        required: true,
+        error: ''
+      },
+      'description': {
+        required: false,
+        error: ''
+      }
     };
 
     if ($stateParams.isClone) {
@@ -210,16 +219,13 @@ class HydratorPlusPlusTopPanelCtrl {
   resetMetadata(event) {
     this.setState();
     this.metadataExpanded = false;
-    Object.keys(this.inputErrors).map(x => this.inputErrors[x] = null);
+    Object.keys(this.inputs).map(x => this.inputs[x].error = '');
     event.preventDefault();
     event.stopPropagation();
   }
   saveMetadata(event) {
-    // TODO: use map if possible
-    const sanitizedName = this.inputSanitize(this.state.metadata.name, 'metadataName');
-    this.inputErrors['metadataName'] = sanitizedName['error'];
-    const sanitizedDescription = this.inputSanitize(this.state.metadata.description, 'metadataDescription');
-    this.inputErrors['metadataDescription'] = sanitizedDescription['error'];
+    this.inputs['name'].error = this.inputError(this.state.metadata.name, 'name');
+    this.inputs['description'].error = this.inputError(this.state.metadata.description, 'description');
     // If there are any input errors don't save metadata
     if (this.isSomeInputError()) {
       console.error(this.getSomeInputErrorMessage());
@@ -249,21 +255,27 @@ class HydratorPlusPlusTopPanelCtrl {
     }
   }
 
-  inputSanitize(dirty, inputName = '', config = 'simple') {
-      const clean = this.dom_sanitizer(dirty, this.TEMPLATES[config]);
-      // TODO: need a better error code!
-      const error = 'Invalid Input' + (inputName ? ': '  + inputName : inputName);
-      return {
-          'clean': clean,
-          'error': clean !== dirty ? error : null,
-      };
+  inputError(dirty, inputName, config = 'NAME') {
+      if (inputName && !this.state.metadata[inputName]) {
+        if (!this.inputs[inputName].required) {
+          return '';
+        } else {
+          return 'This is a required field.';
+        }
+      }
+      const isValid = this.TEMPLATES[config].validate(dirty);
+      const error = isValid ? '' : 'Invalid Input, see input instructions.';
+      return error;
   }
   isSomeInputError() {
-    return Object.keys(this.inputErrors).some(x => this.inputErrors[x] !== null);
+    return Object.keys(this.inputs).some(x => this.inputs[x].error !== '');
   }
   getSomeInputErrorMessage() {
-    const idx = Object.keys(this.inputErrors).filter(x => this.inputErrors[x] !== null);
-    return idx.map(i => this.inputErrors[i]).join(' | ');
+    const idx = Object.keys(this.inputs).filter(x => this.inputs[x].error !== '');
+    return idx.map(i => this.inputs[i].error).join(' || ');
+  }
+  getInputInfoMessage() {
+    return this.TEMPLATES['NAME'].info;
   }
 
   onImport() {

@@ -50,6 +50,9 @@
              ng-model="HydratorPlusPlusTopPanelCtrl.state.metadata['name']"
              placeholder="Name your pipeline"
              ng-keyup="HydratorPlusPlusTopPanelCtrl.onEnterOnMetadata($event)" />
+      <div class="error-message" ng-if="HydratorPlusPlusTopPanelCtrl.metadataExpanded">
+      {{ HydratorPlusPlusTopPanelCtrl.inputs['name'].error }}
+      </div>
       <div class="pipeline-description"
            ng-class="{'placeholder': !HydratorPlusPlusTopPanelCtrl.state.metadata['description'].length}"
            ng-if="!HydratorPlusPlusTopPanelCtrl.metadataExpanded"
@@ -62,10 +65,15 @@
       <textarea ng-model="HydratorPlusPlusTopPanelCtrl.state.metadata['description']"
                 placeholder="Enter a description for your pipeline."
                 ng-if="HydratorPlusPlusTopPanelCtrl.metadataExpanded"></textarea>
+      <div class="error-message" ng-if="HydratorPlusPlusTopPanelCtrl.metadataExpanded">
+        {{ HydratorPlusPlusTopPanelCtrl.inputs['description'].error }}
+      </div>
+      <div class="info-message" ng-if="HydratorPlusPlusTopPanelCtrl.metadataExpanded">
+        {{ HydratorPlusPlusTopPanelCtrl.getInputInfoMessage() }}
+      </div>
       <div class="btn-group pull-left" ng-if="HydratorPlusPlusTopPanelCtrl.metadataExpanded">
         <button type="button" class="btn btn-primary save-button" ng-click="HydratorPlusPlusTopPanelCtrl.saveMetadata($event)" ng-disabled="!HydratorPlusPlusTopPanelCtrl.state.metadata['name']">Save</button>
         <button type="button" class="btn btn-secondary cancel-button" ng-click="HydratorPlusPlusTopPanelCtrl.resetMetadata($event)">Cancel</button>
-        <div class="error-message" ng-if="HydratorPlusPlusTopPanelCtrl.isSomeInputError()">{{ HydratorPlusPlusTopPanelCtrl.getSomeInputErrorMessage() }}</div>
       </div>
     </div>
   </div>
