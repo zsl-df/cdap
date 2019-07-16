@@ -267,7 +267,7 @@
 
   <property>
     <name>local.market.base.url</name>
-    <value>http://192.168.133.92:11765/v2</value>
+    <value>http://artifacts.ggn.in.guavus.com/ggn-archive/marketplace/v2</value>
     <description>
       Guavus MarketPlace
     </description>
