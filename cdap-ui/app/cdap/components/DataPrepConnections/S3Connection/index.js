@@ -297,36 +297,10 @@ export default class S3Connection extends Component {
       });
   }
 
-  /** Set input errors and return true if there is some error. */
+  /** Return true if there is some input error. */
   testInputs() {
-
-    this.setState({
-      connectionResult: {
-        type: null,
-        message: null
-      },
-      error: null
-    });
     const isSomeError = Object.keys(this.state.inputs).some(key => this.state.inputs[key]['error'] !== '');
-    if (isSomeError) {
-      this.renderInputErrors();
-    }
     return (isSomeError ? true : false);
-  }
-
-  /** Render input errors. Only gets called if there is some input error.
-  No checks are done to see if there actually has been an input error.
-  Such check must be done before calling this method. */
-  renderInputErrors() {
-    let errorMessage = Object.values(this.state.inputs).map(k => this.state.inputs[k]['error']).join('\n');
-    console.log(errorMessage);
-    this.setState({
-      error: errorMessage,
-      connectionResult: {
-        type: CARD_ACTION_TYPES.DANGER,
-        message: errorMessage
-      }
-    });
   }
 
   handleChange(key, e) {
