@@ -40,7 +40,7 @@ const AWS_SECRET_ACCESS_KEY = {
 */
 const GCS_PROJECT_ID = {
     regex: RegExp("^[a-z][-a-z0-9]{4,28}[a-z0-9]$"),
-    info: "Check Standard for Google Cloud Project ID",
+    info: " Input must be 6 to 30 lowercase letters, digits, or hyphens. It must start with a letter. Trailing hyphens are prohibited.",
     validate: function(val) {
         return this.regex.test(val) ? true : false;
     }
@@ -52,7 +52,7 @@ const GCS_PROJECT_ID = {
 */
 const GCS_BUCKET_ID = {
     regex: RegExp("^([a-z0-9][-a-z0-9_\.]{1,220}[a-z0-9])$"),
-    info: "Check Standard for Google Cloud Bucket ID",
+    info: "Check Standard for Google Cloud Bucket ID: https://cloud.google.com/iam/docs/service-accounts",
     validate: function(val) {
         return this.regex.test(val) ? true : false;
     }

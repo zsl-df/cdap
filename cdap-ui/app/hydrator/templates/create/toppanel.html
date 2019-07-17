@@ -54,7 +54,7 @@
           ng-keyup="HydratorPlusPlusTopPanelCtrl.onEnterOnMetadata($event)" />
           <span>
               <span class="fa fa-info-circle"
-                uib-tooltip="{{ HydratorPlusPlusTopPanelCtrl.getInputInfoMessage() }}"
+                uib-tooltip="{{ HydratorPlusPlusTopPanelCtrl.getInputInfoMessage('name') }}"
                 tooltip-placement="bottom"
               >
               </span>
@@ -80,7 +80,7 @@
                   placeholder="Enter a description for your pipeline."></textarea>
         <span>
             <span class="fa fa-info-circle"
-              uib-tooltip="{{ HydratorPlusPlusTopPanelCtrl.getInputInfoMessage() }}"
+              uib-tooltip="{{ HydratorPlusPlusTopPanelCtrl.getInputInfoMessage('description') }}"
               tooltip-placement="bottom"
             >
             </span>

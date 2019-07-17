@@ -70,10 +70,14 @@ class HydratorPlusPlusTopPanelCtrl {
 
     this.TEMPLATES = {
       'NAME': {
-        regex: RegExp('^[-@,:\.()a-zA-Z0-9 ]+$'),
-        info: 'Input should be alphanumeric and may contain spaces, underscore, hyphen, period, comma, colon, forward slash, @, and parentheses.',
+        allowed: {
+          ALLOWED_TAGS: [],
+        },
+        dom_sanitizer: window['DOMPurify'].sanitize,
+        info: 'cannot contain any xml tags.',
         validate: function(val) {
-            return this.regex.test(val) ? true : false;
+          const clean = this.dom_sanitizer(val, this.allowed);
+          return clean === val ? true : false;
         }
       },
     };
@@ -228,7 +232,6 @@ class HydratorPlusPlusTopPanelCtrl {
     this.inputs['description'].error = this.inputError(this.state.metadata.description, 'description');
     // If there are any input errors don't save metadata
     if (this.isSomeInputError()) {
-      console.error(this.getSomeInputErrorMessage());
       return;
     }
 
@@ -256,26 +259,22 @@ class HydratorPlusPlusTopPanelCtrl {
   }
 
   inputError(dirty, inputName, config = 'NAME') {
-      if (inputName && !this.state.metadata[inputName]) {
-        if (!this.inputs[inputName].required) {
-          return '';
-        } else {
-          return 'This is a required field.';
-        }
+    if (inputName && !this.state.metadata[inputName]) {
+      if (!this.inputs[inputName].required) {
+        return '';
+      } else {
+        return 'This is a required field.';
       }
-      const isValid = this.TEMPLATES[config].validate(dirty);
-      const error = isValid ? '' : 'Invalid Input, see input instructions.';
-      return error;
+    }
+    const isValid = this.TEMPLATES[config].validate(dirty);
+    const error = isValid ? '' : 'Invalid Input, see input instructions.';
+    return error;
   }
   isSomeInputError() {
     return Object.keys(this.inputs).some(x => this.inputs[x].error !== '');
   }
-  getSomeInputErrorMessage() {
-    const idx = Object.keys(this.inputs).filter(x => this.inputs[x].error !== '');
-    return idx.map(i => this.inputs[i].error).join(' || ');
-  }
-  getInputInfoMessage() {
-    return this.TEMPLATES['NAME'].info;
+  getInputInfoMessage(key) {
+    return (key === 'name' ? 'Pipeline Name ' : 'Pipeline Description ') + this.TEMPLATES['NAME'].info;
   }
 
   onImport() {
