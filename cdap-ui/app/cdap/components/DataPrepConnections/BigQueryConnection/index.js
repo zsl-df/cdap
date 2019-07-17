@@ -25,7 +25,8 @@ import CardActionFeedback, {CARD_ACTION_TYPES} from 'components/CardActionFeedba
 import {objectQuery} from 'services/helpers';
 import ee from 'event-emitter';
 import BtnWithLoading from 'components/BtnWithLoading';
-import inputSanitizer from 'services/input-sanitizer';
+import ValidatedInput from 'components/ValidatedInput';
+import types from 'services/inputValidationTemplates';
 
 const PREFIX = 'features.DataPrepConnections.AddConnections.BigQuery';
 const ADDCONN_PREFIX = 'features.DataPrepConnections.AddConnections';
@@ -54,26 +55,30 @@ export default class BigQueryConnection extends Component {
       message: null,
       type: null
     },
-    inputFields: {
+    inputs: {
       'name': {
-        'error': null,
+        'error': '',
         'required': true,
-        'config': 'simple'
+        'template': 'NAME',
+        'label': 'Connection Name'
       },
       'projectId': {
-        'error': null,
+        'error': '',
         'required': false,
-        'config': 'gcs_project_id'
+        'template': 'GCS_PROJECT_ID',
+        'label': 'Project ID'
       },
       'bucket': {
-        'error': null,
+        'error': '',
         'required': false,
-        'config': 'gcs_bucket'
+        'template': 'GCS_BUCKET_ID',
+        'label': 'Bucket ID'
       },
       'serviceAccountKeyfile': {
-        'error': null,
+        'error': '',
         'required': false,
-        'config': 'simple'
+        'template': 'NAME',
+        'label': 'file location'
       }
     }
   };
@@ -239,68 +244,38 @@ export default class BigQueryConnection extends Component {
       });
   };
 
-  /** Set input errors and return true if there is some error. */
+  /** Return true if there is some error. */
   testInputs() {
-
-    this.setState({
-      connectionResult: {
-        type: null,
-        message: null
-      },
-      error: null
-    });
-
-    const inputsList = Object.keys(this.state.inputFields);
-    // updatedInputFields exists because setState() is async.
-    let updatedInputFields = {};
-
-    inputsList.forEach(key => {
-      let cleanedInput;
-      const inputField = this.state.inputFields[key];
-      if (!this.state[key]) {
-        // don't sanitize if field is empty and not required
-        if (!inputField['required']) {
-          cleanedInput = {'error': null};
-        }
-      } else {
-        cleanedInput = inputSanitizer({dirty: this.state[key], inputName: key, config: inputField['config']});
-      }
-      updatedInputFields[key] = {
-        ...inputField,
-        'error': cleanedInput['error']
-      };
-    });
-
-    this.setState(prevState => ({
-      ...prevState,
-      inputFields: updatedInputFields
-    }), () => {
-      if (inputsList.some(key => updatedInputFields[key]['error'] !== null)) {
-        this.renderInputErrors();
-      }
-    });
-
-    return (inputsList.some(key => updatedInputFields[key]['error'] !== null) ? true : false);
-  }
-
-  /** Render input errors. Only gets called if there is some input error.
-  No checks are done to see if there actually has been an input error.
-  Such check must be done before calling this method. */
-  renderInputErrors() {
-    let errorMessage = Object.values(this.state.inputFields).map(x => x['error']).join(' ');
-    this.setState({
-      error: errorMessage,
-      connectionResult: {
-        type: CARD_ACTION_TYPES.DANGER,
-        message: errorMessage
-      }
-    });
+    const isSomeError = Object.keys(this.state.inputs).some(key => this.state.inputs[key]['error'] !== '');
+    return (isSomeError ? true : false);
   }
 
   handleChange = (key, e) => {
-    this.setState({
-      [key]: e.target.value
-    });
+    if (Object.keys(this.state.inputs).includes(key)) {
+      // validate input
+      const isValid = types[this.state.inputs[key]['template']].validate(e.target.value);
+      let errorMsg = '';
+      if (e.target.value && !isValid) {
+        errorMsg = 'Invalid Input, see help.';
+      }
+      if (!e.target.value && this.state.inputs[key]['required']) {
+        errorMsg = 'You are required to fill this.';
+      }
+      this.setState({
+        [key]: e.target.value,
+        inputs: {
+          ...this.state.inputs,
+          [key]: {
+            ...this.state.inputs[key],
+            'error': errorMsg
+          }
+        }
+      });
+    } else {
+      this.setState({
+        [key]: e.target.value
+      });
+    }
   };
 
   renderTestButton = () => {
@@ -361,12 +336,17 @@ export default class BigQueryConnection extends Component {
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.name`)}
-              <span className="asterisk">*</span>
+              { this.state.inputs['name']['required'] &&
+                <span className="asterisk">*</span>
+              }
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-text">
-                <input
+                <ValidatedInput
                   type="text"
+                  label={this.state.inputs['name']['label']}
+                  inputInfo={types[this.state.inputs['name']['template']]['info']}
+                  validationError={this.state.inputs['name']['error']}
                   className="form-control"
                   value={this.state.name}
                   onChange={this.handleChange.bind(this, 'name')}
@@ -380,11 +360,17 @@ export default class BigQueryConnection extends Component {
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.projectId`)}
+              { this.state.inputs['projectId']['required'] &&
+                <span className="asterisk">*</span>
+              }
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-text">
-                <input
+                <ValidatedInput
                   type="text"
+                  label={this.state.inputs['projectId']['label']}
+                  inputInfo={types[this.state.inputs['projectId']['template']]['info']}
+                  validationError={this.state.inputs['projectId']['error']}
                   className="form-control"
                   value={this.state.projectId}
                   onChange={this.handleChange.bind(this, 'projectId')}
@@ -397,11 +383,17 @@ export default class BigQueryConnection extends Component {
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.serviceAccountKeyfile`)}
+              { this.state.inputs['serviceAccountKeyfile']['required'] &&
+                <span className="asterisk">*</span>
+              }
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-text">
-                <input
+                <ValidatedInput
                   type="text"
+                  label={this.state.inputs['serviceAccountKeyfile']['label']}
+                  inputInfo={types[this.state.inputs['serviceAccountKeyfile']['template']]['info']}
+                  validationError={this.state.inputs['serviceAccountKeyfile']['error']}
                   className="form-control"
                   value={this.state.serviceAccountKeyfile}
                   onChange={this.handleChange.bind(this, 'serviceAccountKeyfile')}
@@ -414,11 +406,17 @@ export default class BigQueryConnection extends Component {
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.bucket`)}
+              { this.state.inputs['bucket']['required'] &&
+                <span className="asterisk">*</span>
+              }
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-text">
-                <input
+                <ValidatedInput
                   type="text"
+                  label={this.state.inputs['bucket']['label']}
+                  inputInfo={types[this.state.inputs['bucket']['template']]['info']}
+                  validationError={this.state.inputs['bucket']['error']}
                   className="form-control"
                   value={this.state.bucket}
                   onChange={this.handleChange.bind(this, 'bucket')}
