@@ -17,7 +17,7 @@
 import PropTypes from 'prop-types';
 
 import React, { Component } from 'react';
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
+import { Modal, ModalHeader, ModalBody, ModalFooter, Button, FormGroup, Label, Col} from 'reactstrap';
 import DataPrepStore from 'components/DataPrep/store';
 import { objectQuery } from 'services/helpers';
 import T from 'i18n-react';
@@ -260,17 +260,22 @@ export default class PersistViewSchemaModal extends Component {
       >
         <ModalHeader>Persist Dataset</ModalHeader>
         <ModalBody>
-          <div className="text-xs-left">
-            <ValidatedInput
-              type="text"
-              label="Dataset Name"
-              inputInfo={types[this.state.inputTemplate]['info']}
-              validationError={this.state.inputError}
-              required={true}
-              value={this.state.datasetName}
-              onChange={this.handleChange}
-            />
-          </div>
+          <FormGroup row>
+            <Label xs="4" className="text-xs-left">
+              Dataset Name:
+              <span className="text-danger">*</span>
+            </Label>
+            <Col xs="6" className="dataset-name-group">
+              <ValidatedInput
+                type="text"
+                label="Dataset Name"
+                inputInfo={types[this.state.inputTemplate]['info']}
+                validationError={this.state.inputError}
+                value={this.state.datasetName}
+                onChange={this.handleChange}
+              />
+            </Col>
+          </FormGroup>
         </ModalBody>
         <ModalFooter>
           {content}

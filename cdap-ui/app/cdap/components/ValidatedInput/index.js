@@ -2,31 +2,20 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
   FormGroup,
-  Label,
   Input,
   FormText,
   InputGroup,
   InputGroupAddon,
   InputGroupText,
-  Col,
   UncontrolledTooltip,
 } from 'reactstrap';
 
 export default function ValidatedInput(props) {
-  const {validationError, inputInfo, label, required, ...moreProps} = props;
+  const {validationError, inputInfo, label, ...moreProps} = props;
   const invalidProp = validationError ? true : false;
 
   return (
       <FormGroup row>
-        <Label for={label} sm={2}>
-          {label}
-          {
-            required ?
-            <span> * </span> :
-            null
-          }
-        </Label>
-        <Col sm={10}>
         <InputGroup>
           <Input {...moreProps} invalid={invalidProp}/>
           <InputGroupAddon addonType="append">
@@ -39,7 +28,6 @@ export default function ValidatedInput(props) {
           </InputGroupAddon>
         </InputGroup>
         <FormText>{validationError}</FormText>
-        </Col>
       </FormGroup>
   );
 }

@@ -27,7 +27,8 @@ import {objectQuery} from 'services/helpers';
 import BtnWithLoading from 'components/BtnWithLoading';
 import ee from 'event-emitter';
 import {ConnectionType} from 'components/DataPrepConnections/ConnectionType';
-import inputSanitizer from 'services/input-sanitizer';
+import ValidatedInput from 'components/ValidatedInput';
+import types from 'services/inputValidationTemplates';
 const PREFIX = 'features.DataPrepConnections.AddConnections.S3';
 const ADDCONN_PREFIX = 'features.DataPrepConnections.AddConnections';
 
@@ -114,10 +115,25 @@ export default class S3Connection extends Component {
         type: null,
         message: null
       },
-      inputErrors: {
-        'name': null,
-        'accessKeyId': null,
-        'accessSecretKey': null
+      inputs: {
+        'name': {
+          'error': '',
+          'label': 'Connection name',
+          'template': 'NAME',
+          'required': true,
+        },
+        'accessKeyId': {
+          'error': '',
+          'label': 'Access key ID',
+          'template': 'AWS_ACCESS_KEY_ID',
+          'required': true,
+        },
+        'accessSecretKey': {
+          'error': '',
+          'label': 'Secret access key',
+          'template': 'AWS_SECRET_ACCESS_KEY',
+          'required': true,
+        },
       }
     };
 
@@ -291,40 +307,18 @@ export default class S3Connection extends Component {
       },
       error: null
     });
-
-    const inputsList = Object.keys(this.state.inputErrors);
-    // updatedInputErrors exists because setState() is async.
-    let updatedInputErrors = {};
-
-    inputsList.forEach(key => {
-      let cleanedInput;
-      if (['accessKeyId', 'accessSecretKey'].includes(key)) {
-        const configUsed = (key === 'accessKeyId' ? 'aws_access_key_id' : 'aws_secret_access_key');
-        cleanedInput = inputSanitizer({dirty: this.state[key], inputName: key, config: configUsed});
-      }
-      if (key === 'name') {
-        cleanedInput = inputSanitizer({dirty: this.state[key], inputName: key});
-      }
-      updatedInputErrors[key] = cleanedInput['error'];
-    });
-
-    this.setState(prevState => ({
-      ...prevState,
-      inputErrors: updatedInputErrors
-    }), () => {
-      if (inputsList.some(key => updatedInputErrors[key] !== null)) {
-        this.renderInputErrors();
-      }
-    });
-
-    return (inputsList.some(key => updatedInputErrors[key] !== null) ? true : false);
+    const isSomeError = Object.keys(this.state.inputs).some(key => this.state.inputs[key]['error'] !== '');
+    if (isSomeError) {
+      this.renderInputErrors();
+    }
+    return (isSomeError ? true : false);
   }
 
   /** Render input errors. Only gets called if there is some input error.
   No checks are done to see if there actually has been an input error.
   Such check must be done before calling this method. */
   renderInputErrors() {
-    let errorMessage = Object.values(this.state.inputErrors).join(' ');
+    let errorMessage = Object.values(this.state.inputs).map(k => this.state.inputs[k]['error']).join('\n');
     console.log(errorMessage);
     this.setState({
       error: errorMessage,
@@ -336,9 +330,31 @@ export default class S3Connection extends Component {
   }
 
   handleChange(key, e) {
-    this.setState({
-      [key]: e.target.value
-    });
+    if (Object.keys(this.state.inputs).includes(key)) {
+      // validate input
+      const isValid = types[this.state.inputs[key]['template']].validate(e.target.value);
+      let errorMsg = '';
+      if (e.target.value && !isValid) {
+        errorMsg = 'Invalid Input, see help.';
+      }
+      if (!e.target.value && this.state.inputs[key]['required']) {
+        errorMsg = 'You are required to fill this.';
+      }
+      this.setState({
+        [key]: e.target.value,
+        inputs: {
+          ...this.state.inputs,
+          [key]: {
+            ...this.state.inputs[key],
+            'error': errorMsg
+          }
+        }
+      });
+    } else {
+      this.setState({
+        [key]: e.target.value
+      });
+    }
   }
 
   renderTestButton() {
@@ -402,13 +418,18 @@ export default class S3Connection extends Component {
         <div className="form">
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
-              {T.translate(`${PREFIX}.name`)}
-              <span className="asterisk">*</span>
+                {T.translate(`${PREFIX}.name`)}
+                { this.state.inputs['name']['required'] &&
+                    <span className="asterisk">*</span>
+                }
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-text">
-                <input
+                <ValidatedInput
                   type="text"
+                  label={this.state.inputs['name']['label']}
+                  inputInfo={types[this.state.inputs['name']['template']]['info']}
+                  validationError={this.state.inputs['name']['error']}
                   className="form-control"
                   value={this.state.name}
                   onChange={this.handleChange.bind(this, 'name')}
@@ -422,12 +443,17 @@ export default class S3Connection extends Component {
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.accessKeyId`)}
-              <span className="asterisk">*</span>
+              { this.state.inputs['accessKeyId']['required'] &&
+                  <span className="asterisk">*</span>
+              }
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-text">
-                <input
+                <ValidatedInput
                   type="text"
+                  label={this.state.inputs['accessKeyId']['label']}
+                  inputInfo={types[this.state.inputs['accessKeyId']['template']]['info']}
+                  validationError={this.state.inputs['accessKeyId']['error']}
                   className="form-control"
                   value={this.state.accessKeyId}
                   onChange={this.handleChange.bind(this, 'accessKeyId')}
@@ -440,12 +466,17 @@ export default class S3Connection extends Component {
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.accessSecretKey`)}
-              <span className="asterisk">*</span>
+              { this.state.inputs['accessSecretKey']['required'] &&
+                  <span className="asterisk">*</span>
+              }
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-text">
-                <input
+                <ValidatedInput
                   type="text"
+                  label={this.state.inputs['accessSecretKey']['label']}
+                  inputInfo={types[this.state.inputs['accessSecretKey']['template']]['info']}
+                  validationError={this.state.inputs['accessSecretKey']['error']}
                   className="form-control"
                   value={this.state.accessSecretKey}
                   onChange={this.handleChange.bind(this, 'accessSecretKey')}
