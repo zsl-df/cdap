@@ -96,6 +96,7 @@ import org.apache.tephra.inmemory.InMemoryTransactionService;
 import org.apache.twill.api.TwillRunnerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.spark_project.dmg.pmml.False;
 
 import java.io.File;
 import java.io.IOException;
@@ -176,6 +177,7 @@ public class StandaloneMain {
     }
 
     boolean exploreEnabled = cConf.getBoolean(Constants.Explore.EXPLORE_ENABLED);
+    exploreEnabled = false;
     if (exploreEnabled) {
       ExploreServiceUtils.checkHiveSupport(cConf, getClass().getClassLoader());
       exploreExecutorService = injector.getInstance(ExploreExecutorService.class);
