@@ -94,7 +94,7 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
       serviceAccountKeyfile: {
         error: '',
         required: false,
-        template: 'NAME',
+        template: 'FILE_PATH',
         label: 'file location',
       },
     },

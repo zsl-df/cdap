@@ -1,6 +1,15 @@
 const NAME = {
-    regex: RegExp("^[a-zA-Z][-/\._()a-zA-Z0-9 ]{1,253}[)/a-zA-Z0-9]$"),
-    info: "Name needs to between 3 and 255 characters. May contain spaces, underscore, hyphen, period, forward slash, and parentheses. Can start with alphabets only. Can end with alphanumeric characters, forward slash, and closing parentheses.",
+    regex: RegExp("^[-@,:\.()a-zA-Z0-9 ]+$"),
+    // prev: ^[-/\._()a-zA-Z0-9 ]{1,}[)/a-zA-Z0-9]$
+    info: "Input should be alphanumeric and may contain spaces, underscore, hyphen, period, comma, forward slash, @, and parentheses.",
+    validate: function(val) {
+        return this.regex.test(val) ? true : false;
+    }
+};
+
+const FILE_PATH = {
+    regex: RegExp("^(.+)\/([^/]+)$"),
+    info: "File path cannot end with forward slash",
     validate: function(val) {
         return this.regex.test(val) ? true : false;
     }
@@ -72,6 +81,7 @@ const DEFAULT = {
 const types = {
     "DEFAULT": DEFAULT,
     "NAME": NAME,
+    "FILE_PATH": FILE_PATH,
     "AWS_ACCESS_KEY_ID": AWS_ACCESS_KEY_ID,
     "AWS_SECRET_ACCESS_KEY": AWS_SECRET_ACCESS_KEY,
     "GCS_PROJECT_ID": GCS_PROJECT_ID,

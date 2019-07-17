@@ -68,7 +68,7 @@ export default class GCSConnection extends Component {
         'serviceAccountKeyfile': {
           'error': '',
           'required': false,
-          'template': 'NAME',
+          'template': 'FILE_PATH',
           'label': 'file location'
         }
       }

@@ -70,8 +70,8 @@ class HydratorPlusPlusTopPanelCtrl {
 
     this.TEMPLATES = {
       'NAME': {
-        regex: RegExp('^[a-zA-Z][-/\._()a-zA-Z0-9 ]{1,253}[)/a-zA-Z0-9]$'),
-        info: 'Input needs to between 3 and 255 characters. May contain spaces, underscore, hyphen, period, forward slash, and parentheses. Can start with alphabets only. Can end with alphanumeric characters, forward slash, and closing parentheses.',
+        regex: RegExp('^[-@,:\.()a-zA-Z0-9 ]+$'),
+        info: 'Input should be alphanumeric and may contain spaces, underscore, hyphen, period, comma, colon, forward slash, @, and parentheses.',
         validate: function(val) {
             return this.regex.test(val) ? true : false;
         }

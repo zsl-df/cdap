@@ -77,7 +77,7 @@ export default class BigQueryConnection extends Component {
       'serviceAccountKeyfile': {
         'error': '',
         'required': false,
-        'template': 'NAME',
+        'template': 'FILE_PATH',
         'label': 'file location'
       }
     }
