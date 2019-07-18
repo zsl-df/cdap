@@ -745,7 +745,7 @@ export default class IngestDataFromDataPrep extends Component {
               <ValidatedInput
                 type="text"
                 label="name"
-                inputInfo={types[this.state.inputTemplate]['info']}
+                inputInfo={types[this.state.inputTemplate].getInfo()}
                 validationError={this.state.inputError}
                 value={this.state.datasetName}
                 onChange={this.handleDatasetNameChange}

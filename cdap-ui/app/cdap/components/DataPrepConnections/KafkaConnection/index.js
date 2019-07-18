@@ -29,7 +29,8 @@ import ee from 'event-emitter';
 import CardActionFeedback, {CARD_ACTION_TYPES} from 'components/CardActionFeedback';
 import BtnWithLoading from 'components/BtnWithLoading';
 import {ConnectionType} from 'components/DataPrepConnections/ConnectionType';
-import inputSanitizer from 'services/input-sanitizer';
+import ValidatedInput from 'components/ValidatedInput';
+import types from 'services/inputValidationTemplates';
 
 const PREFIX = 'features.DataPrepConnections.AddConnections.Kafka';
 const ADDCONN_PREFIX = 'features.DataPrepConnections.AddConnections';
@@ -48,7 +49,8 @@ export default class KafkaConnection extends Component {
       brokersList: [{
         host: 'localhost',
         port: '9092',
-        uniqueId: uuidV4()
+        uniqueId: uuidV4(),
+        valid: true,
       }],
       connectionResult: {
         type: null,
@@ -56,6 +58,14 @@ export default class KafkaConnection extends Component {
       },
       testConnectionLoading: false,
       error: null,
+      inputs: {
+        'name': {
+          'error': '',
+          'required': true,
+          'template': 'NAME',
+          'label': 'Connection Name'
+        },
+      },
       loading: false
     };
 
@@ -110,7 +120,8 @@ export default class KafkaConnection extends Component {
       let obj = {
         host: split[0] || '',
         port: split[1] || '',
-        uniqueId: uuidV4()
+        uniqueId: uuidV4(),
+        valid: true
       };
 
       brokersList.push(obj);
@@ -247,55 +258,39 @@ export default class KafkaConnection extends Component {
       });
   }
 
-  /** Set input errors and return true if there is some error. */
+  /** Return true if there is some error. */
   testInputs() {
-
-    this.setState({
-      connectionResult: {
-        type: null,
-        message: null
-      },
-      error: null
-    });
-
-    const cleanName = inputSanitizer({dirty: this.state['name'], inputName: 'name', config: 'simple'});
-    const nameError = cleanName['error'];
-
-    const brokerErrorsList = [];
-    this.state.brokersList.forEach(broker => {
-      const cleanBrokerHost = inputSanitizer({dirty: broker.host, inputName: 'hostname', config: 'hostname_rfc1123'});
-      brokerErrorsList.push({
-        ...broker,
-        error: cleanBrokerHost['error']
-      });
-    });
-
-    if (nameError !== null || brokerErrorsList.some(broker => broker.error !== null)) {
-      this.renderInputErrors(nameError, brokerErrorsList);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  /** Render input errors. Only gets called if there is some input error.
-  No checks are done to see if there actually has been an input error.
-  Such check must be done before calling this method. */
-  renderInputErrors(nameError, brokerErrorsList) {
-    let errorMessage = (nameError === null ? '' : nameError + '\n') + brokerErrorsList.map(broker => broker.error).join('\n');
-    this.setState({
-      error: errorMessage,
-      connectionResult: {
-        type: CARD_ACTION_TYPES.DANGER,
-        message: errorMessage
-      }
-    });
+    let isSomeError = Object.keys(this.state.inputs).some(key => this.state.inputs[key]['error'] !== '');
+    isSomeError = isSomeError || this.state.brokersList.some(broker => !broker.valid);
+    return (isSomeError ? true : false);
   }
 
   handleChange(key, e) {
-    this.setState({
-      [key]: e.target.value
-    });
+    if (Object.keys(this.state.inputs).includes(key)) {
+      // validate input
+      const isValid = types[this.state.inputs[key]['template']].validate(e.target.value);
+      let errorMsg = '';
+      if (e.target.value && !isValid) {
+        errorMsg = 'Invalid Input, see help.';
+      }
+      if (!e.target.value && this.state.inputs[key]['required']) {
+        errorMsg = 'You are required to fill this.';
+      }
+      this.setState({
+        [key]: e.target.value,
+        inputs: {
+          ...this.state.inputs,
+          [key]: {
+            ...this.state.inputs[key],
+            'error': errorMsg
+          }
+        }
+      });
+    } else {
+      this.setState({
+        [key]: e.target.value
+      });
+    }
   }
 
   renderKafka() {
@@ -402,12 +397,17 @@ export default class KafkaConnection extends Component {
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.name`)}
-              <span className="asterisk">*</span>
+              { this.state.inputs['name']['required'] &&
+                <span className="asterisk">*</span>
+              }
             </label>
             <div className={INPUT_COL_CLASS}>
-              <div className="input-name">
-                <input
+              <div className="input-name" style={{paddingLeft: 15}}>
+                <ValidatedInput
                   type="text"
+                  label={this.state.inputs['name']['label']}
+                  inputInfo={types[this.state.inputs['name']['template']].getInfo()}
+                  validationError={this.state.inputs['name']['error']}
                   className="form-control"
                   value={this.state.name}
                   onChange={this.handleChange.bind(this, 'name')}

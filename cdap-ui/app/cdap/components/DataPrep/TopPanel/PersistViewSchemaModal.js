@@ -269,7 +269,7 @@ export default class PersistViewSchemaModal extends Component {
               <ValidatedInput
                 type="text"
                 label="Dataset Name"
-                inputInfo={types[this.state.inputTemplate]['info']}
+                inputInfo={types[this.state.inputTemplate].getInfo()}
                 validationError={this.state.inputError}
                 value={this.state.datasetName}
                 onChange={this.handleChange}

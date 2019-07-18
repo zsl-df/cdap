@@ -40,6 +40,7 @@ ValidatedInput.propTypes = {
   placeholder: PropTypes.string,
   defaultValue: PropTypes.string,
   value: PropTypes.string,
+  disabled: PropTypes.bool,
   className: PropTypes.string,
   validationError: PropTypes.string,
   inputInfo: PropTypes.string,
