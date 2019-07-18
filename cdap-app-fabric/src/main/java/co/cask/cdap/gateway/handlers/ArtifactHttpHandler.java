@@ -795,6 +795,24 @@ public class ArtifactHttpHandler extends AbstractHttpHandler {
     }
   }
 
+  // this special handler is exposed on purpose. In order to successfully retrieve artifact jar location path
+  @GET
+  @Path("/namespaces/{namespace-id}/artifacts/{artifact-name}/versions/{artifact-version}/location")
+  public void getArtifactLocationExposed(HttpRequest request, HttpResponder responder,
+                                  @PathParam("namespace-id") String namespaceId,
+                                  @PathParam("artifact-name") String artifactName,
+                                  @PathParam("artifact-version") String artifactVersion) {
+    try {
+      ArtifactDetail artifactDetail = artifactRepository.getArtifact(
+        Id.Artifact.from(Id.Namespace.from(namespaceId), artifactName, artifactVersion));
+      responder.sendString(HttpResponseStatus.OK, artifactDetail.getDescriptor().getLocation().toURI().getPath());
+    } catch (Exception e) {
+      LOG.warn("Exception reading artifact metadata for namespace {} from the store.", namespaceId, e);
+      responder.sendString(HttpResponseStatus.INTERNAL_SERVER_ERROR,
+                           "Error reading artifact metadata from the store.");
+    }
+  }
+  
   // the following endpoints with path "artifact-internals" are only called by CDAP programs, not exposed via router.
   @GET
   @Path("/namespaces/{namespace-id}/artifact-internals/artifacts")
