@@ -15,7 +15,7 @@ export default function ValidatedInput(props) {
   const invalidProp = validationError ? true : false;
 
   return (
-      <FormGroup row>
+      <FormGroup row style={{paddingLeft:15}}>
         <InputGroup>
           <Input {...moreProps} invalid={invalidProp}/>
           <InputGroupAddon addonType="append">
@@ -45,4 +45,5 @@ ValidatedInput.propTypes = {
   validationError: PropTypes.string,
   inputInfo: PropTypes.string,
   onChange: PropTypes.func,
+  readOnly: PropTypes.bool,
 };

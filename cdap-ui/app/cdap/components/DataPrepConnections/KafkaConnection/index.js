@@ -402,7 +402,7 @@ export default class KafkaConnection extends Component {
               }
             </label>
             <div className={INPUT_COL_CLASS}>
-              <div className="input-name" style={{paddingLeft: 15}}>
+              <div className="input-name">
                 <ValidatedInput
                   type="text"
                   label={this.state.inputs['name']['label']}
