@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import {
   FormGroup,
   Input,
-  FormText,
+  FormFeedback,
   InputGroup,
   InputGroupAddon,
   InputGroupText,
@@ -12,12 +12,12 @@ import {
 
 export default function ValidatedInput(props) {
   const {validationError, inputInfo, label, ...moreProps} = props;
-  const invalidProp = validationError ? true : false;
+  const isInvalid = validationError ? true : false;
 
   return (
       <FormGroup row style={{paddingLeft:15}}>
         <InputGroup>
-          <Input {...moreProps} invalid={invalidProp}/>
+          <Input {...moreProps} invalid={isInvalid}/>
           <InputGroupAddon addonType="append">
             <InputGroupText id={label.replace(/\s/g,'')}>
               <span className="fa fa-info-circle"></span>
@@ -27,7 +27,7 @@ export default function ValidatedInput(props) {
             </InputGroupText>
           </InputGroupAddon>
         </InputGroup>
-        <FormText>{validationError}</FormText>
+        <FormFeedback>{validationError}</FormFeedback>
       </FormGroup>
   );
 }
