@@ -425,10 +425,11 @@ body.theme-cdap {
 
               &.save-button {
                 margin-right: 10px;
-                // Disable on Button acting inversely for some reason hence the color change.
-                background-color: #5a84e4 !important;
+                // Disable on this Button acting inversely in dev mode for some reason.
+                // This runs correctly in prod.
+                background-color: #255ddb !important;
                 &[disabled] {
-                  background-color: #255ddb !important;
+                  background-color: #5a84e4 !important;
                 }
               }
             }
