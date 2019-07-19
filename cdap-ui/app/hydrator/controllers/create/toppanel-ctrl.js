@@ -228,13 +228,6 @@ class HydratorPlusPlusTopPanelCtrl {
     event.stopPropagation();
   }
   saveMetadata(event) {
-    // this.inputs['name'].error = this.inputError(this.state.metadata.name, 'name');
-    // this.inputs['description'].error = this.inputError(this.state.metadata.description, 'description');
-    // // If there are any input errors don't save metadata
-    // if (this.isSomeInputError()) {
-    //   return;
-    // }
-
     this.HydratorPlusPlusConfigActions.setMetadataInfo(this.state.metadata.name, this.state.metadata.description);
     if (this.state.metadata.description) {
       this.parsedDescription = this.state.metadata.description.replace(/\n/g, ' ');

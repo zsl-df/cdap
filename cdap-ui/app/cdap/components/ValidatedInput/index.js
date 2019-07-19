@@ -9,6 +9,7 @@ import {
   InputGroupText,
   UncontrolledTooltip,
 } from 'reactstrap';
+require('./ValidatedInput.scss');
 
 export default function ValidatedInput(props) {
   const {validationError, inputInfo, label, ...moreProps} = props;
@@ -18,7 +19,7 @@ export default function ValidatedInput(props) {
       <FormGroup row style={{paddingLeft:15}}>
         <InputGroup>
           <Input {...moreProps} invalid={isInvalid}/>
-          <InputGroupAddon addonType="append">
+          <InputGroupAddon addonType="append" className="input-group-info">
             <InputGroupText id={label.replace(/\s/g,'')}>
               <span className="fa fa-info-circle"></span>
               <UncontrolledTooltip placement="left" target={label.replace(/\s/g,'')}>
@@ -27,7 +28,7 @@ export default function ValidatedInput(props) {
             </InputGroupText>
           </InputGroupAddon>
         </InputGroup>
-        <FormFeedback>{validationError}</FormFeedback>
+        <FormFeedback className="feedback-error">{validationError}</FormFeedback>
       </FormGroup>
   );
 }

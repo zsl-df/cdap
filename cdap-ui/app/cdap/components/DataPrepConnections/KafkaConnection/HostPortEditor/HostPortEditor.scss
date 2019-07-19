@@ -13,18 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+@import '~styles/variables.scss';
 
 .host-port-editor-container {
   .host-port-row-outer-container {
     display: flex;
     flex-direction: column;
-    small {
+    .invalid-feedback {
       display: block;
-      margin-bottom: 0.25rem;
-      color: #818a91 !important;
+      padding-bottom: 10px;
+      color: $red-02;
     }
     .host-port-row-container {
-      margin-bottom: 10px;
       display: flex;
       align-items: center;
 

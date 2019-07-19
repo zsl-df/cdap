@@ -425,6 +425,11 @@ body.theme-cdap {
 
               &.save-button {
                 margin-right: 10px;
+                // Disable on Button acting inversely for some reason hence the color change.
+                background-color: #5a84e4 !important;
+                &[disabled] {
+                  background-color: #255ddb !important;
+                }
               }
             }
           }
