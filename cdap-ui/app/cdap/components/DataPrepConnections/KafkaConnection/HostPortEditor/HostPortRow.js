@@ -76,7 +76,7 @@ export default class HostPortRow extends Component {
       </div>
       <div>
         { !this.props.valid &&
-          <small>Invalid Hostname, See rfc-1123 for reference.</small>
+          <small>Invalid Hostname.</small>
         }
       </div>
       </div>

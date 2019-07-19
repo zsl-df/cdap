@@ -168,9 +168,6 @@ export default class PersistViewSchemaModal extends Component {
 
 
   handleSubmit = () => {
-    if (this.state.inputError) {
-      return;
-    }
     this.setState({ formloaded: true,error: false,loading: true, });
     this.persistViewSchema();
   }

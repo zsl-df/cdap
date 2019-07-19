@@ -154,10 +154,6 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
   }
 
   private addConnection = () => {
-    if (this.testInputs()) {
-      return;
-    }
-
     const namespace = getCurrentNamespace();
 
     const requestBody = {
@@ -178,10 +174,6 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
   }
 
   private editConnection = () => {
-    if (this.testInputs()) {
-      return;
-    }
-
     const namespace = getCurrentNamespace();
 
     const params = {
@@ -208,10 +200,6 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
   }
 
   private testConnection = () => {
-    if (this.testInputs()) {
-      return;
-    }
-
     this.setState({
       testConnectionLoading: true,
       connectionResult: {
@@ -253,7 +241,7 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
       });
   }
 
-  /** Set input errors and return true if there is some error. */
+  /** Return true if there is some error. */
   private testInputs = () => {
     const isSomeError = Object.keys(this.state.inputs).some((key) => this.state.inputs[key]['error'] !== '');
     return (isSomeError ? true : false);
@@ -288,7 +276,7 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
   }
 
   private renderTestButton = () => {
-    const disabled = !this.state.name;
+    const disabled = this.testInputs() || !this.state.name;
 
     return (
       <span className="test-connection-button">
@@ -305,7 +293,7 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
   }
 
   private renderAddConnectionButton = () => {
-    const disabled = !this.state.name || this.state.testConnectionLoading;
+    const disabled = this.testInputs() || !this.state.name || this.state.testConnectionLoading;
 
     let onClickFn = this.addConnection;
 

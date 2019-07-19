@@ -371,10 +371,6 @@ export default class IngestDataFromDataPrep extends Component {
   }
 
   submitForm = () => {
-    if (this.state.inputError) {
-      // found an error so not saving the input.
-      return;
-    }
     let steps = cloneDeep(copyingSteps);
     let {dataprep} = DataPrepStore.getState();
     let workspaceProps = objectQuery(dataprep, 'workspaceInfo', 'properties');
@@ -781,7 +777,7 @@ export default class IngestDataFromDataPrep extends Component {
           <button
             className="btn btn-primary"
             onClick={this.submitForm}
-            disabled={isEmpty(this.state.datasetName)}
+            disabled={this.state.inputError || isEmpty(this.state.datasetName)}
           >
             {T.translate(`${PREFIX}.createBtnLabel`)}
           </button>

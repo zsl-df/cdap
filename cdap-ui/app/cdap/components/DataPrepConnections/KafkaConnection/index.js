@@ -148,10 +148,6 @@ export default class KafkaConnection extends Component {
   }
 
   addConnection() {
-    if (this.testInputs()) {
-      return;
-    }
-
     let namespace = NamespaceStore.getState().selectedNamespace;
 
     let requestBody = {
@@ -176,10 +172,6 @@ export default class KafkaConnection extends Component {
   }
 
   editConnection() {
-    if (this.testInputs()) {
-      return;
-    }
-
     let namespace = NamespaceStore.getState().selectedNamespace;
 
     let params = {
@@ -211,10 +203,6 @@ export default class KafkaConnection extends Component {
   }
 
   testConnection() {
-    if (this.testInputs()) {
-      return;
-    }
-
     this.setState({
       testConnectionLoading: true,
       connectionResult: {
@@ -311,7 +299,7 @@ export default class KafkaConnection extends Component {
   }
 
   renderAddConnectionButton() {
-    let disabled = !this.state.name;
+    let disabled = this.testInputs() || !this.state.name;
     disabled = disabled ||
       this.state.brokersList.length === 0 ||
       this.state.testConnectionLoading ||
@@ -342,7 +330,7 @@ export default class KafkaConnection extends Component {
   }
 
   renderTestButton() {
-    let disabled = this.state.testConnectionLoading || !this.state.name;
+    let disabled = this.testInputs() || this.state.testConnectionLoading || !this.state.name;
     disabled = disabled || this.state.brokersList.length === 0 || (this.state.brokersList.length === 1 && (!this.state.brokersList[0].host || !this.state.brokersList[0].port));
 
     return (

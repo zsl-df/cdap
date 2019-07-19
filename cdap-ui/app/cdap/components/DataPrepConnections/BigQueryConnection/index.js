@@ -140,10 +140,6 @@ export default class BigQueryConnection extends Component {
   }
 
   addConnection = () => {
-    if (this.testInputs()) {
-      return;
-    }
-
     let namespace = NamespaceStore.getState().selectedNamespace;
 
     let requestBody = {
@@ -166,10 +162,6 @@ export default class BigQueryConnection extends Component {
   };
 
   editConnection = () => {
-    if (this.testInputs()) {
-      return;
-    }
-
     let namespace = NamespaceStore.getState().selectedNamespace;
 
     let params = {
@@ -199,10 +191,6 @@ export default class BigQueryConnection extends Component {
   };
 
   testConnection = () => {
-    if (this.testInputs()) {
-      return;
-    }
-
     this.setState({
       testConnectionLoading: true,
       connectionResult: {
@@ -279,7 +267,7 @@ export default class BigQueryConnection extends Component {
   };
 
   renderTestButton = () => {
-    let disabled = !this.state.name;
+    let disabled = this.testInputs() || !this.state.name;
 
     return (
       <span className="test-connection-button">
@@ -296,7 +284,7 @@ export default class BigQueryConnection extends Component {
   };
 
   renderAddConnectionButton = () => {
-    let disabled = !this.state.name || this.state.testConnectionLoading;
+    let disabled = this.testInputs() || !this.state.name || this.state.testConnectionLoading;
 
     let onClickFn = this.addConnection;
 

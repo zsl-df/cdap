@@ -228,12 +228,12 @@ class HydratorPlusPlusTopPanelCtrl {
     event.stopPropagation();
   }
   saveMetadata(event) {
-    this.inputs['name'].error = this.inputError(this.state.metadata.name, 'name');
-    this.inputs['description'].error = this.inputError(this.state.metadata.description, 'description');
-    // If there are any input errors don't save metadata
-    if (this.isSomeInputError()) {
-      return;
-    }
+    // this.inputs['name'].error = this.inputError(this.state.metadata.name, 'name');
+    // this.inputs['description'].error = this.inputError(this.state.metadata.description, 'description');
+    // // If there are any input errors don't save metadata
+    // if (this.isSomeInputError()) {
+    //   return;
+    // }
 
     this.HydratorPlusPlusConfigActions.setMetadataInfo(this.state.metadata.name, this.state.metadata.description);
     if (this.state.metadata.description) {
@@ -248,11 +248,22 @@ class HydratorPlusPlusTopPanelCtrl {
     event.stopPropagation();
   }
   onEnterOnMetadata(event) {
+    this.inputs['name'].error = this.inputError(this.state.metadata.name, 'name');
     // Save when user hits ENTER key.
     if (event.keyCode === 13) {
+      if (this.isSomeInputError()) {
+        return;
+      }
       this.saveMetadata(event);
-      //  this.metadataExpanded = false;
+      this.metadataExpanded = false;
     } else if (event.keyCode === 27) {
+      // Reset if the user hits ESC key.
+      this.resetMetadata(event);
+    }
+  }
+  onEnterOnMetadataDescription(event) {
+    this.inputs['description'].error = this.inputError(this.state.metadata.description, 'description');
+    if (event.keyCode === 27) {
       // Reset if the user hits ESC key.
       this.resetMetadata(event);
     }

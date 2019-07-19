@@ -181,10 +181,6 @@ export default class S3Connection extends Component {
   }
 
   addConnection() {
-    if (this.testInputs()) {
-      return;
-    }
-
     let namespace = NamespaceStore.getState().selectedNamespace;
 
     let requestBody = {
@@ -211,10 +207,6 @@ export default class S3Connection extends Component {
   }
 
   editConnection() {
-    if (this.testInputs()) {
-      return;
-    }
-
     let namespace = NamespaceStore.getState().selectedNamespace;
 
     let params = {
@@ -248,10 +240,6 @@ export default class S3Connection extends Component {
   }
 
   testConnection() {
-    if (this.testInputs()) {
-      return;
-    }
-
     this.setState({
       testConnectionLoading: true,
       connectionResult: {
@@ -332,7 +320,7 @@ export default class S3Connection extends Component {
   }
 
   renderTestButton() {
-    let disabled = !this.state.name ||
+    let disabled = this.testInputs() || !this.state.name ||
       !this.state.accessKeyId ||
       !this.state.accessSecretKey ||
       !this.state.region;
@@ -350,7 +338,7 @@ export default class S3Connection extends Component {
   }
 
   renderAddConnectionButton() {
-    let disabled = !this.state.name ||
+    let disabled = this.testInputs() || !this.state.name ||
       !this.state.accessKeyId ||
       !this.state.accessSecretKey ||
       !this.state.region;
