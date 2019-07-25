@@ -17,6 +17,7 @@ import React from 'react';
 import cloneDeep from 'lodash/cloneDeep';
 import PropTypes from 'prop-types';
 import { Input } from 'reactstrap';
+import Select from 'react-select';
 import { isNil, isEmpty, remove } from 'lodash';
 import InfoTip from '../InfoTip';
 
@@ -26,10 +27,12 @@ class OperationSelector extends React.Component {
   availableOperations;
   operationConfigurations;
   operationMap;
+  columns;
   constructor(props) {
     super(props);
     this.configPropList = [];
     this.operationMap = {};
+    this.columns = [];
     this.state = {
       operations: []
     };
@@ -38,6 +41,14 @@ class OperationSelector extends React.Component {
   }
 
   componentDidMount() {
+    if (this.props.schema) {
+      this.columns = this.props.schema.schemaColumns.map(column => {
+        const value = column.columnName;
+        const label = column.columnName;
+        const type = column.columnType;
+        return { value, label, type };
+      });
+    }
     this.availableOperations = cloneDeep(this.props.availableOperations);
     if (!isEmpty(this.availableOperations)) {
       this.availableOperations.forEach(element => {
@@ -76,7 +87,7 @@ class OperationSelector extends React.Component {
 
   updateConfiguration() {
     const operationConfigurations = {};
-    if (!isEmpty(this.state.operations) && this.state.operations.length>0) {
+    if (!isEmpty(this.state.operations) && this.state.operations.length > 0) {
       this.state.operations.forEach(element => {
         operationConfigurations[element] = {};
         if (!isNil(this.operationMap[element])) {
@@ -86,7 +97,7 @@ class OperationSelector extends React.Component {
     }
     this.operationConfigurations = operationConfigurations;
     console.log("Update store with Operation -> ", this.operationConfigurations);
-    this.props.setOperationConfigurations(this.operationConfigurations);
+    this.props.updateOperationConfigurations(this.operationConfigurations);
   }
 
   onOperationChange(evt) {
@@ -101,7 +112,7 @@ class OperationSelector extends React.Component {
     this.setState({
       operations: operationList
     });
-    setTimeout(()=>{
+    setTimeout(() => {
       this.updateConfiguration();
     });
   }
@@ -137,24 +148,52 @@ class OperationSelector extends React.Component {
                   <div className="config-item-container">
                     {
                       (item.subParams).map(param => {
-                        return (
-                          <div className='list-row' key={param.paramName}>
-                            <div className='name'>{param.displayName}
+                        if (param.displayName == "Features") {
+                          return (
+                            <div className='list-row' key={param.paramName}>
+                              <div className='name'>{param.displayName}
+                                {
+                                  param.isMandatory && <i className="fa fa-asterisk mandatory"></i>
+                                }
+                              </div>
+                              <div className='colon'>:</div>
+                              <Select className='value' isMulti = { true }
+                                options={this.columns}/>
+                              </div>
+                          );
+                        } else if (param.displayName == "Target Column") {
+                          return (
+                            <div className='list-row' key={param.paramName}>
+                              <div className='name'>{param.displayName}
+                                {
+                                  param.isMandatory && <i className="fa fa-asterisk mandatory"></i>
+                                }
+                              </div>
+                              <div className='colon'>:</div>
+                              <Select className='value' 
+                                options={this.columns}/>
+                              </div>
+                          );
+                        } else {
+                          return (
+                            <div className='list-row' key={param.paramName}>
+                              <div className='name'>{param.displayName}
+                                {
+                                  param.isMandatory && <i className="fa fa-asterisk mandatory"></i>
+                                }
+                              </div>
+                              <div className='colon'>:</div>
+                              <Input className='value' type="text" name="value"
+                                placeholder={'Enter ' + param.displayName + ' value'}
+                                defaultValue={isNil(this.operationMap[item.paramName][param.paramName]) ? '' : this.operationMap[item.paramName][param.paramName]}
+                                onChange={this.onValueUpdated.bind(this, item.paramName, param.paramName)} />
                               {
-                                param.isMandatory && <i className="fa fa-asterisk mandatory"></i>
+                                param.description &&
+                                <InfoTip id={param.paramName + "_InfoTip"} description={param.description}></InfoTip>
                               }
                             </div>
-                            <div className='colon'>:</div>
-                            <Input className='value' type="text" name="value"
-                              placeholder={'Enter ' + param.displayName + ' value'}
-                              defaultValue={isNil(this.operationMap[item.paramName][param.paramName]) ? '' : this.operationMap[item.paramName][param.paramName]}
-                              onChange={this.onValueUpdated.bind(this, item.paramName, param.paramName)} />
-                            {
-                              param.description &&
-                              <InfoTip id={param.paramName + "_InfoTip"} description={param.description}></InfoTip>
-                            }
-                          </div>
-                        );
+                          );
+                        }
                       })
                     }
                   </div>
@@ -171,5 +210,6 @@ export default OperationSelector;
 OperationSelector.propTypes = {
   availableOperations: PropTypes.array,
   operationConfigurations: PropTypes.any,
-  setOperationConfigurations: PropTypes.func
+  updateOperationConfigurations: PropTypes.func,
+  schema: PropTypes.any,
 };

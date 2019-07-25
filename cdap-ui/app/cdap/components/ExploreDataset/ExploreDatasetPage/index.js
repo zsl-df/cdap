@@ -47,7 +47,18 @@ class ExploreDatasetPage extends React.Component {
   componentWillMount() {
     const workspaceId = this.getURLParam("workspaceId");
     if (workspaceId) {
-      // console.log(" WORKPSPACE -> ", window.localStorage.getItem("Explore:"+workspaceId));
+      const workspaceObj = JSON.parse(window.localStorage.getItem("Explore:" + workspaceId));
+      if (workspaceObj) {
+        const schema = {};
+        schema["schemaName"] = workspaceObj.schema.name;
+        schema["schemaColumns"] = workspaceObj.schema.fields
+                                       .map(field => {
+                                         const columnName = field.name;
+                                         const columnType = field.type[0];
+                                         return {columnName,columnType};
+                                        });
+        this.props.setSchema(schema);
+      }
       this.toggleFeatureWizard();
     }
   }
@@ -55,12 +66,12 @@ class ExploreDatasetPage extends React.Component {
   getSinkConfiguration() {
     EDADataServiceApi.availableSinks({
       namespace: NamespaceStore.getState().selectedNamespace,
-    },{} , getDefaultRequestHeader()).subscribe(
+    }, {}, getDefaultRequestHeader()).subscribe(
       result => {
         if (checkResponseError(result)) {
           this.handleError(result, GET_SINKS);
         } else {
-         this.setAvailableSinks(result["configParamList"]);
+          this.setAvailableSinks(result["configParamList"]);
         }
       },
       error => {
@@ -72,7 +83,7 @@ class ExploreDatasetPage extends React.Component {
   getEDAConfiguration() {
     EDADataServiceApi.configurationConfig({
       namespace: NamespaceStore.getState().selectedNamespace,
-    },{} , getDefaultRequestHeader()).subscribe(
+    }, {}, getDefaultRequestHeader()).subscribe(
       result => {
         if (checkResponseError(result)) {
           this.handleError(result, GET_SINKS);
@@ -93,7 +104,7 @@ class ExploreDatasetPage extends React.Component {
   setEDAConfigurations(response) {
     const operations = [];
     const engineConfigs = [];
-    if (response) { 
+    if (response) {
       response.forEach(element => {
         if (element && element.hasOwnProperty("groupName")) {
           if (element["groupName"] == "eda") {
@@ -105,7 +116,7 @@ class ExploreDatasetPage extends React.Component {
       });
       this.props.setAvailableOperations(operations);
       this.props.setAvailableEngineConfigurations(engineConfigs);
-      this.props.updateEngineConfigurations(getUpdatedConfigurationList(engineConfigs,[]));
+      this.props.updateEngineConfigurations(getUpdatedConfigurationList(engineConfigs, []));
     }
   }
 
@@ -152,9 +163,9 @@ class ExploreDatasetPage extends React.Component {
 
   render() {
     return <div>
-        <ExploreDatasetWizard showWizard={this.state.showExploreWizard}
-              onClose={this.onWizardClose}
-              onSubmit={this.savePipeline.bind(this)} />
+      <ExploreDatasetWizard showWizard={this.state.showExploreWizard}
+        onClose={this.onWizardClose}
+        onSubmit={this.savePipeline.bind(this)} />
     </div>;
   }
 
@@ -165,4 +176,5 @@ ExploreDatasetPage.propTypes = {
   setAvailableOperations: PropTypes.func,
   setAvailableEngineConfigurations: PropTypes.func,
   updateEngineConfigurations: PropTypes.func,
+  setSchema: PropTypes.func,
 };

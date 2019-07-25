@@ -50,6 +50,12 @@ const mapDispatchToExploreDatasetProps = (dispatch) => {
         payload: configurations
       });
     },
+    setSchema: (schema) => {
+      dispatch({
+        type: ExploreDatasetActions.setSchema,
+        payload: schema
+      });
+    },
     updateEngineConfigurations: (configurations) => {
       dispatch({
         type: ExploreDatasetActions.updateEngineConfigurations,

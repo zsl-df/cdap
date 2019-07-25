@@ -31,7 +31,7 @@ const mapStateToConfigurationProps = (state) => {
 
 const mapDispatchToConfigurationProps = (dispatch) => {
   return {
-    updateOperationMap: (value) => {
+    updateOperationConfigurations: (value) => {
       dispatch({
         type: ExploreDatasetActions.updateOperationConfigurations,
         payload: value

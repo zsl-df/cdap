@@ -143,7 +143,7 @@ const exploreDatasetState = (state = defaultState, action = defaultAction) => {
         availableSinks: action.payload
       };
       break;
-    case ExploreDatasetActions.setAvailableConfigurations:
+    case ExploreDatasetActions.setAvailableEngineConfigurations:
       state = {
         ...state,
         availableEngineConfigurations: action.payload
