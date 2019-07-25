@@ -28,7 +28,8 @@ const edaService = `${appPath}/services/AutoFeatureGenerationService/methods/eda
 const EDADataServiceApi = {
   configurationConfig: serviceCreator(dataSrc, "GET", "REQUEST",`${edaService}/analysis/configparams/get`),
   availableSinks: serviceCreator(dataSrc, "GET", "REQUEST",`${edaService}/analysis/configparams/datasink/get`),
-  createEDAPipeline: serviceCreator(dataSrc, "GET", "REQUEST",`${edaService}/:pipeline/analysis/create`),
+  createEDAPipeline: serviceCreator(dataSrc, "POST", "REQUEST",`${edaService}/:pipeline/analysis/create`),
+  startEDAPipeline: serviceCreator(dataSrc, "POST", "REQUEST",`/namespaces/:namespace/apps/:pipeline/workflows/DataPipelineWorkflow/start`),
 };
 
 function serviceCreator (dataSrc, method, type, path, options = {}) {

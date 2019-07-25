@@ -29,7 +29,7 @@ class ExploreDatasetWizard extends React.Component {
     super(props);
     this.state = {
       successInfo: {},
-      activeStepId: 'schema',
+      activeStepId: 'operation',
     };
   }
 

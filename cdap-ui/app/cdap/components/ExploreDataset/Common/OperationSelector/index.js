@@ -18,7 +18,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import PropTypes from 'prop-types';
 import { Input } from 'reactstrap';
 import Select from 'react-select';
-import { isNil, isEmpty, remove } from 'lodash';
+import { isNil, isEmpty, remove, find } from 'lodash';
 import InfoTip from '../InfoTip';
 
 require('./OperationSelector.scss');
@@ -31,8 +31,7 @@ class OperationSelector extends React.Component {
   constructor(props) {
     super(props);
     this.configPropList = [];
-    this.operationMap = {};
-    this.selectedOptionMap = {};
+    this.operationMap = {};    
     this.columns = [];
     this.state = {
       operations: [],
@@ -66,10 +65,9 @@ class OperationSelector extends React.Component {
         }
       });
     }
-
+    let operationList = [];
     this.operationConfigurations = cloneDeep(this.props.operationConfigurations);
     if (!isNil(this.operationConfigurations)) {
-      let operationList = [];
       for (let property in this.operationConfigurations) {
         if (property) {
           if (isNil(this.operationMap[property])) {
@@ -79,11 +77,16 @@ class OperationSelector extends React.Component {
           operationList.push(property);
         }
       }
-
-      this.setState({
-        operations: operationList
-      });
     }
+
+    this.setState({
+      operations: operationList,
+      selectedOptionMap: this.initSelectedOptionMap()
+    });
+
+    setTimeout(() => {
+      this.updateConfiguration();
+    });
   }
 
 
@@ -128,9 +131,29 @@ class OperationSelector extends React.Component {
     this.updateConfiguration();
   }
 
+  initSelectedOptionMap() {
+    const selectedOptionMap = {};
+    let selectedValue;
+    (this.props.availableOperations).map((item) => {
+      (item.subParams).map(param => {
+        if (param.isSchemaSpecific) {
+          selectedValue = this.operationMap[item.paramName][param.paramName];
+          if (!isEmpty(selectedValue)) {
+            if (param.isCollection) {
+              selectedOptionMap[item.paramName + ":" + param.paramName] = selectedValue.split(",").map(value => find(this.columns, { "value": value }));
+              } else {
+                selectedOptionMap[item.paramName + ":" + param.paramName]  =  find(this.columns, { "value": selectedValue });
+              }
+            }
+          }
+        });
+    });
+    return selectedOptionMap;
+  }
+
   handleSelectChange(parent, child, selectedOption) {
     const selectedOptionMap = { ...this.state.selectedOptionMap };
-    selectedOptionMap[parent+":"+child] = selectedOption;
+    selectedOptionMap[parent + ":" + child] = selectedOption;
     if (isNil(this.operationMap[parent])) {
       this.operationMap[parent] = {};
     }
@@ -144,7 +167,7 @@ class OperationSelector extends React.Component {
         return result;
       }, "");
     } else {
-      this.operationMap[parent][child] = isNil(selectedOption) ? "": selectedOption.value;
+      this.operationMap[parent][child] = isNil(selectedOption) ? "" : selectedOption.value;
     }
     this.updateConfiguration();
     this.setState({

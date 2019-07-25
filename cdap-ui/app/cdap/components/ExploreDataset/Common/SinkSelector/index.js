@@ -72,6 +72,9 @@ class SinkSelector extends React.Component {
     this.setState({
       sinks: sinkList
     });
+    setTimeout(()=>{
+      this.updateConfiguration();
+    });
   }
 
 

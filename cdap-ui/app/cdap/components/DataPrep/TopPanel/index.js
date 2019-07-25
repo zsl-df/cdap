@@ -55,6 +55,11 @@ const IngestDataFromDataPrep = Loadable({
   loading: LoadingSVGCentered
 });
 
+const ExploreDatsetUI = Loadable({
+  loader: () => import(/* webpackChunkName: "ExploreDataset" */ 'components/ExploreDataset'),
+  loading: LoadingSVGCentered
+});
+
 require('./TopPanel.scss');
 const PREFIX = 'features.DataPrep.TopPanel';
 
@@ -72,7 +77,8 @@ export default class DataPrepTopPanel extends Component {
       higherVersion: initialState.higherVersion,
       onSubmitError: null,
       onSubmitLoading: false,
-      workspaceInfo: initialState.workspaceInfo
+      workspaceInfo: initialState.workspaceInfo,
+      openExploreDataset: false
     };
 
     this.toggleSchemaModal = this.toggleSchemaModal.bind(this);
@@ -117,6 +123,13 @@ export default class DataPrepTopPanel extends Component {
 
     return (
       <SchemaModal toggle={this.toggleSchemaModal} />
+    );
+  }
+
+  renderEDAModal() {
+    if (!this.state.openExploreDataset) { return null; }
+    return (
+      <ExploreDatsetUI />
     );
   }
 
@@ -184,10 +197,11 @@ export default class DataPrepTopPanel extends Component {
             pluginConfig: pluginConfig,
             schema: schema
           };
+          window.localStorage.setItem("analyseWorkpaceId", "Explore:" + workspaceId);
           window.localStorage.setItem("Explore:" + workspaceId, JSON.stringify(workspaceObj));
-          const exploreDatasetURL = `/ns/${namespace}/exploredataset`;
-          const exploreDatasetPath = `/cdap${exploreDatasetURL}?workspaceId=${workspaceId}`;
-          window.location.href = exploreDatasetPath;
+          this.setState({
+            openExploreDataset: true
+          });
         },
         (err) => {
           console.log(err);
@@ -510,6 +524,7 @@ export default class DataPrepTopPanel extends Component {
           {this.renderAddToPipelineModal()}
           {this.renderPersistViewSchemaModal()}
           {this.renderSchemaModal()}
+          {this.renderEDAModal()}
         </div>
       </div>
     );

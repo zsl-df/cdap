@@ -24,7 +24,7 @@ import DatasetEngineConfigurationStep from './DatasetEngineConfigurationStep';
 const ExploreDatasetWizardConfig = {
   steps: [
     {
-      id: 'properties',
+      id: 'operation',
       shorttitle: 'EDA Config',
       title: 'Select Operation',
       description: '',

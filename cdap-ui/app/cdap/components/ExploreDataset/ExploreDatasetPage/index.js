@@ -21,9 +21,10 @@ import ExploreDatasetWizard from '../ExploreDatasetWizard';
 import { getDefaultRequestHeader } from 'components/FeatureUI/util';
 import EDADataServiceApi from '../dataService';
 import { checkResponseError, getUpdatedConfigurationList, getEDAObject } from '../Common/util';
-import { GET_SINKS, SAVE_PIPELINE } from '../Common/constant';
+import { GET_SINKS, SAVE_PIPELINE, GET_CONFIGURATION } from '../Common/constant';
 import { IS_OFFLINE } from '../config';
 import { sinks, configurations } from '../sampleData';
+import { Observable } from 'rxjs/Observable';
 
 class ExploreDatasetPage extends React.Component {
   originalSchema;
@@ -46,9 +47,9 @@ class ExploreDatasetPage extends React.Component {
   }
 
   componentWillMount() {
-    const workspaceId = this.getURLParam("workspaceId");
+    const workspaceId = window.localStorage.getItem("analyseWorkpaceId");
     if (workspaceId) {
-      const workspaceObj = JSON.parse(window.localStorage.getItem("Explore:" + workspaceId));
+      const workspaceObj = JSON.parse(window.localStorage.getItem(workspaceId));
       if (workspaceObj) {
         console.log(workspaceObj);
         this.originalSchema = workspaceObj.schema;
@@ -64,6 +65,8 @@ class ExploreDatasetPage extends React.Component {
         this.props.setSchema(schema);
       }
       this.toggleFeatureWizard();
+      window.localStorage.removeItem("analyseWorkpaceId");
+      window.localStorage.removeItem(workspaceId);
     }
   }
 
@@ -90,13 +93,13 @@ class ExploreDatasetPage extends React.Component {
     }, {}, getDefaultRequestHeader()).subscribe(
       result => {
         if (checkResponseError(result)) {
-          this.handleError(result, GET_SINKS);
+          this.handleError(result, GET_CONFIGURATION);
         } else {
           this.setEDAConfigurations(result["configParamList"]);
         }
       },
       error => {
-        this.handleError(error, GET_SINKS);
+        this.handleError(error, GET_CONFIGURATION);
       }
     );
   }
@@ -124,19 +127,8 @@ class ExploreDatasetPage extends React.Component {
     }
   }
 
-  fetchWizardData() {
-  }
-
-  getURLParam(key) {
-    var q = window.location.search.match(new RegExp('[?&]' + key + '=([^&#]*)'));
-    return q && q[1];
-  }
-
   toggleFeatureWizard() {
     let open = !this.state.showExploreWizard;
-    if (open) {
-      this.fetchWizardData();
-    }
     this.setState({
       showExploreWizard: open
     });
@@ -144,6 +136,24 @@ class ExploreDatasetPage extends React.Component {
 
   toggleDropDown() {
     this.setState(prevState => ({ dropdownOpen: !prevState.dropdownOpen }));
+  }
+
+  startPipeline(pipeline) {
+    EDADataServiceApi.startEDAPipeline({
+      namespace: NamespaceStore.getState().selectedNamespace,
+      pipeline: pipeline
+    }, {}, getDefaultRequestHeader()).subscribe(
+      result => {
+        if (checkResponseError(result)) {
+          this.handleError(result, "START");
+        } else {
+          this.viewPipeline(pipeline);
+        }
+      },
+      error => {
+        this.handleError(error, "START");
+      }
+    );
   }
 
   viewPipeline(pipeline) {
@@ -158,31 +168,42 @@ class ExploreDatasetPage extends React.Component {
   savePipeline() {
     const edaPostObj = getEDAObject(this.props);
     if (edaPostObj) {
-      edaPostObj["schema"] = this.originalSchema;
-      edaPostObj["pluginConfig"] = this.pluginConfig;
+      edaPostObj["schema"] = JSON.stringify(this.originalSchema);
+      edaPostObj["pluginConfig"] = JSON.stringify(this.pluginConfig);
     }
     console.log('EDA ==> ', edaPostObj);
-    EDADataServiceApi.savePipeline({
+    let fetchObserver = EDADataServiceApi.createEDAPipeline({
       namespace: NamespaceStore.getState().selectedNamespace,
-      pipeline: edaPostObj.pipelineRunName
-    }, edaPostObj, getDefaultRequestHeader()).subscribe(
-      result => {
-        if (checkResponseError(result)) {
-          this.handleError(result, SAVE_PIPELINE);
-        } else {
-          this.toggleFeatureWizard();
+      pipeline:  this.props.pipelineName
+    }, edaPostObj, getDefaultRequestHeader());
+
+    return Observable.create((observer) => {
+      fetchObserver.subscribe(
+        result => {
+          if (checkResponseError(result)) {
+            this.handleError(result, SAVE_PIPELINE);
+            observer.error(result);
+          } else {
+            this.startPipeline(this.props.pipelineName);
+            observer.next(result);
+            observer.complete();
+          }
+        },
+        err => {
+          this.handleError(err, SAVE_PIPELINE);
+          observer.error(err);
         }
-      },
-      error => {
-        this.handleError(error, SAVE_PIPELINE);
-      }
-    );
+      );
+    });
   }
 
   onWizardClose() {
     this.setState({
       showExploreWizard: !this.state.showExploreWizard
     });
+    // hack to allow re-open EDA
+    const exploreDatasetURL = `${window.location.origin}/cdap/ns/${NamespaceStore.getState().selectedNamespace}/dataprep`;
+    window.location.href = exploreDatasetURL;
   }
 
   render() {
@@ -201,4 +222,5 @@ ExploreDatasetPage.propTypes = {
   setAvailableEngineConfigurations: PropTypes.func,
   updateEngineConfigurations: PropTypes.func,
   setSchema: PropTypes.func,
+  pipelineName: PropTypes.string,
 };

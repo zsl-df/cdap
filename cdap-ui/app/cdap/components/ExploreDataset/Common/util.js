@@ -181,10 +181,14 @@ export function getFeatureObject(props) {
   return featureObject;
 }
 
+export function getURLParam(key) {
+  var q = window.location.search.match(new RegExp('[?&]' + key + '=([^&#]*)'));
+  return q && q[1];
+}
+
+
 export function getEDAObject(props) {
-  let featureObject = {
-    pipelineName: props.pipelineName
-  };
+  let featureObject = {};
   if (!isEmpty(props.engineConfigurations)) {
     props.engineConfigurations.forEach((configuration) => {
       if (!isEmpty(configuration.value)) {

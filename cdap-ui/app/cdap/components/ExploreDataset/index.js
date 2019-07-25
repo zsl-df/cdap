@@ -70,7 +70,7 @@ const mapDispatchToExploreDatasetProps = (dispatch) => {
         type: ExploreDatasetActions.updateEngineConfigurations,
         payload: configurations
       });
-    }
+    },
   };
 };
 
