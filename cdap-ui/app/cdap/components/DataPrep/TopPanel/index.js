@@ -32,6 +32,7 @@ import IconSVG from 'components/IconSVG';
 import DataPrepPlusButton from 'components/DataPrep/TopPanel/PlusButton';
 import { Theme } from 'services/ThemeHelper';
 import classnames from 'classnames';
+import getPipelineConfig from 'components/DataPrep/TopPanel/PipelineConfigHelper';
 
 const SchemaModal = Loadable({
   loader: () => import(/* webpackChunkName: "SchemaModal"*/ 'components/DataPrep/TopPanel/SchemaModal'),
@@ -142,7 +143,19 @@ export default class DataPrepTopPanel extends Component {
     );
   }
 
+
   toggleExploreDataset = () => {
+    getPipelineConfig().subscribe(
+      (res) => {
+        this.analyseSchema(res.batchConfig);
+        },
+      (err) => {
+        console.log("Batch config -> ", err);
+      }
+    );
+  }
+
+  analyseSchema = (pluginConfig) => {
     let directives = DataPrepStore.getState().dataprep.directives;
     let workspaceId = DataPrepStore.getState().dataprep.workspaceId;
     let namespace = NamespaceStore.getState().selectedNamespace;
@@ -156,7 +169,7 @@ export default class DataPrepTopPanel extends Component {
       .subscribe(
         res => {
           let schema = {
-            name: 'avroSchema',
+            name: 'etlSchemaBody',
             type: 'record',
             fields: res
           };
@@ -168,6 +181,7 @@ export default class DataPrepTopPanel extends Component {
           const workspaceObj = {
             workspaceId,
             directives,
+            pluginConfig: pluginConfig,
             schema: schema
           };
           window.localStorage.setItem("Explore:" + workspaceId, JSON.stringify(workspaceObj));

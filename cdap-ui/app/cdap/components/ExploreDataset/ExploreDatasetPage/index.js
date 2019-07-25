@@ -20,13 +20,14 @@ import PropTypes from 'prop-types';
 import ExploreDatasetWizard from '../ExploreDatasetWizard';
 import { getDefaultRequestHeader } from 'components/FeatureUI/util';
 import EDADataServiceApi from '../dataService';
-import { checkResponseError, getUpdatedConfigurationList } from '../Common/util';
-import { GET_SINKS } from '../Common/constant';
+import { checkResponseError, getUpdatedConfigurationList, getEDAObject } from '../Common/util';
+import { GET_SINKS, SAVE_PIPELINE } from '../Common/constant';
 import { IS_OFFLINE } from '../config';
 import { sinks, configurations } from '../sampleData';
 
 class ExploreDatasetPage extends React.Component {
-
+  originalSchema;
+  pluginConfig;
   constructor(props) {
     super(props);
     this.toggleFeatureWizard = this.toggleFeatureWizard.bind(this);
@@ -49,6 +50,9 @@ class ExploreDatasetPage extends React.Component {
     if (workspaceId) {
       const workspaceObj = JSON.parse(window.localStorage.getItem("Explore:" + workspaceId));
       if (workspaceObj) {
+        console.log(workspaceObj);
+        this.originalSchema = workspaceObj.schema;
+        this.pluginConfig =  workspaceObj.schema;
         const schema = {};
         schema["schemaName"] = workspaceObj.schema.name;
         schema["schemaColumns"] = workspaceObj.schema.fields
@@ -152,7 +156,27 @@ class ExploreDatasetPage extends React.Component {
   }
 
   savePipeline() {
-
+    const edaPostObj = getEDAObject(this.props);
+    if (edaPostObj) {
+      edaPostObj["schema"] = this.originalSchema;
+      edaPostObj["pluginConfig"] = this.pluginConfig;
+    }
+    console.log('EDA ==> ', edaPostObj);
+    EDADataServiceApi.savePipeline({
+      namespace: NamespaceStore.getState().selectedNamespace,
+      pipeline: edaPostObj.pipelineRunName
+    }, edaPostObj, getDefaultRequestHeader()).subscribe(
+      result => {
+        if (checkResponseError(result)) {
+          this.handleError(result, SAVE_PIPELINE);
+        } else {
+          this.toggleFeatureWizard();
+        }
+      },
+      error => {
+        this.handleError(error, SAVE_PIPELINE);
+      }
+    );
   }
 
   onWizardClose() {

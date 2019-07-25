@@ -23,16 +23,23 @@ import ExploreDatasetStore from 'components/ExploreDataset/store/ExploreDatasetS
 const mapStateToProps = (state) => {
   return {
     operationType: state.exploreDatasetState.operationType,
-    featureName: state.exploreDatasetState.pipelineName,
+    pipelineName: state.exploreDatasetState.pipelineName,
+    extraConfigurations: state.exploreDatasetState.extraConfigurations,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    updateFeatureName: (pipelineName) => {
+    updatePipelineName: (pipelineName) => {
       dispatch({
         type: ExploreDatasetActions.updatePipelineName,
         payload: pipelineName
+      });
+    },
+    setExtraConfigurations: (extraConfigurations) => {
+      dispatch({
+        type: ExploreDatasetActions.setExtraConfigurations,
+        payload: extraConfigurations
       });
     },
   };

@@ -55,8 +55,8 @@ class SinkSelector extends React.Component {
     }
 
     this.sinkConfigurations = cloneDeep(this.props.sinkConfigurations);
-    if (!isNil(this.sinkConfigurations)) {
-      let sinkList = [];
+    let sinkList = [];
+    if (!isEmpty(this.sinkConfigurations)) {
       for (let property in this.sinkConfigurations) {
         if (property) {
           if (isNil(this.configMap[property])) {
@@ -66,11 +66,12 @@ class SinkSelector extends React.Component {
           sinkList.push(property);
         }
       }
-
-      this.setState({
-        sinks: sinkList
-      });
+    } else if((!isEmpty(this.availableSinks))) {
+      sinkList.push(this.availableSinks[0].paramName);
     }
+    this.setState({
+      sinks: sinkList
+    });
   }
 
 
@@ -123,22 +124,15 @@ class SinkSelector extends React.Component {
             return (
               <div className="config-container" key={item.paramName}>
                 <div className="config-header-label">
-                  <Input
-                    type="checkbox"
-                    value={item.paramName}
-                    onChange={this.onSinkChange}
-                    checked={this.state.sinks.includes(item.paramName)}
-                  />
                   <span>{item.displayName}</span>
                 </div>
-
                 {
                   this.state.sinks.includes(item.paramName) &&
                   <div className="config-item-container">
                     {
                       (item.subParams).map(param => {
                         return (
-                          <div className='list-row' key={param.paramName}>
+                          <div className='list-row' key={item.paramName + ":" + param.paramName}>
                             <div className='name'>{param.displayName}
                               {
                                 param.isMandatory && <i className="fa fa-asterisk mandatory"></i>

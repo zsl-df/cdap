@@ -21,6 +21,15 @@ import ExploreDatasetStore from './store/ExploreDatasetStore';
 
 const mapStateToExploreDatasetProps = (state) => {
   return {
+    actionType:  state.exploreDatasetState.actionType,
+    schema: state.exploreDatasetState.schema,
+    availableOperations: state.exploreDatasetState.availableOperations,
+    availableEngineConfigurations: state.exploreDatasetState.availableEngineConfigurations,
+    availableSinks: state.exploreDatasetState.availableSinks,
+    pipelineName: state.exploreDatasetState.pipelineName,
+    operationConfigurations: state.exploreDatasetState.operationConfigurations,
+    engineConfigurations: state.exploreDatasetState.engineConfigurations,
+    sinkConfigurations: state.exploreDatasetState.sinkConfigurations,
   };
 };
 

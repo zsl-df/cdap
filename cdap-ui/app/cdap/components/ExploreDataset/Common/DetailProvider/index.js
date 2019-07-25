@@ -17,31 +17,86 @@ import React from 'react';
 import { Input } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { EDIT } from '../constant';
+import isNil from 'lodash/isNil';
 
 require('./DetailProvider.scss');
 
 class DetailProvider extends React.Component {
   name;
+  hadoopOutputPath;
+  extraConfigurations;
   constructor(props) {
     super(props);
+    this.state = {
+      saveToHadoop: false
+    };
+  }
+
+  componentWillMount() {
+    this.extraConfigurations = this.props.extraConfigurations;
+    this.hadoopOutputPath = isNil(this.extraConfigurations.hadoopOutputPath) ? "" :this.extraConfigurations.hadoopOutputPath;
+    this.setState({
+      saveToHadoop: (!isNil(this.extraConfigurations.saveToHadoop) && this.extraConfigurations.saveToHadoop == "Yes")  ? true : false
+    });
   }
 
   onNameUpdated(event) {
-    this.name =  event.target.value;
-    this.props.updateFeatureName(this.name);
+    this.name = event.target.value;
+    this.props.updatePipelineName(this.name);
+  }
+
+  onOutputPathUpdated(event) {
+    this.hadoopOutputPath = event.target.value;
+    this.extraConfigurations["saveToHadoop"]  = "Yes";
+    this.extraConfigurations["hadoopOutputPath"]  = this.hadoopOutputPath;
+    this.props.setExtraConfigurations(this.extraConfigurations);
+  }
+
+  onSaveToHadoopChange(evt) {
+    if (evt.target.checked) {
+      this.extraConfigurations["saveToHadoop"]  = "Yes";
+      this.extraConfigurations["hadoopOutputPath"]  = this.hadoopOutputPath;
+      this.props.setExtraConfigurations(this.extraConfigurations);
+    } else {
+      this.extraConfigurations["saveToHadoop"]  = "No";
+      this.extraConfigurations["hadoopOutputPath"]  = null;
+      this.props.setExtraConfigurations(this.extraConfigurations);
+    }  
+
+    this.setState({
+      saveToHadoop: evt.target.checked
+    });
   }
 
   render() {
     return (
-      <div className = "detail-step-container">
+      <div className="detail-step-container">
         <div className='field-row'>
-            <div className='name'>Name
-              <i className = "fa fa-asterisk mandatory"></i>
+          <div className='name'>Name
+              <i className="fa fa-asterisk mandatory"></i>
+          </div>
+          <div className='colon'>:</div>
+          <Input className='value' type="text" name="name" placeholder='name' readOnly={this.props.operationType == EDIT}
+            defaultValue={this.props.pipelineName} onChange={this.onNameUpdated.bind(this)} />
+        </div>
+        <div className="config-header-label">
+          <Input
+            type="checkbox"
+            onChange={this.onSaveToHadoopChange.bind(this)}
+            checked={this.state.saveToHadoop}
+          />
+          <span>Save to Hadoop</span>
+        </div> {
+          this.state.saveToHadoop &&  
+          <div className='field-row'>
+            <div className='name'>Model Output Path
+                <i className="fa fa-asterisk mandatory"></i>
             </div>
             <div className='colon'>:</div>
-            <Input className='value' type="text" name="name" placeholder='name'  readOnly = {this.props.operationType == EDIT}
-              defaultValue = {this.props.featureName} onChange={this.onNameUpdated.bind(this)}/>
-        </div>
+            <Input className='value' type="text" name="name" placeholder='name'
+              defaultValue={this.hadoopOutputPath} onChange={this.onOutputPathUpdated.bind(this)} />
+          </div>
+        }
       </div>
     );
   }
@@ -49,7 +104,9 @@ class DetailProvider extends React.Component {
 
 export default DetailProvider;
 DetailProvider.propTypes = {
-  updateFeatureName: PropTypes.func,
+  extraConfigurations: PropTypes.any,  
+  setExtraConfigurations: PropTypes.func,
+  updatePipelineName: PropTypes.func,
   operationType: PropTypes.string,
-  featureName: PropTypes.string
+  pipelineName: PropTypes.string
 };

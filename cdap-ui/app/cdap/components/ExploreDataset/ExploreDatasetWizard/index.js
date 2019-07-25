@@ -17,9 +17,9 @@
 import React from 'react';
 import WizardModal from 'components/WizardModal';
 import Wizard from 'components/Wizard';
-import AddFeatureStore from '../../../services/WizardStores/AddFeature/AddFeatureStore';
 import PropTypes from 'prop-types';
 import ExploreDatasetWizardConfig from './ExploreDatasetWizardConfig';
+import ExploreDatasetStore from '../store/ExploreDatasetStore';
 
 
 require('./ExploreDatasetWizard.scss');
@@ -39,15 +39,15 @@ class ExploreDatasetWizard extends React.Component {
         title="EDA Operation"
         isOpen={this.props.showWizard}
         toggle={this.props.onClose}
-        className="add-feature-wizard">
+        className="explore-datset-wizard">
         <Wizard
           wizardConfig={ExploreDatasetWizardConfig}
-          wizardType="Add-Feature"
+          wizardType="EDA-Operation"
           onSubmit={this.props.onSubmit}
           successInfo={this.state.successInfo}
           onClose={this.props.onClose}
           activeStepId={this.state.activeStepId}
-          store={AddFeatureStore}
+          store={ExploreDatasetStore}
         />
       </WizardModal>
     );

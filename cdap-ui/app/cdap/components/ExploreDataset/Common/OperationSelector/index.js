@@ -32,9 +32,11 @@ class OperationSelector extends React.Component {
     super(props);
     this.configPropList = [];
     this.operationMap = {};
+    this.selectedOptionMap = {};
     this.columns = [];
     this.state = {
-      operations: []
+      operations: [],
+      selectedOptionMap: {}
     };
     this.onOperationChange = this.onOperationChange.bind(this);
     this.onValueUpdated = this.onValueUpdated.bind(this);
@@ -126,6 +128,30 @@ class OperationSelector extends React.Component {
     this.updateConfiguration();
   }
 
+  handleSelectChange(parent, child, selectedOption) {
+    const selectedOptionMap = { ...this.state.selectedOptionMap };
+    selectedOptionMap[parent+":"+child] = selectedOption;
+    if (isNil(this.operationMap[parent])) {
+      this.operationMap[parent] = {};
+    }
+    if (Array.isArray(selectedOption)) {
+      this.operationMap[parent][child] = selectedOption.reduce((result, item) => {
+        if (isEmpty(result)) {
+          result = item.value;
+        } else {
+          result += ("," + item.value);
+        }
+        return result;
+      }, "");
+    } else {
+      this.operationMap[parent][child] = isNil(selectedOption) ? "": selectedOption.value;
+    }
+    this.updateConfiguration();
+    this.setState({
+      selectedOptionMap: selectedOptionMap
+    });
+  }
+
   render() {
     return (
       <div className='operation-step-container'>
@@ -148,7 +174,8 @@ class OperationSelector extends React.Component {
                   <div className="config-item-container">
                     {
                       (item.subParams).map(param => {
-                        if (param.displayName == "Features") {
+                        const subParamKey = `${item.paramName}:${param.paramName}`;
+                        if (param.isSchemaSpecific && param.isCollection) {
                           return (
                             <div className='list-row' key={param.paramName}>
                               <div className='name'>{param.displayName}
@@ -157,11 +184,17 @@ class OperationSelector extends React.Component {
                                 }
                               </div>
                               <div className='colon'>:</div>
-                              <Select className='value' isMulti = { true }
-                                options={this.columns}/>
-                              </div>
+                              <Select className='select-value' isMulti={true}
+                                options={this.columns} onChange={this.handleSelectChange.bind(this, item.paramName, param.paramName)}
+                                value={isNil(this.state.selectedOptionMap[subParamKey]) ? [] : this.state.selectedOptionMap[subParamKey]}
+                              />
+                              {
+                                param.description &&
+                                <InfoTip id={param.paramName + "_InfoTip"} description={param.description}></InfoTip>
+                              }
+                            </div>
                           );
-                        } else if (param.displayName == "Target Column") {
+                        } else if (param.isSchemaSpecific && !param.isCollection) {
                           return (
                             <div className='list-row' key={param.paramName}>
                               <div className='name'>{param.displayName}
@@ -170,9 +203,14 @@ class OperationSelector extends React.Component {
                                 }
                               </div>
                               <div className='colon'>:</div>
-                              <Select className='value' 
-                                options={this.columns}/>
-                              </div>
+                              <Select className='select-value'
+                                value={isNil(this.state.selectedOptionMap[subParamKey]) ? [] : this.state.selectedOptionMap[subParamKey]}
+                                options={this.columns} onChange={this.handleSelectChange.bind(this, item.paramName, param.paramName)} />
+                              {
+                                param.description &&
+                                <InfoTip id={param.paramName + "_InfoTip"} description={param.description}></InfoTip>
+                              }
+                            </div>
                           );
                         } else {
                           return (

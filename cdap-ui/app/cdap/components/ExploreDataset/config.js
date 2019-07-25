@@ -14,11 +14,9 @@
 * the License.
 */
 
-export const REMOTE_IP = "http://192.168.109.67:11011";
-const SERVICE_PORT = "10443";
+export const REMOTE_IP = "http://192.168.156.36:11015";
 export const RAF_ACCESS_TOKEN = "AhpkZWVwaWthLm1laHRhAOr1lLjcWurlx4rdWuaF+qACQMwUZZXczEPF//98fX+jkzY1tXFY1Lg6oBw+RDAskaSe";
-export const SERVER_IP = (window.location.hostname == "localhost") ? REMOTE_IP : (window.location.protocol + "//" + window.location.hostname + ":" + SERVICE_PORT);
-export const IS_OFFLINE = true;
+export const IS_OFFLINE = false;
 export const USE_REMOTE_SERVER = true;
 
 export const PIPELINE_RUN_NAME = "pipelineRunName";

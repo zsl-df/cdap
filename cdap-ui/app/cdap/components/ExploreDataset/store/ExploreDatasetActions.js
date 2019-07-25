@@ -24,6 +24,7 @@ const ExploreDatasetActions = {
   setAvailableSinks: 'EDA-SET-AVAILABLE-SINKS',
   updateEngineConfigurations: 'EDA-UPDATE-ENGINE-CONFIGURATIONS',
   updateOperationConfigurations: 'EDA-UPDATE-OPERATION-CONFIGURATION',
+  setExtraConfigurations: 'EDA-SET-EXTRA-CONFIGURATIONS',
   setSinkConfigurations: 'EDA-SET-SINK-CONFIGURATIONS',
 };
 

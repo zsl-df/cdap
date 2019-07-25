@@ -17,9 +17,8 @@
 import { combineReducers, createStore } from 'redux';
 import ExploreDatasetActions from './ExploreDatasetActions';
 import isEmpty from 'lodash/isEmpty';
-import remove from 'lodash/remove';
+import isNil from 'lodash/isNil';
 import find from 'lodash/find';
-import findIndex from 'lodash/findIndex';
 
 
 const defaultAction = {
@@ -37,6 +36,7 @@ const defaultState = {
   operationConfigurations: {},
   engineConfigurations: [],
   sinkConfigurations: {},
+  extraConfigurations: {},
   __complete: false,
   __skipped: false,
   __error: false
@@ -46,38 +46,28 @@ const defaultInitialState = {
 };
 
 const isOperationComplete = (state) => {
-  if (isEmpty(state.featureName)) {
+  if (isEmpty(state.pipelineName)) {
     return false;
   }
-  if (isEmpty(state.selectedSchemas)) {
+  if (isNil(state.schema)) {
     return false;
   }
 
-  let mandatoryProperties = state.availableProperties.filter(item => item.isMandatory == true).map(item => item.paramName);
-
-  let mandatoryPropsSet = 0;
-  state.propertyMap.forEach((value, key) => {
-    if (mandatoryProperties.indexOf(key) >= 0) {
-      for (let i = 0; i < value.length; i++) {
-        let size = state.propertyMap.get(key).size;
-        if (size == 0) {
-          return false;
-        } else {
-          mandatoryPropsSet++;
-        }
-      }
-    } else {
-      let property = find(state.availableProperties, { paramName: key });
-      if (property && !isEmpty(property.subParams)) {
-        if (property.subParams.length != value.length) {
-          return false;
+  if (isEmpty(state.operationConfigurations)) {
+    return false;
+  } else {
+    for (let property in state.operationConfigurations) {
+      if (property) {
+        const initialOperationConfiguration = state.operationConfigurations[property];
+        if (!isEmpty(initialOperationConfiguration)) {
+          for (let subParams in initialOperationConfiguration) {
+            if (subParams.isMandatory && isEmpty(state.operationConfigurations[property][subParams.paramName])) {
+              return false;
+            }
+          }
         }
       }
     }
-  });
-
-  if (mandatoryPropsSet < mandatoryProperties.length) {
-    return false;
   }
 
   if (isEmpty(state.engineConfigurations)) {
@@ -175,6 +165,13 @@ const exploreDatasetState = (state = defaultState, action = defaultAction) => {
       };
     }
       break;
+    case ExploreDatasetActions.setExtraConfigurations: {
+        state = {
+          ...state,
+          extraConfigurations: action.payload
+        };
+      }
+        break;
     case ExploreDatasetActions.setSinkConfigurations:
       state = {
         ...state,

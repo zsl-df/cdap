@@ -21,12 +21,14 @@ import { USE_REMOTE_SERVER } from './config';
 
 let dataSrc = DataSourceConfigurer.getInstance();
 
+
 const appPath = '/namespaces/:namespace/apps/FeatureEngineeringApp';
-const edaService = `${appPath}/services/ManualFeatureSelectionService/methods/featureengineering/methods/eda`;
+const edaService = `${appPath}/services/AutoFeatureGenerationService/methods/eda`;
 
 const EDADataServiceApi = {
   configurationConfig: serviceCreator(dataSrc, "GET", "REQUEST",`${edaService}/analysis/configparams/get`),
-  availableSinks: serviceCreator(dataSrc, "GET", "REQUEST",`${edaService}/analysis/configparams/datasink/get`)
+  availableSinks: serviceCreator(dataSrc, "GET", "REQUEST",`${edaService}/analysis/configparams/datasink/get`),
+  createEDAPipeline: serviceCreator(dataSrc, "GET", "REQUEST",`${edaService}/:pipeline/analysis/create`),
 };
 
 function serviceCreator (dataSrc, method, type, path, options = {}) {

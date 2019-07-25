@@ -24,7 +24,7 @@ import ExploreDatasetStore from 'components/ExploreDataset/store/ExploreDatasetS
 const mapStateToConfigurationProps = (state) => {
   return {
     schema: state.exploreDatasetState.schema,
-    operationMap: state.exploreDatasetState.operationConfigurations,
+    operationConfigurations: state.exploreDatasetState.operationConfigurations,
     availableOperations: state.exploreDatasetState.availableOperations,
   };
 };
