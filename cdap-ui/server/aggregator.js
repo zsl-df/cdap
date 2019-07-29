@@ -67,13 +67,11 @@ function Aggregator (conn, cdapConfig) {
 
  Aggregator.prototype.getWhiltListIps = function (config) {
   var whiteList = [];
-  //if user provide any white list from cdap config the it will addpend those ips in whitelisting
-  if(config && config.hasOwnProperty('white.list.ips') && config['white.list.ips'].trim() !="") {
-    whiteList = config['white.list.ips'].trim().split(',');
-  }
-
-
   if( config){
+    //if user provide any white list from cdap config the it will addpend those ips in whitelisting
+    if(config.hasOwnProperty('white.list.ips') && config['white.list.ips'].trim() !="") {
+      whiteList = config['white.list.ips'].trim().split(',');
+    }
     //generate whitelist based on cdap config
     var protocol  = config['ssl.external.enabled'] === 'true' ? 'https://' : 'http://';
     var port = config['ssl.external.enabled'] === 'true' ? config['router.ssl.server.port'] : config['router.server.port']
@@ -81,7 +79,6 @@ function Aggregator (conn, cdapConfig) {
     var url = [protocol,config['router.server.address'],port].join('');
     whiteList.push(url);
   }
-
   return whiteList;
 }
 
@@ -429,13 +426,13 @@ Aggregator.prototype.getUrlBreakup = function(url) {
     hostPortPathSplitArr = hostPortPathStr.split(':');
     hostname = hostPortPathSplitArr.length > 0 ? hostPortPathSplitArr[0] : undefined;
     hostPortPathSplitArr.shift();
-    PortPathStr = hostPortPathSplitArr.join(':');
+    portPathStr = hostPortPathSplitArr.join(':');
 
-    if (PortPathStr && PortPathStr!="") {
+    if (portPathStr && portPathStr!="") {
       var splitSymbol;
 
-      var slashIndex = PortPathStr.indexOf('/');
-      var questionIndex = PortPathStr.indexOf('?');
+      var slashIndex = portPathStr.indexOf('/');
+      var questionIndex = portPathStr.indexOf('?');
 
       if (slashIndex != -1 && questionIndex != -1) {
 
@@ -447,13 +444,13 @@ Aggregator.prototype.getUrlBreakup = function(url) {
       }
 
       if (splitSymbol) {
-        var portPathSplitArr = PortPathStr.split(splitSymbol);
+        var portPathSplitArr = portPathStr.split(splitSymbol);
         port = portPathSplitArr[0];
         portPathSplitArr.shift();
         path = portPathSplitArr.join(splitSymbol);
 
       } else {
-        port = PortPathStr;
+        port = portPathStr;
       }
     }
   }
