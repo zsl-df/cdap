@@ -346,8 +346,8 @@ function onSocketData (message) {
     message = JSON.parse(message);
     var r = message.resource;
     if(!this.isValidURL(r.url)){
+      emitResponse.call(this, r, 'Invalid Request');
       log.warn('Invalid Request');
-      log.error('Invalid Request');
       return;
     }
 
