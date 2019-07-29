@@ -83,7 +83,7 @@ class HydratorPlusPlusTopPanelCtrl {
     };
     this.inputs = {
       'name': {
-        required: true,
+        required: false,
         error: ''
       },
       'description': {
@@ -270,6 +270,7 @@ class HydratorPlusPlusTopPanelCtrl {
         return 'This is a required field.';
       }
     }
+
     const isValid = this.TEMPLATES[config].validate(dirty);
     const error = isValid ? '' : 'Invalid Input, see input instructions.';
     return error;
