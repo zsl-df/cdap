@@ -804,15 +804,33 @@ public class ArtifactHttpHandler extends AbstractHttpHandler {
                                   @PathParam("artifact-version") String artifactVersion) {
     try {
       ArtifactDetail artifactDetail = artifactRepository.getArtifact(
-        Id.Artifact.from(Id.Namespace.from(namespaceId), artifactName, artifactVersion));
+              Id.Artifact.from(Id.Namespace.from(namespaceId), artifactName, artifactVersion));
       responder.sendString(HttpResponseStatus.OK, artifactDetail.getDescriptor().getLocation().toURI().getPath());
     } catch (Exception e) {
       LOG.warn("Exception reading artifact metadata for namespace {} from the store.", namespaceId, e);
       responder.sendString(HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                           "Error reading artifact metadata from the store.");
+              "Error reading artifact metadata from the store.");
     }
   }
-  
+
+  @GET
+  @Path("/namespaces/{namespace-id}/artifacts/file")
+  public void getArtifactJarFileExposed(HttpRequest request, HttpResponder responder,
+                                         @QueryParam("path") String pathToJarFile) {
+    try {
+      JarFile artifactJar = new JarFile(pathToJarFile);
+      if(artifactJar==null){
+        throw new BadRequestException(
+                "Unable to determine valid jar file at path : "+pathToJarFile);
+      }
+      responder.sendFile(new File(pathToJarFile));
+    } catch (Exception e) {
+      LOG.warn("Exception reading artifact jar file from path <{}>.", pathToJarFile, e);
+      responder.sendString(HttpResponseStatus.INTERNAL_SERVER_ERROR,
+              "Error reading artifact metadata from the store.");
+    }
+  }
+
   // the following endpoints with path "artifact-internals" are only called by CDAP programs, not exposed via router.
   @GET
   @Path("/namespaces/{namespace-id}/artifact-internals/artifacts")
