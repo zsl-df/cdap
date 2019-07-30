@@ -795,7 +795,8 @@ public class ArtifactHttpHandler extends AbstractHttpHandler {
     }
   }
 
-  // this special handler is exposed on purpose. In order to successfully retrieve artifact jar location path
+  // These *SPECIAL HANDLERS* are exposed on purpose.
+  // In order to successfully retrieve artifact jar location path
   @GET
   @Path("/namespaces/{namespace-id}/artifacts/{artifact-name}/versions/{artifact-version}/location")
   public void getArtifactLocationExposed(HttpRequest request, HttpResponder responder,
@@ -813,8 +814,15 @@ public class ArtifactHttpHandler extends AbstractHttpHandler {
     }
   }
 
+  /**
+   * Handler used by to download .jar file for artifact by providing jar file location path as query param
+   * used in case of spark service to fetch "not found" dependency jar for which its trying to run a job.
+   * @param request
+   * @param responder
+   * @param pathToJarFile
+   */
   @GET
-  @Path("/namespaces/{namespace-id}/artifacts/file")
+  @Path("/namespaces/{namespace-id}/artifacts/getJarFile")
   public void getArtifactJarFileExposed(HttpRequest request, HttpResponder responder,
                                          @QueryParam("path") String pathToJarFile) {
     try {
