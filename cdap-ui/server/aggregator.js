@@ -397,7 +397,7 @@ Aggregator.prototype.isValidURL = function (url) {
     isValid = false;
   }
 
-  log.info( isValid +' Request URL ==> '+url+' ::  Break IP ==> '+ip +' ::  Break Path ==> '+path +' :: WhiteListIP ==> '+whiteListIps);
+  //log.info( isValid +' Request URL ==> '+url+' ::  Break IP ==> '+ip +' ::  Break Path ==> '+path +' :: WhiteListIP ==> '+whiteListIps);
 
   return isValid ;
 };
