@@ -214,8 +214,8 @@ export default class DataPrepTopPanel extends Component {
     if (this.state.workspaceInfo && this.state.workspaceInfo.properties &&
       !isNilOrEmpty(this.state.workspaceInfo.properties.name) ) {
       return this.state.workspaceInfo.properties.name.split(".")[0];
-    } 
-    return undefine;
+    }
+    return undefined;
 
   }
 
