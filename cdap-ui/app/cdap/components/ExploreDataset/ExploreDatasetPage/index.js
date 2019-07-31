@@ -25,6 +25,7 @@ import { GET_SINKS, SAVE_PIPELINE, GET_CONFIGURATION } from '../Common/constant'
 import { IS_OFFLINE } from '../config';
 import { sinks, configurations } from '../sampleData';
 import { Observable } from 'rxjs/Observable';
+import { isNilOrEmpty } from 'services/helpers';
 
 class ExploreDatasetPage extends React.Component {
   originalSchema;
@@ -33,13 +34,6 @@ class ExploreDatasetPage extends React.Component {
     super(props);
     this.toggleFeatureWizard = this.toggleFeatureWizard.bind(this);
     this.onWizardClose = this.onWizardClose.bind(this);
-    if (IS_OFFLINE) {
-      this.setAvailableSinks(sinks["configParamList"]);
-      this.setEDAConfigurations(configurations["configParamList"]);
-    } else {
-      this.getSinkConfiguration();
-      this.getEDAConfiguration();
-    }
     this.state = {
       showExploreWizard: false,
       schema: [],
@@ -51,9 +45,8 @@ class ExploreDatasetPage extends React.Component {
     if (workspaceId) {
       const workspaceObj = JSON.parse(window.localStorage.getItem(workspaceId));
       if (workspaceObj) {
-        console.log(workspaceObj);
         this.originalSchema = workspaceObj.schema;
-        this.pluginConfig =  workspaceObj.schema;
+        this.pluginConfig =  workspaceObj.pluginConfig;
         const schema = {};
         schema["schemaName"] = workspaceObj.schema.name;
         schema["schemaColumns"] = workspaceObj.schema.fields
@@ -63,10 +56,25 @@ class ExploreDatasetPage extends React.Component {
                                          return {columnName,columnType};
                                         });
         this.props.setSchema(schema);
+        this.setDefaultPipelineName(workspaceObj.workspaceName);
       }
-      this.toggleFeatureWizard();
+      if (IS_OFFLINE) {
+        this.setAvailableSinks(sinks["configParamList"]);
+        this.setEDAConfigurations(configurations["configParamList"]);
+      } else {
+        this.getSinkConfiguration();
+        this.getEDAConfiguration();
+      }
       window.localStorage.removeItem("analyseWorkpaceId");
       window.localStorage.removeItem(workspaceId);
+    }
+  }
+
+  setDefaultPipelineName(defaultName) {
+    if (this.props.updatePipelineName) {
+      if (!isNilOrEmpty(defaultName)) {
+        this.props.updatePipelineName(defaultName);
+      }
     }
   }
 
@@ -124,6 +132,9 @@ class ExploreDatasetPage extends React.Component {
       this.props.setAvailableOperations(operations);
       this.props.setAvailableEngineConfigurations(engineConfigs);
       this.props.updateEngineConfigurations(getUpdatedConfigurationList(engineConfigs, []));
+      setTimeout(() => {
+        this.toggleFeatureWizard();
+      }, );
     }
   }
 
@@ -144,11 +155,13 @@ class ExploreDatasetPage extends React.Component {
       pipeline: pipeline
     }, {}, getDefaultRequestHeader()).subscribe(
       result => {
-        if (checkResponseError(result)) {
-          this.handleError(result, "START");
-        } else {
-          this.viewPipeline(pipeline);
-        }
+        console.log("EDA ->", result);
+        this.viewPipeline(pipeline, true);
+        // if (checkResponseError(result)) {
+        //   this.handleError(result, "START");
+        // } else {
+        //   this.viewPipeline(pipeline);
+        // } 
       },
       error => {
         this.handleError(error, "START");
@@ -156,9 +169,13 @@ class ExploreDatasetPage extends React.Component {
     );
   }
 
-  viewPipeline(pipeline) {
+  viewPipeline(pipeline, onNewtab = false) {
     let navigatePath = `${window.location.origin}/pipelines/ns/${NamespaceStore.getState().selectedNamespace}/view/${pipeline.pipelineName}`;
-    window.location.href = navigatePath;
+    if (onNewtab) {
+      window.open(navigatePath, '_blank');
+    } else {
+      window.location.href = navigatePath;
+    }
   }
 
   handleError(error, type) {
@@ -168,7 +185,10 @@ class ExploreDatasetPage extends React.Component {
   savePipeline() {
     const edaPostObj = getEDAObject(this.props);
     if (edaPostObj) {
-      edaPostObj["schema"] = JSON.stringify(this.originalSchema);
+      edaPostObj["schema"] = JSON.stringify([{
+        name:this.originalSchema.name,
+        schema:this.originalSchema}
+      ]);
       edaPostObj["pluginConfig"] = JSON.stringify(this.pluginConfig);
     }
     console.log('EDA ==> ', edaPostObj);
@@ -182,7 +202,9 @@ class ExploreDatasetPage extends React.Component {
         result => {
           if (checkResponseError(result)) {
             this.handleError(result, SAVE_PIPELINE);
-            observer.error(result);
+            if (result && result.message) {
+              observer.error(result.message);
+            }
           } else {
             this.startPipeline(this.props.pipelineName);
             observer.next(result);
@@ -191,7 +213,9 @@ class ExploreDatasetPage extends React.Component {
         },
         err => {
           this.handleError(err, SAVE_PIPELINE);
-          observer.error(err);
+          if (err && err.message) {
+            observer.error(err.message);
+          }
         }
       );
     });
@@ -201,9 +225,8 @@ class ExploreDatasetPage extends React.Component {
     this.setState({
       showExploreWizard: !this.state.showExploreWizard
     });
-    // hack to allow re-open EDA
-    const exploreDatasetURL = `${window.location.origin}/cdap/ns/${NamespaceStore.getState().selectedNamespace}/dataprep`;
-    window.location.href = exploreDatasetURL;
+    // hack to allow re-open EDA Wizard
+    window.location.reload();
   }
 
   render() {
@@ -217,6 +240,7 @@ class ExploreDatasetPage extends React.Component {
 }
 export default ExploreDatasetPage;
 ExploreDatasetPage.propTypes = {
+  updatePipelineName: PropTypes.func,
   setAvailableSinks: PropTypes.func,
   setAvailableOperations: PropTypes.func,
   setAvailableEngineConfigurations: PropTypes.func,

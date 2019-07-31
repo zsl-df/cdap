@@ -58,10 +58,11 @@ const isOperationComplete = (state) => {
   } else {
     for (let property in state.operationConfigurations) {
       if (property) {
-        const initialOperationConfiguration = state.operationConfigurations[property];
-        if (!isEmpty(initialOperationConfiguration)) {
-          for (let subParams in initialOperationConfiguration) {
-            if (subParams.isMandatory && isEmpty(state.operationConfigurations[property][subParams.paramName])) {
+        let intialOperationObj = find(state.availableOperations, { "paramName": property });
+        const configuredOperation = state.operationConfigurations[property];
+        if (intialOperationObj && !isEmpty(intialOperationObj)) {
+          for (let subParam of intialOperationObj["subParams"]) {
+            if (subParam.isMandatory && ( isNil(configuredOperation) || isEmpty(configuredOperation[subParam.paramName]))) {
               return false;
             }
           }
@@ -75,7 +76,7 @@ const isOperationComplete = (state) => {
   } else {
     for (let i = 0; i < state.availableEngineConfigurations.length; i++) {
       if (state.availableEngineConfigurations[i].isMandatory) {
-        let configuredProperty = find(state.engineConfigurations, { name: state.availableEngineConfigurations[i].paramName });
+        let configuredProperty = find(state.engineConfigurations, { "name": state.availableEngineConfigurations[i].paramName });
         if (configuredProperty) {
           if (isEmpty(configuredProperty.value)) {
             return false;
@@ -93,7 +94,7 @@ const isOperationComplete = (state) => {
       if (property) {
         const initialSinkConfig = state.sinkConfigurations[property];
         if (!isEmpty(initialSinkConfig)) {
-          for (let subParams in initialSinkConfig) {
+          for (let subParams of initialSinkConfig) {
             if (subParams.isMandatory && isEmpty(state.sinkConfigurations[property][subParams.paramName])) {
               return false;
             }

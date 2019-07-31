@@ -173,7 +173,7 @@ export function getFeatureObject(props) {
       }
     });
   }
-  if (!isEmpty(props.sinkConfigurations)) {
+  if (!isNil(props.sinkConfigurations)) {
     for (let property in props.sinkConfigurations) {
       featureObject[property] = props.sinkConfigurations[property];
     }
@@ -188,55 +188,71 @@ export function getURLParam(key) {
 
 
 export function getEDAObject(props) {
-  let featureObject = {};
+  let edaObject = {};
   if (!isEmpty(props.engineConfigurations)) {
     props.engineConfigurations.forEach((configuration) => {
       if (!isEmpty(configuration.value)) {
         switch (configuration.dataType) {
-          case 'int':
-            if (configuration.isCollection) {
-              let values = configuration.value.split(",");
-              featureObject[configuration.name] = values.map(value => parseInt(value));
-            } else {
-              featureObject[configuration.name] = parseInt(configuration.value);
-            }
-            break;
+          // case 'int':
+          //   if (configuration.isCollection) {
+          //     let values = configuration.value.split(",");
+          //     edaObject[configuration.name] = values.map(value => parseInt(value));
+          //   } else {
+          //     edaObject[configuration.name] = parseInt(configuration.value);
+          //   }
+          //   break;
           default:
             if (configuration.isCollection) {
-              featureObject[configuration.name] = configuration.value.split(",");
+              edaObject[configuration.name] = configuration.value.split(",");
             } else {
-              featureObject[configuration.name] = configuration.value;
+              edaObject[configuration.name] = configuration.value;
             }
         }
       }
     });
   }
 
-  if (!isEmpty(props.operationConfigurations)) {
+  if (!isNil(props.operationConfigurations)) {
     for (let operation in props.operationConfigurations) {
       if (!isEmpty(operation.value)) {
         if (operation.isCollection) {
-          featureObject[operation.name] = operation.value.split(",");
+          edaObject[operation.name] = operation.value.split(",");
         } else {
-          featureObject[operation.name] = operation.value;
+          edaObject[operation.name] = operation.value;
         }
       }
     }
   }
 
-  if (!isEmpty(props.sinkConfigurations)) {
+  if (!isEmpty(props.availableOperations)) {
+    props.availableOperations.forEach(element => {
+      if (!isNil(props.operationConfigurations[element.paramName])) {
+        edaObject[element.paramName] = {};
+        element.subParams.forEach(subElement => {
+          if (!isNil(props.operationConfigurations[element.paramName][subElement.paramName])) {
+            if (subElement.isSchemaSpecific && subElement.isCollection) {
+              edaObject[element.paramName][subElement.paramName] = (props.operationConfigurations[element.paramName][subElement.paramName]).split(",");
+            } else {
+              edaObject[element.paramName][subElement.paramName] = props.operationConfigurations[element.paramName][subElement.paramName];
+            }
+          }
+        });
+      }
+    });
+  }
+
+  if (!isNil(props.sinkConfigurations)) {
     for (let property in props.sinkConfigurations) {
-      featureObject[property] = props.sinkConfigurations[property];
+      edaObject[property] = props.sinkConfigurations[property];
     }
   }
 
-  if (!isEmpty(props.extraConfigurations)) {
+  if (!isNil(props.extraConfigurations)) {
     for (let property in props.extraConfigurations) {
-      featureObject[property] = props.extraConfigurations[property];
+      edaObject[property] = props.extraConfigurations[property];
     }
   }
-  
-  return featureObject;
+  return edaObject;
 }
 
 export function getUpdatedConfigurationList(availableConfigurations, configList) {

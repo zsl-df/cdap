@@ -19,7 +19,7 @@ import React, { Component } from 'react';
 import Loadable from 'react-loadable';
 import LoadingSVGCentered from 'components/LoadingSVGCentered';
 import DataPrepStore from 'components/DataPrep/store';
-import { objectQuery, preventPropagation } from 'services/helpers';
+import { objectQuery, preventPropagation, isNilOrEmpty } from 'services/helpers';
 import { getParsedSchemaForDataPrep } from 'components/SchemaEditor/SchemaHelpers';
 import { directiveRequestBodyCreator } from 'components/DataPrep/helper';
 import NamespaceStore from 'services/NamespaceStore';
@@ -54,11 +54,11 @@ const IngestDataFromDataPrep = Loadable({
   loader: () => import(/* webpackChunkName: "IngestDataFromDataPrep" */ 'components/DataPrep/TopPanel/IngestDataFromDataPrep'),
   loading: LoadingSVGCentered
 });
-
-const ExploreDatsetUI = Loadable({
+const ExploreDatasetUI = Loadable({
   loader: () => import(/* webpackChunkName: "ExploreDataset" */ 'components/ExploreDataset'),
   loading: LoadingSVGCentered
 });
+
 
 require('./TopPanel.scss');
 const PREFIX = 'features.DataPrep.TopPanel';
@@ -129,7 +129,7 @@ export default class DataPrepTopPanel extends Component {
   renderEDAModal() {
     if (!this.state.openExploreDataset) { return null; }
     return (
-      <ExploreDatsetUI />
+      <ExploreDatasetUI />
     );
   }
 
@@ -193,6 +193,7 @@ export default class DataPrepTopPanel extends Component {
           }
           const workspaceObj = {
             workspaceId,
+            workspaceName: this.getWorspaceName(),
             directives,
             pluginConfig: pluginConfig,
             schema: schema
@@ -207,6 +208,15 @@ export default class DataPrepTopPanel extends Component {
           console.log(err);
         }
       );
+  }
+
+  getWorspaceName = () => {
+    if (this.state.workspaceInfo && this.state.workspaceInfo.properties &&
+      !isNilOrEmpty(this.state.workspaceInfo.properties.name) ) {
+      return this.state.workspaceInfo.properties.name.split(".")[0];
+    } 
+    return undefine;
+
   }
 
   onSubmit = () => {

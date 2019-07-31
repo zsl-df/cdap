@@ -30,6 +30,7 @@ const mapStateToExploreDatasetProps = (state) => {
     operationConfigurations: state.exploreDatasetState.operationConfigurations,
     engineConfigurations: state.exploreDatasetState.engineConfigurations,
     sinkConfigurations: state.exploreDatasetState.sinkConfigurations,
+    extraConfigurations: state.exploreDatasetState.extraConfigurations,
   };
 };
 
@@ -45,6 +46,12 @@ const mapDispatchToExploreDatasetProps = (dispatch) => {
       dispatch({
         type: ExploreDatasetActions.setAvailableSinks,
         payload: configurations
+      });
+    },
+    updatePipelineName: (pipelineName) => {
+      dispatch({
+        type: ExploreDatasetActions.updatePipelineName,
+        payload: pipelineName
       });
     },
     setAvailableOperations: (configurations) => {
@@ -74,16 +81,16 @@ const mapDispatchToExploreDatasetProps = (dispatch) => {
   };
 };
 
-const ExploreDatsetUIPage = connect(
+const ExploreDatasetUIPage = connect(
     mapStateToExploreDatasetProps,
     mapDispatchToExploreDatasetProps
 )(ExploreDatasetPage);
 
 
-export default function ExploreDatsetUI() {
+export default function ExploreDatasetUI() {
   return (
     <Provider store={ExploreDatasetStore}>
-      <ExploreDatsetUIPage/>
+      <ExploreDatasetUIPage/>
     </Provider>
   );
 }

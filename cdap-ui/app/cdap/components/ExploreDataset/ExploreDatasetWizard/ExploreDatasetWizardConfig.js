@@ -25,14 +25,14 @@ const ExploreDatasetWizardConfig = {
   steps: [
     {
       id: 'operation',
-      shorttitle: 'EDA Config',
+      shorttitle: 'Analyser Config',
       title: 'Select Operation',
       description: '',
       content: (<DatasetOperationsStep />)
     },
     {
       id: 'sink',
-      shorttitle: 'Sink Config',
+      shorttitle: 'Sink',
       title: 'Set Sink Configuration',
       description: '',
       content: (<DatasetSinkStep />)
@@ -40,18 +40,18 @@ const ExploreDatasetWizardConfig = {
     {
       id: 'detail',
       shorttitle: 'Pipeline',
-      title: 'Set Details',
+      title: 'Set Pipeline Details',
       description: '',
       content: (<DatasetDetailStep />)
     },
     {
       id: 'configuration',
-      shorttitle: 'Engine Config',
-      title: 'Set Configuration',
+      shorttitle: 'Engine',
+      title: 'Set Engine Configuration',
       description: '',
       content: (<DatasetEngineConfigurationStep />)
     }
-  ]
+  ],
+  footertitle: 'EDA Operation'
 };
-
 export default ExploreDatasetWizardConfig;

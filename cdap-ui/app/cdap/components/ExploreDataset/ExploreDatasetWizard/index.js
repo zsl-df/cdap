@@ -36,7 +36,7 @@ class ExploreDatasetWizard extends React.Component {
   render() {
     return (
       <WizardModal
-        title="EDA Operation"
+        title="Analyse"
         isOpen={this.props.showWizard}
         toggle={this.props.onClose}
         className="explore-datset-wizard">

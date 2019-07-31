@@ -18,26 +18,31 @@ import { Input } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { EDIT } from '../constant';
 import isNil from 'lodash/isNil';
+import cloneDeep from 'lodash/cloneDeep';
 
 require('./DetailProvider.scss');
 
 class DetailProvider extends React.Component {
   name;
-  hadoopOutputPath;
+  outputPath;
   extraConfigurations;
   constructor(props) {
     super(props);
     this.state = {
-      saveToHadoop: false
+      hadoopSave: false
     };
   }
 
   componentWillMount() {
-    this.extraConfigurations = this.props.extraConfigurations;
-    this.hadoopOutputPath = isNil(this.extraConfigurations.hadoopOutputPath) ? "" :this.extraConfigurations.hadoopOutputPath;
+    this.extraConfigurations = cloneDeep(this.props.extraConfigurations);
+    this.outputPath = isNil(this.extraConfigurations.outputPath) ? "" : this.extraConfigurations.outputPath;
+    const hadoopSave = (!isNil(this.extraConfigurations.hadoopSave) && this.extraConfigurations.hadoopSave == "Yes") ? true : false;
     this.setState({
-      saveToHadoop: (!isNil(this.extraConfigurations.saveToHadoop) && this.extraConfigurations.saveToHadoop == "Yes")  ? true : false
+      hadoopSave: hadoopSave
     });
+    this.extraConfigurations["hadoopSave"] = hadoopSave ? "Yes" : "No";
+    this.extraConfigurations["outputPath"] = this.outputPath;
+    this.props.setExtraConfigurations(this.extraConfigurations);
   }
 
   onNameUpdated(event) {
@@ -46,25 +51,24 @@ class DetailProvider extends React.Component {
   }
 
   onOutputPathUpdated(event) {
-    this.hadoopOutputPath = event.target.value;
-    this.extraConfigurations["saveToHadoop"]  = "Yes";
-    this.extraConfigurations["hadoopOutputPath"]  = this.hadoopOutputPath;
+    this.outputPath = event.target.value;
+    this.extraConfigurations["hadoopSave"] = "Yes";
+    this.extraConfigurations["outputPath"] = this.outputPath;
     this.props.setExtraConfigurations(this.extraConfigurations);
   }
 
   onSaveToHadoopChange(evt) {
     if (evt.target.checked) {
-      this.extraConfigurations["saveToHadoop"]  = "Yes";
-      this.extraConfigurations["hadoopOutputPath"]  = this.hadoopOutputPath;
+      this.extraConfigurations["hadoopSave"] = "Yes";
+      this.extraConfigurations["outputPath"] = this.outputPath;
       this.props.setExtraConfigurations(this.extraConfigurations);
     } else {
-      this.extraConfigurations["saveToHadoop"]  = "No";
-      this.extraConfigurations["hadoopOutputPath"]  = null;
+      this.extraConfigurations["hadoopSave"] = "No";
+      this.extraConfigurations["outputPath"] = null;
       this.props.setExtraConfigurations(this.extraConfigurations);
-    }  
-
+    }
     this.setState({
-      saveToHadoop: evt.target.checked
+      hadoopSave: evt.target.checked
     });
   }
 
@@ -83,18 +87,18 @@ class DetailProvider extends React.Component {
           <Input
             type="checkbox"
             onChange={this.onSaveToHadoopChange.bind(this)}
-            checked={this.state.saveToHadoop}
+            checked={this.state.hadoopSave}
           />
           <span>Save to Hadoop</span>
         </div> {
-          this.state.saveToHadoop &&  
+          this.state.hadoopSave &&
           <div className='field-row'>
-            <div className='name'>Model Output Path
+            <div className='name'>Output Path
                 <i className="fa fa-asterisk mandatory"></i>
             </div>
             <div className='colon'>:</div>
             <Input className='value' type="text" name="name" placeholder='name'
-              defaultValue={this.hadoopOutputPath} onChange={this.onOutputPathUpdated.bind(this)} />
+              defaultValue={this.outputPath} onChange={this.onOutputPathUpdated.bind(this)} />
           </div>
         }
       </div>
@@ -104,7 +108,7 @@ class DetailProvider extends React.Component {
 
 export default DetailProvider;
 DetailProvider.propTypes = {
-  extraConfigurations: PropTypes.any,  
+  extraConfigurations: PropTypes.any,
   setExtraConfigurations: PropTypes.func,
   updatePipelineName: PropTypes.func,
   operationType: PropTypes.string,

@@ -21,6 +21,7 @@ import ExploreDatasetStore from 'components/ExploreDataset/store/ExploreDatasetS
 
 const mapStateToSelectSinkProps = (state) => {
   return {
+    pipelineName:  state.exploreDatasetState.pipelineName,
     availableSinks: state.exploreDatasetState.availableSinks,
     sinkConfigurations: state.exploreDatasetState.sinkConfigurations,
   };

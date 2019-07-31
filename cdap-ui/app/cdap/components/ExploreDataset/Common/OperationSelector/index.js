@@ -18,7 +18,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import PropTypes from 'prop-types';
 import { Input } from 'reactstrap';
 import Select from 'react-select';
-import { isNil, isEmpty, remove, find } from 'lodash';
+import { isNil, isEmpty, remove, find, findIndex } from 'lodash';
 import InfoTip from '../InfoTip';
 
 require('./OperationSelector.scss');
@@ -31,7 +31,7 @@ class OperationSelector extends React.Component {
   constructor(props) {
     super(props);
     this.configPropList = [];
-    this.operationMap = {};    
+    this.operationMap = {};
     this.columns = [];
     this.state = {
       operations: [],
@@ -58,6 +58,18 @@ class OperationSelector extends React.Component {
         }
         if (!isEmpty(element.subParams)) {
           element.subParams.forEach(subElement => {
+            if (subElement.isSchemaSpecific && subElement.isCollection) {
+              this.operationMap[element.paramName][subElement.paramName]
+                = this.columns.filter((column) => this.columnFilter(column, subElement.dataType))
+                  .reduce((result, item) => {
+                    if (isEmpty(result)) {
+                      result = item.value;
+                    } else {
+                      result += ("," + item.value);
+                    }
+                    return result;
+                  }, "");
+            }
             if (!isEmpty(subElement.defaultValue)) {
               this.operationMap[element.paramName][subElement.paramName] = subElement.defaultValue;
             }
@@ -101,7 +113,6 @@ class OperationSelector extends React.Component {
       });
     }
     this.operationConfigurations = operationConfigurations;
-    console.log("Update store with Operation -> ", this.operationConfigurations);
     this.props.updateOperationConfigurations(this.operationConfigurations);
   }
 
@@ -141,12 +152,12 @@ class OperationSelector extends React.Component {
           if (!isEmpty(selectedValue)) {
             if (param.isCollection) {
               selectedOptionMap[item.paramName + ":" + param.paramName] = selectedValue.split(",").map(value => find(this.columns, { "value": value }));
-              } else {
-                selectedOptionMap[item.paramName + ":" + param.paramName]  =  find(this.columns, { "value": selectedValue });
-              }
+            } else {
+              selectedOptionMap[item.paramName + ":" + param.paramName] = find(this.columns, { "value": selectedValue });
             }
           }
-        });
+        }
+      });
     });
     return selectedOptionMap;
   }
@@ -173,6 +184,17 @@ class OperationSelector extends React.Component {
     this.setState({
       selectedOptionMap: selectedOptionMap
     });
+  }
+
+  columnFilter(column, dataType) {
+    switch (dataType) {
+      case "string":
+        return column.type == "string";
+      case "number":
+        return findIndex(["int", "float", "number", "double", "short"], column.type) >= 0;
+      default:
+        return true;
+    }
   }
 
   render() {
@@ -246,7 +268,7 @@ class OperationSelector extends React.Component {
                               <div className='colon'>:</div>
                               <Input className='value' type="text" name="value"
                                 placeholder={'Enter ' + param.displayName + ' value'}
-                                defaultValue={isNil(this.operationMap[item.paramName][param.paramName]) ? '' : this.operationMap[item.paramName][param.paramName]}
+                                defaultValue={(isNil(this.operationMap[item.paramName]) || isNil(this.operationMap[item.paramName][param.paramName])) ? '' : this.operationMap[item.paramName][param.paramName]}
                                 onChange={this.onValueUpdated.bind(this, item.paramName, param.paramName)} />
                               {
                                 param.description &&

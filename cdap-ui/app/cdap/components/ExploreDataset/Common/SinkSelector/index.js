@@ -19,6 +19,7 @@ import PropTypes from 'prop-types';
 import { Input } from 'reactstrap';
 import { isNil, isEmpty, remove } from 'lodash';
 import InfoTip from '../InfoTip';
+import { isNilOrEmpty } from 'services/helpers';
 
 require('./SinkSelector.scss');
 
@@ -46,8 +47,18 @@ class SinkSelector extends React.Component {
         }
         if (!isEmpty(element.subParams)) {
           element.subParams.forEach(subElement => {
-            if (!isEmpty(subElement.defaultValue)) {
-              this.configMap[element.paramName][subElement.paramName] = subElement.defaultValue;
+            if (subElement.paramName == "hiveTableName" && !isNilOrEmpty(this.props.pipelineName)) {
+              this.configMap[element.paramName][subElement.paramName] = this.props.pipelineName;
+            } else if (!isEmpty(subElement.defaultValue)) {
+              if (subElement.paramName == "hiveHostUrl") {
+                let hiveURL = subElement.defaultValue;
+                if (!isNilOrEmpty(hiveURL)) {
+                  hiveURL = hiveURL.replace("localhost", window.location.hostname);
+                }
+                this.configMap[element.paramName][subElement.paramName] = hiveURL;
+              } else {
+                this.configMap[element.paramName][subElement.paramName] = subElement.defaultValue;
+              }
             }
           });
         }
@@ -66,13 +77,13 @@ class SinkSelector extends React.Component {
           sinkList.push(property);
         }
       }
-    } else if((!isEmpty(this.availableSinks))) {
+    } else if ((!isEmpty(this.availableSinks))) {
       sinkList.push(this.availableSinks[0].paramName);
     }
     this.setState({
       sinks: sinkList
     });
-    setTimeout(()=>{
+    setTimeout(() => {
       this.updateConfiguration();
     });
   }
@@ -80,7 +91,7 @@ class SinkSelector extends React.Component {
 
   updateConfiguration() {
     const sinkConfigurations = {};
-    if (!isEmpty(this.state.sinks) && this.state.sinks.length>0) {
+    if (!isEmpty(this.state.sinks) && this.state.sinks.length > 0) {
       this.state.sinks.forEach(element => {
         sinkConfigurations[element] = {};
         if (!isNil(this.configMap[element])) {
@@ -105,7 +116,7 @@ class SinkSelector extends React.Component {
     this.setState({
       sinks: sinkList
     });
-    setTimeout(()=>{
+    setTimeout(() => {
       this.updateConfiguration();
     });
   }
@@ -133,9 +144,9 @@ class SinkSelector extends React.Component {
                   this.state.sinks.includes(item.paramName) &&
                   <div className="config-item-container">
                     {
-                      (item.subParams).map(param => {
+                      (item.subParams).map((param, index) => {
                         return (
-                          <div className='list-row' key={item.paramName + ":" + param.paramName}>
+                          <div className='list-row' key={item.paramName + ":" + param.paramName + index} >
                             <div className='name'>{param.displayName}
                               {
                                 param.isMandatory && <i className="fa fa-asterisk mandatory"></i>
@@ -166,6 +177,7 @@ class SinkSelector extends React.Component {
 }
 export default SinkSelector;
 SinkSelector.propTypes = {
+  pipelineName: PropTypes.string,
   availableSinks: PropTypes.array,
   sinkConfigurations: PropTypes.any,
   setSinkConfigurations: PropTypes.func
