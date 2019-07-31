@@ -22,7 +22,7 @@
 
   <groupId>io.cdap.cdap</groupId>
   <artifactId>cdap</artifactId>
-  <version>6.0.0</version>
+  <version>6.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Cask Data Application Platform (CDAP)</name>
   <description>Data Application Platform for Hadoop</description>
@@ -530,6 +530,10 @@
           <exclusion>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>net.jpountz.lz4</groupId>
+            <artifactId>lz4</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
