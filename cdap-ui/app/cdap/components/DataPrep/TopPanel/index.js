@@ -193,7 +193,7 @@ export default class DataPrepTopPanel extends Component {
           }
           const workspaceObj = {
             workspaceId,
-            workspaceName: this.getWorspaceName(),
+            workspaceName: this.getWorkspaceName(),
             directives,
             pluginConfig: pluginConfig,
             schema: schema
@@ -210,7 +210,7 @@ export default class DataPrepTopPanel extends Component {
       );
   }
 
-  getWorspaceName = () => {
+  getWorkspaceName = () => {
     if (this.state.workspaceInfo && this.state.workspaceInfo.properties &&
       !isNilOrEmpty(this.state.workspaceInfo.properties.name) ) {
       return this.state.workspaceInfo.properties.name.split(".")[0];
