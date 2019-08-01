@@ -158,7 +158,7 @@ export default class PersistViewSchemaModal extends Component {
       errorMsg = 'Invalid Input, see help.';
     }
     if (!e.target.value) {
-      errorMsg = 'You are required to fill this.';
+      errorMsg = 'Dataset Name is required.';
     }
     this.setState({
       datasetName: e.target.value,
@@ -262,7 +262,7 @@ export default class PersistViewSchemaModal extends Component {
               Dataset Name:
               <span className="text-danger">*</span>
             </Label>
-            <Col xs="6" className="dataset-name-group">
+            <Col xs="7" className="dataset-name-group">
               <ValidatedInput
                 type="text"
                 label="Dataset Name"

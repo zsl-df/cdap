@@ -165,7 +165,7 @@ export default class IngestDataFromDataPrep extends Component {
       errorMsg = 'Invalid Input, see help.';
     }
     if (!e.target.value) {
-      errorMsg = 'You are required to fill this.';
+      errorMsg = 'Dataset Name is required.';
     }
     this.setState({
       datasetName: e.target.value,
@@ -741,18 +741,11 @@ export default class IngestDataFromDataPrep extends Component {
               <ValidatedInput
                 type="text"
                 label="name"
-                inputInfo={types[this.state.inputTemplate].getInfo()}
+                inputInfo={ T.translate(`${PREFIX}.Form.datasetTooltip`)+ ',\n and this field cannot contain any xml tags.'}
                 validationError={this.state.inputError}
                 value={this.state.datasetName}
                 onChange={this.handleDatasetNameChange}
               />
-              <IconSVG
-                id="dataset-name-info-icon"
-                name="icon-info-circle"
-              />
-              <UncontrolledTooltip target="dataset-name-info-icon" delay={{show: 250, hide: 0}}>
-                {T.translate(`${PREFIX}.Form.datasetTooltip`)}
-              </UncontrolledTooltip>
             </Col>
           </FormGroup>
           {this.renderDatasetSpecificContent()}
