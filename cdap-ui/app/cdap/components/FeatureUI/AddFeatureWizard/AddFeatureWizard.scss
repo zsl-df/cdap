@@ -16,9 +16,15 @@
 
 .add-feature-wizard {
   min-width: 70vw !important;
+  margin: 5% !important;
   .modal-content {
     .modal-body {
-      min-height: 65vh !important;
+      min-height: 75vh !important;
+      .cask-wizard {
+        .wizard-body {
+          height: 90%;
+        }
+      }
     }
   }
 }
