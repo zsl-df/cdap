@@ -67,6 +67,15 @@ interface IProperties {
   'service-account-keyfile'?: string;
 }
 
+const errorMap = 'error';
+const requiredMap = 'required';
+const templateMap = 'template';
+const labelMap = 'label';
+
+const nameMap = 'name';
+const projectIdMap = 'projectId';
+const serviceAccountKeyfileMap = 'serviceAccountKeyfile';
+
 export default class SpannerConnection extends React.PureComponent<ISpannerConnectionProps, ISpannerConnectionState> {
   public state: ISpannerConnectionState = {
     error: null,
@@ -243,14 +252,14 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
 
   /** Return true if there is some error. */
   private testInputs = () => {
-    const isSomeError = Object.keys(this.state.inputs).some((key) => this.state.inputs[key]['error'] !== '');
+    const isSomeError = Object.keys(this.state.inputs).some((key) => this.state.inputs[key][errorMap] !== '');
     return (isSomeError ? true : false);
   }
 
   private handleChange = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (Object.keys(this.state.inputs).indexOf(key) > -1) {
       // validate input
-      const isValid = types[this.state.inputs[key]['template']].validate(e.target.value);
+      const isValid = types[this.state.inputs[key][templateMap]].validate(e.target.value);
       let errorMsg = '';
       if (e.target.value && !isValid) {
         errorMsg = 'Invalid Input, see help.';
@@ -330,7 +339,7 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.name`)}
-              { this.state.inputs['name']['required'] &&
+              { this.state.inputs[nameMap][requiredMap] &&
                 <span className="asterisk">*</span>
               }
             </label>
@@ -338,9 +347,9 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
               <div className="input-text">
                 <ValidatedInput
                   type="text"
-                  label={this.state.inputs['name']['label']}
-                  inputInfo={types[this.state.inputs['name']['template']].getInfo()}
-                  validationError={this.state.inputs['name']['error']}
+                  label={this.state.inputs[nameMap][labelMap]}
+                  inputInfo={types[this.state.inputs[nameMap][templateMap]].getInfo()}
+                  validationError={this.state.inputs[nameMap][errorMap]}
                   className="form-control"
                   value={this.state.name}
                   onChange={this.handleChange.bind(this, 'name')}
@@ -354,7 +363,7 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.projectId`)}
-              { this.state.inputs['projectId']['required'] &&
+              { this.state.inputs[projectIdMap][requiredMap] &&
                 <span className="asterisk">*</span>
               }
             </label>
@@ -362,9 +371,9 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
               <div className="input-text">
                 <ValidatedInput
                   type="text"
-                  label={this.state.inputs['projectId']['label']}
-                  inputInfo={types[this.state.inputs['projectId']['template']].getInfo()}
-                  validationError={this.state.inputs['projectId']['error']}
+                  label={this.state.inputs[projectIdMap][labelMap]}
+                  inputInfo={types[this.state.inputs[projectIdMap][templateMap]].getInfo()}
+                  validationError={this.state.inputs[projectIdMap][errorMap]}
                   className="form-control"
                   value={this.state.projectId}
                   onChange={this.handleChange.bind(this, 'projectId')}
@@ -377,7 +386,7 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.serviceAccountKeyfile`)}
-              { this.state.inputs['serviceAccountKeyfile']['required'] &&
+              { this.state.inputs[serviceAccountKeyfileMap][requiredMap] &&
                 <span className="asterisk">*</span>
               }
             </label>
@@ -385,9 +394,9 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
               <div className="input-text">
                 <ValidatedInput
                   type="text"
-                  label={this.state.inputs['serviceAccountKeyfile']['label']}
-                  inputInfo={types[this.state.inputs['serviceAccountKeyfile']['template']].getInfo()}
-                  validationError={this.state.inputs['serviceAccountKeyfile']['error']}
+                  label={this.state.inputs[serviceAccountKeyfileMap][labelMap]}
+                  inputInfo={types[this.state.inputs[serviceAccountKeyfileMap][templateMap]].getInfo()}
+                  validationError={this.state.inputs[serviceAccountKeyfileMap][errorMap]}
                   className="form-control"
                   value={this.state.serviceAccountKeyfile}
                   onChange={this.handleChange.bind(this, 'serviceAccountKeyfile')}

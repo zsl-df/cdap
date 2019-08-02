@@ -18,7 +18,6 @@ import cloneDeep from 'lodash/cloneDeep';
 import PropTypes from 'prop-types';
 import { Input } from 'reactstrap';
 import { isNil, isEmpty, remove } from 'lodash';
-import { isNil, isEmpty } from 'lodash';
 import ValidatedInput from 'components/ValidatedInput';
 import types from 'services/inputValidationTemplates';
 

@@ -287,7 +287,7 @@ export default class PersistViewSchemaModal extends Component {
               <div>
                 <Button className="btn-margin" color="secondary" onClick={this.props.toggle}>Close</Button>
                 <Button className="btn-margin" color="primary" onClick={this.handleSubmit}
-                  disabled={this.state.datasetName.trim().length < 1} >OK</Button>
+                  disabled={this.state.datasetName.trim().length < 1 || this.state.inputError.length > 0} >OK</Button>
             </div>
             }
           </fieldset>
