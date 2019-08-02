@@ -39,7 +39,7 @@ export default function ValidatedInput(props) {
   const isInvalid = validationError ? true : false;
 
   return (
-      <FormGroup row style={{paddingLeft:15}}>
+      <FormGroup row className="validateInput">
         <InputGroup>
           <Input {...moreProps} invalid={isInvalid}/>
           <InputGroupAddon addonType="append" className="input-group-info">

@@ -246,9 +246,7 @@ export default class BigQueryConnection extends Component {
       if (e.target.value && !isValid) {
         errorMsg = 'Invalid Input, see help.';
       }
-      if (!e.target.value && this.state.inputs[key]['required']) {
-        errorMsg = 'You are required to fill this.';
-      }
+
       this.setState({
         [key]: e.target.value,
         inputs: {
