@@ -87,6 +87,8 @@ public class ExploreServiceUtils {
     HIVE_1_0(null, Hive14ExploreService.class),
     HIVE_1_1(null, Hive14ExploreService.class),
     HIVE_1_2(null, Hive14ExploreService.class),
+    HIVE_2_1(null, Hive14ExploreService.class),
+    HIVE_3_1(null, Hive14ExploreService.class),
     // Current latest non-CDH version is HIVE_1_2. Need to update HIVE_LATEST when newer non-CDH version is added.
     HIVE_LATEST(HIVE_1_2);
 
@@ -198,6 +200,8 @@ public class ExploreServiceUtils {
     }  else if (hiveVersion.startsWith(("1.2"))) {
       return HiveSupport.HIVE_1_2;
     } else if (hiveVersion.startsWith(("2.1"))) {
+      return HiveSupport.HIVE_1_2;
+    } else if (hiveVersion.startsWith(("3.1"))) {
       return HiveSupport.HIVE_1_2;
     }
 
