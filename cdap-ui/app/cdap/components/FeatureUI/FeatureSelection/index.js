@@ -40,7 +40,7 @@ import ModelContainer from './ModelContainer';
 class FeatureSelection extends Component {
 
   gridInfoList = [];
-  targetVariable = "";
+  targetVariable = undefined;
   totalStatsFeature = 0;
   identiferCol = "featureName";
   setGridSelection;
@@ -330,7 +330,9 @@ class FeatureSelection extends Component {
       );
   }
 
-
+  clearCorrelation = () => {
+    this.onFeatureSelection(this.props.selectedPipeline);
+  }
 
   handleError(error, type) {
     console.log('error ==> ' + error + "| type => " + type);
@@ -449,6 +451,13 @@ class FeatureSelection extends Component {
     this.setGridSelection  = childFunc;
   }
 
+  modelBaseClick = () => {
+    if(this.targetVariable) {
+      this.toggle('2');
+    }
+
+  }
+
   render() {
      return (
       <div className="feature-selection-box">
@@ -480,8 +489,8 @@ class FeatureSelection extends Component {
             </NavItem>
             <NavItem>
               <NavLink
-                className={classnames({ active: this.state.activeTab === '2' })}
-                onClick={() => { this.toggle('2'); }}>
+                className={this.targetVariable ? classnames({ active: this.state.activeTab === '2'}) : 'tab-inactive'}
+                onClick={this.modelBaseClick}>
                 Model
               </NavLink>
             </NavItem>
@@ -495,9 +504,10 @@ class FeatureSelection extends Component {
               <CorrelationContainer applyCorrelation={this.applyCorrelation}
                 targetVariable={this.targetVariable}
                 featureNames={this.state.featureNames}
+                onClear={this.clearCorrelation}
                 ></CorrelationContainer>
             </TabPane>
-            <TabPane tabId="2" className="tab-pane">
+              <TabPane tabId="2" className="tab-pane">
               <ModelContainer applyModelSelection={this.applyModelSelection}
                 targetVariable={this.targetVariable}
                 featureNames={this.state.featureNames}
