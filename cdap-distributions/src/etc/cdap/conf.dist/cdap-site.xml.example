@@ -155,5 +155,10 @@
       CDAP UI bind port
     </description>
   </property>
+  
+  <property>
+      <name>white.list.ips</name>
+      <value>http://market.cask.co</value>
+    </property>
 
 </configuration>
