@@ -24,7 +24,8 @@ import {
   GET_PIPE_LINE_FILTERED,
   GET_FEATURE_CORRELAION,
   GET_PIPE_LINE_DATA,
-  GET_PIPELINE
+  GET_PIPELINE,
+  PIPELINE_SAVED_MSG
 } from '../config';
 import { TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
 import classnames from 'classnames';
@@ -36,6 +37,9 @@ import SaveFeatureModal from './SaveFeatureModal';
 import PropTypes from 'prop-types';
 import { getRoundOfValue } from '../GridFormatters';
 import ModelContainer from './ModelContainer';
+import AlertModal from '../AlertModal';
+import T from 'i18n-react';
+const PREFIX = 'features.FeatureEngineering.FeatureSelection.SaveFeatureModal';
 
 class FeatureSelection extends Component {
 
@@ -54,6 +58,9 @@ class FeatureSelection extends Component {
       openSaveModal: false,
       enableSave: false,
       isDataLoading: false,
+      openAlertModal: false,
+      showCancelButton: false,
+      alertMessage: ''
     }, dataInfo);
 
     this.updateGridInfo(0, dataInfo.gridColumnDefs, dataInfo.gridRowData);
@@ -405,8 +412,20 @@ class FeatureSelection extends Component {
     this.setState({ openSaveModal: true });
   }
 
-  onSaveModalClose = () => {
-    this.setState({ openSaveModal: false });
+  onSaveModalClose = (message) => {
+    if (message == T.translate(`${PREFIX}.okButton`)) {
+      this.onSaved();
+    } else {
+      this.setState({ openSaveModal: false });
+    }
+  }
+
+  onSaved = () => {
+    this.setState({ openSaveModal: false , openAlertModal: true, alertMessage: PIPELINE_SAVED_MSG });
+  }
+
+  onAlertClose = () => {
+    this.setState({ openAlertModal: false, alertMessage: '' });
   }
 
   onFeatureSelection(pipeline, isFilter = false) {
@@ -452,7 +471,7 @@ class FeatureSelection extends Component {
   }
 
   modelBaseClick = () => {
-    if(this.targetVariable) {
+    if (this.targetVariable) {
       this.toggle('2');
     }
 
@@ -519,6 +538,9 @@ class FeatureSelection extends Component {
         <SaveFeatureModal open={this.state.openSaveModal} message={this.state.alertMessage}
           onClose={this.onSaveModalClose} selectedPipeline={this.props.selectedPipeline}
           selectedFeatures={this.state.selectedFeatures} />
+        <AlertModal open={this.state.openAlertModal} message={this.state.alertMessage}
+              showCancel = {this.state.showCancelButton}
+              onClose={this.onAlertClose.bind(this)} />
       </div>
     );
   }
