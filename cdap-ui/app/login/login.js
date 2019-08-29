@@ -32,7 +32,6 @@ require('./login.scss');
 import T from 'i18n-react';
 T.setTexts(require('./text/text-en.yaml'));
 
-
 class Login extends Component {
   constructor(props) {
     super(props);
@@ -42,8 +41,13 @@ class Login extends Component {
       message: '',
       formState: false,
       rememberUser: false,
-      inputs: this.getValidationState(),
+      isKnoxEnable: true,
+      knoxUrl:'',
+      applicationPrefix:'',
+      inputs: this.getValidationState()
     };
+
+    this.getLoginConfig();
   }
 
   getValidationState = () => {
@@ -138,6 +142,63 @@ class Login extends Component {
       rememberUser: true
     });
   }
+
+
+  // get cdap token
+
+  getLoginConfig = () => {
+    const knoxGatewayElement = document.getElementById('logingateway');
+    let knoxGateway = '';
+    if (knoxGatewayElement) {
+      knoxGateway = document.getElementById('logingateway').innerHTML.replace('/login','');
+    }
+
+    fetch((knoxGateway + '/loginConfig'), {
+      method: 'GET',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    }).then((response) => {
+      if (response.status >= 200 && response.status < 300) {
+        return response.json();
+      } else {
+        return Promise.reject();
+      }
+    })
+    .then((result) => {
+      this.setState({
+        isKnoxEnable: result.knoxEnabled,
+        knoxUrl: result.knoxLoginUrl,
+        applicationPrefix: result.applicationPrefix
+      });
+      if (result.knoxEnabled) {
+        this.getCdapToken(result.applicationPrefix);
+      }
+    });
+  }
+
+
+  getCdapToken = (prefix) => {
+    fetch((prefix+'/cdapToken'), {
+      method: 'GET',
+      headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+    })
+      .then((response) => {
+        if (response.status >= 200 && response.status < 300) {
+          return response.json();
+        } else {
+          const url = `${location.protocol}//${location.host}/gateway/knoxsso/api/v1/websso?originalUrl=${location.protocol}//${location.host}${prefix}/cdap`;
+          window.open(url, '_self');
+          return Promise.reject();
+        }
+      })
+      .then((res) => {
+        cookie.save('CDAP_Auth_Token', res.access_token, { path: '/'});
+        cookie.save('CDAP_Auth_User', res.userName);
+        var queryObj = util.getQueryParams(location.search);
+        queryObj.redirectUrl = queryObj.redirectUrl || '/';
+        window.location.href = queryObj.redirectUrl;
+      });
+  }
+
   render() {
     let footer;
     if (this.state.message) {
@@ -184,13 +245,41 @@ class Login extends Component {
                   <div className="checkbox form-check">
                     <label className="form-check-label">
                       <input
-                        type="checkbox"
-                        className="form-check-input"
-                        value={this.state.rememberUser}
-                        onClick={this.rememberUser.bind(this)}
+                        id="password"
+                        className="form-control"
+                        placeholder={T.translate('login.placeholders.password')}
+                        onChange={this.onPasswordUpdate.bind(this)}
+                        type="password"
                       />
-                    {T.translate('login.labels.rememberme')}
                     </label>
+                    <div className="form-group">
+                      <div className="clearfix">
+                        <div className="float-xs-left">
+                          <div className="checkbox form-check">
+                            <label className="form-check-label">
+                              <input
+                                type="checkbox"
+                                className="form-check-input"
+                                value={this.state.rememberUser}
+                                onClick={this.rememberUser.bind(this)}
+                              />
+                            {T.translate('login.labels.rememberme')}
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <button
+                        id="submit"
+                        type="submit"
+                        className="btn btn-primary btn-block"
+                        disabled={!this.state.formState}
+                        onClick={this.login.bind(this)}
+                      >
+                        {T.translate('login.labels.loginbtn')}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -209,14 +298,14 @@ class Login extends Component {
           </form>
         </Card>
       </div>
+
     );
   }
 }
-ReactDOM.render(
-  <Login />,
+
+ReactDOM.render(<Login />,
   document.getElementById('login-form')
 );
-ReactDOM.render(
-  <Footer />,
+ReactDOM.render(<Footer />,
   document.getElementById('footer-container')
 );
