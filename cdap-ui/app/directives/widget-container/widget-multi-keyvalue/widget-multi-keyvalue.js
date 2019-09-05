@@ -151,11 +151,11 @@ angular.module(PKG.name + '.commons')
         // Refill the values by desearilizing the model when popup opens.
         function addPropertiesFromModel() {
           try {
-            if($scope.model === undefined || $scope.model === '' || $scope.model === null || $scope.model.includes('undefined')) {
+            console.log('Incoming model', $scope.model);
+            if($scope.model === undefined || $scope.model === '' || $scope.model === null) {
               return;
             }
-            console.log('Incoming model', $scope.model);
-            let keyValuePairs = $scope.model.split($scope.keyValuePairSeparator);
+            let keyValuePairs = $scope.model.split($scope.keyValuePairSeparator).filter((value) => !value.includes('undefined'));
             keyValuePairs.map(pair => {
               let keyValue = pair.split($scope.keyValueSeparator);
               let key = keyValue[0];
@@ -201,7 +201,14 @@ angular.module(PKG.name + '.commons')
 
         // Returns dropdown options for key
         function getOptions(type) {
-          switch($scope.keyInputType) {
+          var selectedType;
+          if(type === 'key') {
+            selectedType = $scope.keyInputType;
+          } else if(type === 'value') {
+            selectedType = $scope.valueInputType;
+          }
+
+          switch(selectedType) {
             case CUSTOM_KEYVALUE_INPUT_TYPE: {
               return [];
             }
