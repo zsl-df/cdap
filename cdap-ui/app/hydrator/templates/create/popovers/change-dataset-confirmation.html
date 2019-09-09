@@ -13,10 +13,56 @@
   License for the specific language governing permissions and limitations under
   the License.
 -->
+<div class="modal-header clearfix">
+  <h3 class="modal-title pull-left">Dataset '{{ datasetName }}' already exists</h3>
+  <!-- <div class="btn-group pull-right">
+    <a class="btn">
+      <span class="fa fa-remove"></span>
+      <span class="sr-only"> Close </span>
+    </a>
+  </div> -->
+</div>
 
 <div class="modal-body">
-  <div>
-    <span>The dataset '{{ datasetName }}' already exists. The schema of the sink '{{ sinkName }}' will be updated to the schema of '{{ datasetName }}'. Are you sure you want to continue?</span>
+  <div class="form-group">
+
+    <div class="form-check">
+      <label class="form-check-label">
+        <input type="checkbox" class="form-check-input" value="checked">
+        Apply the schema of the sink '{{ sinkName }}' to the schema of '{{ datasetName }}'
+        <!-- The schema of the sink '{{ sinkName }}' will be updated to the schema of '{{ datasetName }}'. Are you sure
+        you want to continue? I wiil chang -->
+      </label>
+    </div>
+
+    <label>Following properties are found on the dataset. </label>
+
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>John</td>
+          <td>john@example.com</td>
+        </tr>
+        <tr>
+          <td>Doe</td>
+          <td>johadsfn@example.com</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="form-check">
+      <label class="form-check-label">
+        <input type="checkbox" class="form-check-input" value="">
+        Apply above dataset properties as the input configuration of the plugin.
+      </label>
+    </div>
+
   </div>
 </div>
 <div class="modal-footer">
