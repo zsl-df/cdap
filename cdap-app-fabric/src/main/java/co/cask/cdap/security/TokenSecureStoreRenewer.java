@@ -121,7 +121,7 @@ public class TokenSecureStoreRenewer extends SecureStoreRenewer {
       }
 
       //if (secureExplore) {
-        HiveTokenUtils.obtainTokens(cConf, refreshedCredentials);/
+        HiveTokenUtils.obtainTokens(cConf, refreshedCredentials);
         /**
          * Removed dependency of getting the token from Job history server on CDAP start as,
          * In HDP 3.1 Hive do not have ATSHook enabled.
