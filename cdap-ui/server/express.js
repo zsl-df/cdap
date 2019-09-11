@@ -156,6 +156,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
         previewEnabled: cdapConfig['enable.preview'] === 'true'
       },
       marketUrl: cdapConfig['market.base.url'],
+      localMarketUrl: cdapConfig['local.market.base.url'],
       sslEnabled: cdapConfig['ssl.external.enabled'] === 'true',
       securityEnabled: authAddress.enabled,
       isEnterprise: isModeProduction(),
@@ -177,6 +178,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
    app.get('/loginConfig', function (req, res) {
     var data = {
       marketUrl: cdapConfig['market.base.url'],
+      localMarketUrl: cdapConfig['local.market.base.url'],
       sslEnabled: cdapConfig['ssl.external.enabled'] === 'true',
       knoxLoginUrl: cdapConfig['knox.login.url'],
       securityEnabled: authAddress.enabled,
