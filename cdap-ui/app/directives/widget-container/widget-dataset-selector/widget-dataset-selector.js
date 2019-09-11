@@ -57,23 +57,31 @@ angular.module(PKG.name + '.commons')
         var newDataset;
         var modalOpen = false;
 
-        var showPopupFunc = function(schema, oldDatasetName) {
+        var showPopupFunc = function(schema, properties, oldDatasetName) {
           let sinkName = $scope.stageName;
           let confirmModal = $uibModal.open({
               templateUrl: '/assets/features/hydrator/templates/create/popovers/change-dataset-confirmation.html',
               size: 'lg',
               backdrop: 'static',
               keyboard: false,
-              windowTopClass: 'confirm-modal hydrator-modal center',
+              windowTopClass: 'confirm-modal hydrator-modal center change-dataset-confirmation-modal',
               controller: ['$scope', function($scope) {
                 $scope.datasetName = params.datasetId;
                 $scope.sinkName = sinkName;
+                $scope.inputProperties = properties;
+                $scope.applyProps = false;
+                $scope.applySchema = true;
               }]
             });
           modalOpen = true;
 
-          confirmModal.result.then((confirm) => {
-            if (confirm) {
+          confirmModal.result.then((confirmObj) => {
+
+            if(confirmObj.applyProps) {
+              EventPipe.emit('dataset.apply.property', properties);
+            }
+
+            if (confirmObj.applySchema) {
               isCurrentlyExistingDataset = true;
 
               if (!schema) {
@@ -117,7 +125,7 @@ angular.module(PKG.name + '.commons')
                   if (debouncedPopup) {
                     debouncedPopup.cancel();
                   }
-                  showPopupFunc(schema, oldDataset);
+                  showPopupFunc(schema, res.spec.properties, oldDataset);
                 }
               });
           }
@@ -159,7 +167,7 @@ angular.module(PKG.name + '.commons')
 
                   if (initialized && !isCurrentlyExistingDataset && newDataset !== oldDataset) {
                     if (!modalOpen) {
-                      debouncedPopup(schema, oldDataset);
+                      debouncedPopup(schema, res.spec.properties, oldDataset);
                     }
                   } else {
                     initialized = true;

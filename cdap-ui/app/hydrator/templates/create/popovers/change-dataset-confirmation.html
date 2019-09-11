@@ -28,37 +28,39 @@
 
     <div class="form-check">
       <label class="form-check-label">
-        <input type="checkbox" class="form-check-input" value="checked">
-        Apply the schema of the sink '{{ sinkName }}' to the schema of '{{ datasetName }}'
+        <input type="checkbox" class="form-check-input" ng-model="applySchema">
+        Apply the schema of the sink '{{ datasetName }}' to the schema of '{{ sinkName }}' source plugin.
         <!-- The schema of the sink '{{ sinkName }}' will be updated to the schema of '{{ datasetName }}'. Are you sure
         you want to continue? I wiil chang -->
       </label>
     </div>
 
+    <br />
+
     <label>Following properties are found on the dataset. </label>
 
-    <table class="table table-sm">
-      <thead>
-        <tr>
-          <th>Key</th>
-          <th>Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>John</td>
-          <td>john@example.com</td>
-        </tr>
-        <tr>
-          <td>Doe</td>
-          <td>johadsfn@example.com</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="dataset-property-table-wrapper">
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="(key, value) in inputProperties">
+            <td>{{key}}</td>
+            <td>{{value}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <br />
 
     <div class="form-check">
       <label class="form-check-label">
-        <input type="checkbox" class="form-check-input" value="">
+        <input type="checkbox" class="form-check-input" ng-model="applyProps">
         Apply above dataset properties as the input configuration of the plugin.
       </label>
     </div>
@@ -67,7 +69,7 @@
 </div>
 <div class="modal-footer">
   <div class="pull-right">
-    <button class="btn btn-grey-cancel" ng-click="$close(false)">No</button>
-    <button class="btn btn-blue" ng-click="$close(true)">Yes</button>
+    <button class="btn btn-grey-cancel" ng-click="$close({ applySchema: false, applyProps: false})">No</button>
+    <button class="btn btn-blue" ng-click="$close({applySchema: applySchema, applyProps: applyProps})">Yes</button>
   </div>
 </div>
