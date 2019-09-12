@@ -197,7 +197,7 @@ public class GrantAccessToken {
         	if (expires.before(new Date()))
             		throw new UnauthorizedException("Token expired.");
         
-        	expireTime = Date.parse(expires.getTime());
+        	expireTime = expires.getTime();
         
 		List<String> userGroups = Collections.emptyList();
 
