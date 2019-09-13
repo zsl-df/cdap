@@ -99,7 +99,7 @@ angular.module(PKG.name + '.commons')
           confirmModal.result.then((confirmObj) => {
 
             if(confirmObj.applyProps) {
-              EventPipe.emit('dataset.apply.property', properties);
+              EventPipe.emit('plugin.apply.inputProperties', properties);
             }
 
             if (confirmObj.applySchema) {
@@ -150,7 +150,7 @@ angular.module(PKG.name + '.commons')
                     debouncedPopup.cancel();
                   }
 
-                  // Since we are showing schema seprately, we need to remote the schema proeprty
+                  // Since we are showing schema seprately, we need to remove the schema proeprty
                   // otherwise it will show up in properties table also
                   let propsWithNoSchema = Object.assign({}, res.spec.properties);
                   delete propsWithNoSchema.schema;
@@ -196,7 +196,7 @@ angular.module(PKG.name + '.commons')
 
                   if (initialized && !isCurrentlyExistingDataset && newDataset !== oldDataset) {
                     if (!modalOpen) {
-                      // Since we are showing schema seprately, we need to remote the schema proeprty
+                      // Since we are showing schema seprately, we need to remove the schema proeprty
                       // otherwise it will show up in properties table also
                       let propsWithNoSchema = Object.assign({}, res.spec.properties);
                       delete propsWithNoSchema.schema;

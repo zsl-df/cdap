@@ -138,7 +138,7 @@ class HydratorPlusPlusNodeConfigCtrl {
       }
     });
 
-    this.EventPipe.on('dataset.apply.property', (datasetProperties) => {
+    this.EventPipe.on('plugin.apply.inputProperties', (datasetProperties) => {
       vm.applyDatasetProperties(datasetProperties);
     });
 
@@ -156,9 +156,7 @@ class HydratorPlusPlusNodeConfigCtrl {
 
   // Auto fill plugin input configuration from dataset properties.
   applyDatasetProperties(properties) {
-    // Don't need to apply output schema as it is already handled by `dataset.selected` event.
-    // Before applying make sure input configuration exist with the same name as dataset property.
-    Object.keys(properties).filter(prop => prop !== 'schema').forEach(prop => {
+    Object.keys(properties).forEach(prop => {
       this.state.node.plugin.properties[prop] = properties[prop];
     });
   }
