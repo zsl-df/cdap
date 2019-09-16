@@ -19,13 +19,15 @@ import FilterContainer from './FilterContainer';
 import './FeatureSelection.scss';
 import GridHeader from './GridHeader';
 import GridContainer from './GridContainer';
-import { isNil } from 'lodash';
+import { isNil, cloneDeep } from 'lodash';
 import {
   GET_PIPE_LINE_FILTERED,
   GET_FEATURE_CORRELAION,
   GET_PIPE_LINE_DATA,
   GET_PIPELINE,
-  PIPELINE_SAVED_MSG
+  PIPELINE_SAVED_MSG,
+  SHOW_PIPELINE,
+  CLOSE
 } from '../config';
 import { TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
 import classnames from 'classnames';
@@ -39,6 +41,7 @@ import { getRoundOfValue } from '../GridFormatters';
 import ModelContainer from './ModelContainer';
 import AlertModal from '../AlertModal';
 import T from 'i18n-react';
+import { isNilOrEmpty } from 'services/helpers';
 const PREFIX = 'features.FeatureEngineering.FeatureSelection.SaveFeatureModal';
 
 class FeatureSelection extends Component {
@@ -48,11 +51,14 @@ class FeatureSelection extends Component {
   totalStatsFeature = 0;
   identiferCol = "featureName";
   setGridSelection;
+  savedFSPipeline;
+  checkColumns = []
 
   constructor(props) {
     super(props);
     this.initGridInfo(3);   // Number of tabs
     const dataInfo = this.dataParser(this.props.pipeLineData);
+    this.checkColumns = this.getCheckColumns(dataInfo.filterColumns);
     this.state = Object.assign({
       activeTab: "0", selectedFeatures: [],
       openSaveModal: false,
@@ -60,11 +66,19 @@ class FeatureSelection extends Component {
       isDataLoading: false,
       openAlertModal: false,
       showCancelButton: false,
-      alertMessage: ''
+      alertMessage: '',
     }, dataInfo);
 
     this.updateGridInfo(0, dataInfo.gridColumnDefs, dataInfo.gridRowData);
     this.totalStatsFeature = dataInfo.gridRowData.length;
+  }
+
+  getCheckColumns(values) {
+    let checkList = cloneDeep(values);
+    checkList.forEach(element => {
+      element['checked'] = true;
+    });
+    return checkList;
   }
 
   componentWillMount() {
@@ -120,10 +134,10 @@ class FeatureSelection extends Component {
 
         // generate column def
         if (!isNil(item.featureName)) {
-          columDefs.push({ headerName: "Generated Feature", headerTooltip: "Generated Feature", field: this.identiferCol, width: 500, checkboxSelection: true, headerCheckboxSelection: true, headerCheckboxSelectionFilteredOnly: true, tooltipField: this.identiferCol });
+          columDefs.push({ headerName: "Generated Feature", headerTooltip: "Generated Feature", sortable: true, field: this.identiferCol, width: 500, checkboxSelection: true, headerCheckboxSelection: true, headerCheckboxSelectionFilteredOnly: true, tooltipField: this.identiferCol });
         }
         columns.forEach(element => {
-          columDefs.push({ headerName: element.name, headerTooltip: element.name,  field: element.name, resizable: true, filter: 'agNumberColumnFilter' });
+          columDefs.push({ headerName: element.name, headerTooltip: element.name,  sortable: true, field: element.name, resizable: true, filter: 'agNumberColumnFilter' });
         });
       }
 
@@ -162,8 +176,41 @@ class FeatureSelection extends Component {
   }
 
   applyFilter = (filterObj) => {
-    const requestObject = this.requestGenerator(filterObj);
-    this.getFilteredRecords(requestObject);
+    const tab =0;
+    let checklist = [];
+    let selec_keys = [...filterObj.keys()];
+    let select_values = [...filterObj.values()];
+    for (var i=0; i<select_values.length; i++) {
+      if (select_values[i]) {
+        checklist.push(selec_keys[i]);
+      }
+    }
+
+    let columns = cloneDeep(this.state.gridColumnDefs);
+
+    columns.forEach( column => {
+      if (column.checkboxSelection || checklist.indexOf(column.field) != -1) {
+        column['hide'] = false;
+      } else {
+        column['hide'] = true;
+      }
+    });
+
+    //
+    this.checkColumns.forEach(item => {
+      item.checked = checklist.indexOf(item.name) != -1 ? true : false;
+    });
+
+    this.setState({
+      gridColumnDefs: columns,
+      gridRowData: this.state.gridRowData,
+    });
+
+    this.updateGridInfo(tab, columns, this.state.gridRowData);
+
+    // this code represent older implementation
+    // const requestObject = this.requestGenerator(filterObj);
+    // this.getFilteredRecords(requestObject);
   }
 
   requestGenerator = (value) => {
@@ -397,6 +444,7 @@ class FeatureSelection extends Component {
         {
           headerName: "Generated Feature",
           headerTooltip: "Generated Feature",
+          sortable: true,
           field: this.identiferCol,
           width: 450,
           checkboxSelection: true,
@@ -437,8 +485,9 @@ class FeatureSelection extends Component {
     this.setState({ openSaveModal: true });
   }
 
-  onSaveModalClose = (message) => {
+  onSaveModalClose = (message, savedFSPipeline) => {
     if (message == T.translate(`${PREFIX}.okButton`)) {
+      this.savedFSPipeline = savedFSPipeline;
       this.onSaved();
     } else {
       this.setState({ openSaveModal: false });
@@ -449,8 +498,12 @@ class FeatureSelection extends Component {
     this.setState({ openSaveModal: false , openAlertModal: true, alertMessage: PIPELINE_SAVED_MSG });
   }
 
-  onAlertClose = () => {
+  onAlertClose = (btnText) => {
     this.setState({ openAlertModal: false, alertMessage: '' });
+    if (btnText == SHOW_PIPELINE && !isNilOrEmpty(this.savedFSPipeline)) {
+      let navigatePath = `${window.location.origin}/pipelines/ns/${NamespaceStore.getState().selectedNamespace}/view/${this.savedFSPipeline}`;
+       window.location.href = navigatePath;
+    }
   }
 
   onFeatureSelection(pipeline, isFilter = false) {
@@ -541,7 +594,7 @@ class FeatureSelection extends Component {
           </Nav>
           <TabContent activeTab={this.state.activeTab} className="tab-content">
             <TabPane tabId="0" className="tab-pane">
-              <FilterContainer filterColumns={this.state.filterColumns}
+              <FilterContainer filterColumns={this.checkColumns}
                 applyFilter={this.applyFilter}></FilterContainer>
             </TabPane>
             <TabPane tabId="1" className="tab-pane">
@@ -564,7 +617,7 @@ class FeatureSelection extends Component {
           onClose={this.onSaveModalClose} selectedPipeline={this.props.selectedPipeline}
           selectedFeatures={this.state.selectedFeatures} />
         <AlertModal open={this.state.openAlertModal} message={this.state.alertMessage}
-              showCancel = {this.state.showCancelButton}
+              primaryBtnText = {SHOW_PIPELINE} secondaryBtnText = {CLOSE}
               onClose={this.onAlertClose.bind(this)} />
       </div>
     );
