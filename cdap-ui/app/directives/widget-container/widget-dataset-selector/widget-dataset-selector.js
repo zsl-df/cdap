@@ -57,23 +57,52 @@ angular.module(PKG.name + '.commons')
         var newDataset;
         var modalOpen = false;
 
-        var showPopupFunc = function(schema, oldDatasetName) {
+        var showPopupFunc = function(schema, properties, oldDatasetName) {
           let sinkName = $scope.stageName;
           let confirmModal = $uibModal.open({
               templateUrl: '/assets/features/hydrator/templates/create/popovers/change-dataset-confirmation.html',
               size: 'lg',
               backdrop: 'static',
               keyboard: false,
-              windowTopClass: 'confirm-modal hydrator-modal center',
+              windowTopClass: 'confirm-modal hydrator-modal center change-dataset-confirmation-modal',
               controller: ['$scope', function($scope) {
                 $scope.datasetName = params.datasetId;
                 $scope.sinkName = sinkName;
+                $scope.inputProperties = properties;
+                $scope.schema = schema;
+
+                // To track whether to apply schema, property or both.
+                // Setting it to 'apply-schema' by default to retain older behaviour.
+                $scope.applyType = 'apply-schema';
+
+                $scope.getStatus = (confirm) => {
+                  if(confirm) {
+                    return {
+                      applySchema: ($scope.applyType === 'apply-schema' || $scope.applyType === 'apply-both'),
+                      applyProps: ($scope.applyType === 'apply-props' || $scope.applyType === 'apply-both')
+                    };
+                  } else {
+                    return { applySchema: false, applyProps: false };
+                  }
+                };
               }]
             });
           modalOpen = true;
 
-          confirmModal.result.then((confirm) => {
-            if (confirm) {
+          /*
+          `confirmObj` structure:
+            {
+              applySchema: true|false,
+              applyPorps: true|false
+            }
+           */
+          confirmModal.result.then((confirmObj) => {
+
+            if(confirmObj.applyProps) {
+              EventPipe.emit('plugin.apply.inputProperties', properties);
+            }
+
+            if (confirmObj.applySchema) {
               isCurrentlyExistingDataset = true;
 
               if (!schema) {
@@ -83,7 +112,10 @@ angular.module(PKG.name + '.commons')
                 $scope.schemaError = false;
                 EventPipe.emit('dataset.selected', schema, null, true, $scope.model);
               }
-            } else {
+            }
+
+            // If nothing is selected(neither applySchema nor applyProperties) then in that case set the dataset name to whatever user has selected
+            if(!confirmObj.applySchema && !confirmObj.applyProps) {
               $scope.model = oldDatasetName;
             }
             modalOpen = false;
@@ -117,7 +149,12 @@ angular.module(PKG.name + '.commons')
                   if (debouncedPopup) {
                     debouncedPopup.cancel();
                   }
-                  showPopupFunc(schema, oldDataset);
+
+                  // Since we are showing schema seprately, we need to remove the schema proeprty
+                  // otherwise it will show up in properties table also
+                  let propsWithNoSchema = Object.assign({}, res.spec.properties);
+                  delete propsWithNoSchema.schema;
+                  showPopupFunc(schema, propsWithNoSchema, oldDataset);
                 }
               });
           }
@@ -159,7 +196,11 @@ angular.module(PKG.name + '.commons')
 
                   if (initialized && !isCurrentlyExistingDataset && newDataset !== oldDataset) {
                     if (!modalOpen) {
-                      debouncedPopup(schema, oldDataset);
+                      // Since we are showing schema seprately, we need to remove the schema proeprty
+                      // otherwise it will show up in properties table also
+                      let propsWithNoSchema = Object.assign({}, res.spec.properties);
+                      delete propsWithNoSchema.schema;
+                      debouncedPopup(schema, propsWithNoSchema, oldDataset);
                     }
                   } else {
                     initialized = true;

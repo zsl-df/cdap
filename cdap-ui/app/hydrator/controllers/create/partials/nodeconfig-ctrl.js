@@ -138,6 +138,10 @@ class HydratorPlusPlusNodeConfigCtrl {
       }
     });
 
+    this.EventPipe.on('plugin.apply.inputProperties', (datasetProperties) => {
+      vm.applyDatasetProperties(datasetProperties);
+    });
+
     this.EventPipe.on('content-filter.changed', (widgetName, widgetValue) => {
       this.contentFilterWidgetWiseLastEvent[widgetName] = widgetValue;
     });
@@ -148,6 +152,13 @@ class HydratorPlusPlusNodeConfigCtrl {
       }
     });
 
+  }
+
+  // Auto fill plugin input configuration from dataset properties.
+  applyDatasetProperties(properties) {
+    Object.keys(properties).forEach(prop => {
+      this.state.node.plugin.properties[prop] = properties[prop];
+    });
   }
 
   shouldHideWidgetBasedOnFilter(widget) {
