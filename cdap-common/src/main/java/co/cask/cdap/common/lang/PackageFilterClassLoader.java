@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 public class PackageFilterClassLoader extends ClassLoader {
 
   private final Predicate<String> predicate;
+//  private final Predicate<String> exceptionPredicate;
   private final ClassLoader bootstrapClassLoader;
 
   /**
@@ -46,13 +47,38 @@ public class PackageFilterClassLoader extends ClassLoader {
     // A URLClassLoader with no URLs and with a null parent will load class from bootstrap ClassLoader only.
     this.bootstrapClassLoader = new URLClassLoader(new URL[0], null);
   }
+  
+//  public PackageFilterClassLoader(ClassLoader parent, Predicate<String> predicate, Predicate<String> exceptionpredicate) {
+//	    super(parent);
+//	    this.predicate = predicate;
+//	    //this.exceptionPredicate = exceptionpredicate;
+//	    // There is no reliable way to get bootstrap ClassLoader from Java (System.class.getClassLoader() may return null).
+//	    // A URLClassLoader with no URLs and with a null parent will load class from bootstrap ClassLoader only.
+//	    this.bootstrapClassLoader = new URLClassLoader(new URL[0], null);
+//	  }
 
   @Override
   protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
     try {
+    	
+//    	if(name.startsWith("com.google.protobuf") || name.startsWith("org.apache.arrow.vector")) {
+//    		  System.out.println(" PackageFilterClassLoader: trying to load class :: " + name );
+//    	  }
+    	
       return bootstrapClassLoader.loadClass(name);
     } catch (ClassNotFoundException e) {
-      if (!predicate.apply(getClassPackage(name))) {
+    	
+//    	if(name.startsWith("com.google.protobuf")) {
+//  		  System.out.println(" PackageFilterClassLoader: ClassNotFoundException in bootstrapClassLoader:: " + name );
+//  		  System.out.println(" PackageFilterClassLoader: !predicate.apply(getClassPackage(name)):: " + (!predicate.apply(getClassPackage(name))));
+//  		  System.out.println(" PackageFilterClassLoader: ClassNotFoundException " + super.toString() );
+//  	  	}
+    	
+//    	if(name.startsWith("com.google.protobuf") || name.startsWith("org.apache.arrow.vector")) {
+//    		System.out.println(" PackageFilterClassLoader.loadClass: ClassNotFoundException trying to load class :: " + name + ", accepted?:: " + (!predicate.apply(getClassPackage(name))));// && !exceptionPredicate.apply(getClassPackage(name))));
+//    	}
+    	
+      if (!predicate.apply(getClassPackage(name))) {// && !exceptionPredicate.apply(getClassPackage(name))) {
         throw new ClassNotFoundException("Loading of class " + name + " not allowed");
       }
 
@@ -67,7 +93,7 @@ public class PackageFilterClassLoader extends ClassLoader {
       return resource;
     }
 
-    if (name.endsWith(".class") && !predicate.apply(getResourcePackage(name))) {
+    if (name.endsWith(".class") && !predicate.apply(getResourcePackage(name))) {// && !exceptionPredicate.apply(getResourcePackage(name))) {
       return null;
     }
     return super.getResource(name);
@@ -79,7 +105,7 @@ public class PackageFilterClassLoader extends ClassLoader {
     if (resources.hasMoreElements()) {
       return resources;
     }
-    if (name.endsWith(".class") && !predicate.apply(getResourcePackage(name))) {
+    if (name.endsWith(".class") && !predicate.apply(getResourcePackage(name))) {// && !exceptionPredicate.apply(getResourcePackage(name))) {
       return Iterators.asEnumeration(Iterators.<URL>emptyIterator());
     }
     return super.getResources(name);
@@ -89,7 +115,7 @@ public class PackageFilterClassLoader extends ClassLoader {
   protected Package[] getPackages() {
     List<Package> packages = Lists.newArrayList();
     for (Package pkg : super.getPackages()) {
-      if (predicate.apply(pkg.getName())) {
+      if (predicate.apply(pkg.getName())) {// || exceptionPredicate.apply(pkg.getName())) {
         packages.add(pkg);
       }
     }
@@ -98,7 +124,7 @@ public class PackageFilterClassLoader extends ClassLoader {
 
   @Override
   protected Package getPackage(String name) {
-    if (!predicate.apply(name)) {
+    if (!predicate.apply(name)) {// && !exceptionPredicate.apply(name)) {
       return null;
     }
     return super.getPackage(name);

@@ -86,10 +86,20 @@ public class CombineClassLoader extends URLClassLoader {
   @Override
   protected Class<?> findClass(String name) throws ClassNotFoundException {
     for (ClassLoader classLoader : delegates) {
+    	
+//  	  if(name.startsWith("com.google.protobuf") || name.startsWith("org.apache.arrow.vector")) {
+//		  System.out.println(" CombineClassLoader: "+classLoader.toString()+", trying to load class :: " + name );
+//	  }
+    	
       try {
         return classLoader.loadClass(name);
       } catch (ClassNotFoundException e) {
-        LOG.trace("Class {} not found in ClassLoader {}", name, classLoader);
+//    	  if(name.startsWith("com.google.protobuf") || name.startsWith("org.apache.arrow.vector")) {
+//    		  System.out.println("Class "+name+" not found in ClasssLoader " + classLoader);
+//    	  }else {
+    		  LOG.trace("Class {} not found in ClasssLoader {}", name, classLoader);
+//    	  }
+        
       }
     }
 

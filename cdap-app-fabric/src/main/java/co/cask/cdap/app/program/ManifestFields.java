@@ -47,6 +47,9 @@ public final class ManifestFields {
   public static final String VERSION = "1.0";   // Defines manifest version value.
   public static final String MANIFEST_SPEC_FILE = "META-INF/specification/application.json";
 
+  //public static final Attributes.Name PIPELINE_IMPORT = new Attributes.Name("Pipeline-Import");
+  
+  
   /**
    * Regex for extracting one package name from the Export-Package manifest entry.
    * Refer to OSGI spec r4v43, section 3.6.5 for details. For example:
@@ -88,6 +91,33 @@ public final class ManifestFields {
     }
     return result.build();
   }
+  
+//	public static Set<String> getPipelineImport(@Nullable Manifest manifest) {
+//		if (manifest == null) {
+//			return ImmutableSet.of();
+//		}
+//
+//		ImmutableSet.Builder<String> result = ImmutableSet.builder();
+//		String pipelineImports = manifest.getMainAttributes().getValue(ManifestFields.PIPELINE_IMPORT);
+//		if (pipelineImports == null || pipelineImports.trim().equals("")) {
+//			return result.build();
+//		}
+//		
+//		String[] splits = pipelineImports.split(",");
+//		for (int i = 0; i < splits.length; i++) {
+//			if(splits[i].endsWith(";")) {
+//				result.add(splits[i].substring(0, splits[i].length()-1));
+//			}else if(splits[i].endsWith(".")) {
+//				result.add(splits[i]);
+//			}else {
+//				result.add(splits[i]+".");
+//			}
+//		}
+//		
+//		Set<String> pipelineImport =  result.build();
+//		System.out.println("sbbbbbbbbbbb pipelineImport:: " + pipelineImport.toString());
+//		return pipelineImport;
+//	}
 
   private ManifestFields() {
   }

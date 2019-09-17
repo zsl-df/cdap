@@ -121,7 +121,7 @@ public class LDAPLoginModule extends LdapLoginModule {
   public Hashtable<Object, Object> getEnvironment() {
     Hashtable<Object, Object> table = super.getEnvironment();
 
-    if (!LDAPAuthenticationHandler.getLdapSSLVerifyCertificate()) {
+    if (LDAPAuthenticationHandler.getUseLdaps() && !LDAPAuthenticationHandler.getLdapSSLVerifyCertificate()) {
       table.put("java.naming.ldap.factory.socket", TrustAllSSLSocketFactory.class.getName());
     }
     return table;

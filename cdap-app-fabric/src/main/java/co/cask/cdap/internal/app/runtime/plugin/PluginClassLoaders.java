@@ -100,11 +100,18 @@ public final class PluginClassLoaders {
     return new FilterClassLoader(parentClassLoader, new FilterClassLoader.Filter() {
       @Override
       public boolean acceptResource(String resource) {
+//    	  if(resource.startsWith("org.apache.arrow.vector")) {
+//    		  System.out.println(" co.cask.cdap.internal.app.runtime.plugin.PluginClassLoaders : acceptResource :: " + resource );
+//    	}
+    	  
         return allowedResources.contains(resource);
       }
 
       @Override
       public boolean acceptPackage(String packageName) {
+//    	  if(packageName.startsWith("org.apache.arrow.vector")) {
+//    		  System.out.println(" co.cask.cdap.internal.app.runtime.plugin.PluginClassLoaders : acceptPackage :: " + packageName );
+//    	}
         return true;
       }
     });

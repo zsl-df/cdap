@@ -24,10 +24,15 @@ import co.cask.cdap.common.lang.PackageFilterClassLoader;
 import co.cask.cdap.internal.app.runtime.ProgramClassLoader;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
 
 import java.io.File;
 import java.util.Set;
 import java.util.jar.Manifest;
+
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+
 
 /**
  * ClassLoader for template plugin. The ClassLoader hierarchy is pretty complicated.
@@ -52,9 +57,22 @@ import java.util.jar.Manifest;
  * ClassLoader as the Combine ClassLoader.
  */
 public class PluginClassLoader extends DirectoryClassLoader {
+  
+//  private static final Logger LOG = LoggerFactory.getLogger(PluginClassLoader.class);
+  
   private final ArtifactId artifactId;
   private final Set<String> exportPackages;
+  //private final Set<String> execptedPackages;
 
+  
+//  @Override
+//	public Class<?> loadClass(String name) throws ClassNotFoundException {
+//	  if(name.startsWith("com.google.protobuf")) {
+//		  LOG.info(" PluginClassLoader trying to load class :: " + name);
+//	  }
+//	  return super.loadClass(name);
+//	}
+  
   static ClassLoader createParent(ClassLoader templateClassLoader) {
     // Find the ProgramClassLoader from the template ClassLoader
     ClassLoader programClassLoader = templateClassLoader;
@@ -67,8 +85,14 @@ public class PluginClassLoader extends DirectoryClassLoader {
     // Package filtered classloader of the template classloader, which only classes in "Export-Packages" are loadable.
     Manifest manifest = ((ProgramClassLoader) programClassLoader).getManifest();
     Set<String> exportPackages = ManifestFields.getExportPackages(manifest);
+//    Set<String> pipelineImports = ManifestFields.getPipelineImport(manifest);    
     ClassLoader filteredTemplateClassLoader = new PackageFilterClassLoader(templateClassLoader,
                                                                            Predicates.in(exportPackages));
+                                                                           //Predicates.in(pipelineImports));
+
+//	LOG.info("sbbbbbbbbbbbbbb export package list:: " + exportPackages.toString());
+//	LOG.info("programClassLoader.getParent:: " + programClassLoader.getParent());
+
 
     // The lib Classloader needs to be able to see all cdap api classes as well.
     // In this way, parent ClassLoader of the plugin ClassLoader will load class from the parent of the
@@ -79,8 +103,15 @@ public class PluginClassLoader extends DirectoryClassLoader {
 
   PluginClassLoader(ArtifactId artifactId, File directory, ClassLoader parent) {
     super(directory, parent, "lib");
+    
+//    LOG.info("sbbbbb inside PluginClassLoader constructor");
+//    LOG.info("sbbbbb artifactId:: " + artifactId.toString());
+//    LOG.info("sbbbbb directory :: " + directory.toString());
+//    LOG.info("sbbbbb parent :: " + parent.toString());
+	
     this.artifactId = artifactId;
     this.exportPackages = ManifestFields.getExportPackages(getManifest());
+//    this.execptedPackages = ManifestFields.getPipelineImport(getManifest());
   }
 
   /**
@@ -95,6 +126,6 @@ public class PluginClassLoader extends DirectoryClassLoader {
    * in the manifest.
    */
   public ClassLoader getExportPackagesClassLoader() {
-    return new PackageFilterClassLoader(this, Predicates.in(exportPackages));
+    return new PackageFilterClassLoader(this, Predicates.in(exportPackages));//, Predicates.in(execptedPackages));
   }
 }

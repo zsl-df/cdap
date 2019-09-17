@@ -40,6 +40,7 @@ public class LDAPAuthenticationHandler extends JAASAuthenticationHandler {
                                                                              "roleMemberAttribute", "roleObjectClass");
 
   private static boolean ldapSSLVerifyCertificate = true;
+  private static boolean useLdaps = true;
 
   /**
    * Create a configuration from properties. Allows optional configurables.
@@ -59,12 +60,31 @@ public class LDAPAuthenticationHandler extends JAASAuthenticationHandler {
 
         String ldapsVerifyCertificate = handlerProps.get("ldapsVerifyCertificate");
         ldapSSLVerifyCertificate = Boolean.parseBoolean(Objects.firstNonNull(ldapsVerifyCertificate, "true"));
+        
+        String useLdapsPropertyValue = handlerProps.get("useLdaps");
+        useLdaps = Boolean.parseBoolean(Objects.firstNonNull(useLdapsPropertyValue, "true"));
 
         return new AppConfigurationEntry[] {
           new AppConfigurationEntry(handlerProps.get(Constants.Security.LOGIN_MODULE_CLASS_NAME),
                                     AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, map)
         };
       }
+      
+      @Override
+    	public String toString() {
+          Map<String, String> map = new HashMap<>();
+          map.put("contextFactory", "com.sun.jndi.ldap.LdapCtxFactory");
+          map.put("authenticationMethod", "simple");
+          map.put("forceBindingLogin", "true");
+
+          copyProperties(handlerProps, map, mandatoryConfigurables, true);
+          copyProperties(handlerProps, map, optionalConfigurables, false);
+
+          String ldapsVerifyCertificate = handlerProps.get("ldapsVerifyCertificate");
+          ldapSSLVerifyCertificate = Boolean.parseBoolean(Objects.firstNonNull(ldapsVerifyCertificate, "true"));
+          return map.toString();
+    	}
+      
     };
   }
 
@@ -83,4 +103,9 @@ public class LDAPAuthenticationHandler extends JAASAuthenticationHandler {
   static boolean getLdapSSLVerifyCertificate() {
     return ldapSSLVerifyCertificate;
   }
+  
+  static boolean getUseLdaps() {
+	 return useLdaps;
+  }
+  
 }

@@ -43,7 +43,7 @@ public final class ProgramResources {
 
   private static final Logger LOG = LoggerFactory.getLogger(ProgramResources.class);
 
-  private static final List<String> HADOOP_PACKAGES = ImmutableList.of("org.apache.hadoop.");
+  private static final List<String> HADOOP_PACKAGES = ImmutableList.of("org.apache.hadoop.");//, "com.google.protobuf.", "org.apache.arrow.");
   private static final List<String> EXCLUDE_PACKAGES = ImmutableList.of("org.apache.hadoop.hbase.",
                                                                         "org.apache.hadoop.hive.");
 
@@ -61,6 +61,12 @@ public final class ProgramResources {
    * Returns a Set of resource names that are visible through to user program.
    */
   public static synchronized Set<String> getVisibleResources() {
+	  
+//	  System.out.println("ProgramResources.getVisibleResources");
+//		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+//		    System.out.println("\t " + ste);
+//		}
+	  
     if (baseResources != null) {
       return baseResources;
     }
@@ -79,6 +85,7 @@ public final class ProgramResources {
    * depends on (for example, sl4j, gson, etc).
    */
   private static Set<String> createBaseResources() throws IOException {
+	  LOG.info("inside createBaseResources");
     // Everything should be traceable in the same ClassLoader of this class, which is the CDAP system ClassLoader
     ClassLoader classLoader = ProgramResources.class.getClassLoader();
 
@@ -92,9 +99,13 @@ public final class ProgramResources {
                                                  ClassPathResources.RESOURCE_INFO_TO_RESOURCE_NAME));
 
     // Gather Hadoop classes and resources
+    LOG.info("Gather Hadoop classes and resources:: " + HADOOP_PACKAGES);
     getResources(ClassPath.from(classLoader, JAR_ONLY_URI),
                  HADOOP_PACKAGES, EXCLUDE_PACKAGES, ClassPathResources.RESOURCE_INFO_TO_RESOURCE_NAME, result);
 
+    
+    //LOG.info("sbbb createBaseResources:: " + result.toString());
+    
     return Collections.unmodifiableSet(result);
   }
 

@@ -277,6 +277,16 @@ final class ArtifactInspector {
       return ManifestFields.getExportPackages(jarFile.getManifest());
     }
   }
+  
+  /**
+   * Returns the set of package names that are declared in "Pipeline-Import" in the jar file Manifest.
+   */  
+//  private Set<String> getPipelineImportPackages(File file) throws IOException {
+//	  try (JarFile jarFile = new JarFile(file)) {
+//		  return ManifestFields.getPipelineImport(jarFile.getManifest());
+//	  }
+//  }
+  
 
   /**
    * Returns an {@link Iterable} of class name that are under the given list of package names that are loadable

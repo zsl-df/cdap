@@ -43,6 +43,20 @@ public abstract class InterceptableClassLoader extends URLClassLoader implements
   @Override
   protected Class<?> findClass(String name) throws ClassNotFoundException {
     if (!needIntercept(name)) {
+    	
+//    	if(name.startsWith("com.google.protobuf") || name.startsWith("org.apache.arrow.vector")) {
+//    		System.out.println(" InterceptableClassLoader : acceptPackage :: " + name );
+//    		System.out.println(" InterceptableClassLoader Super class :  :: " + super.getClass().getName());
+//    		
+//    	}
+//    	
+//    	if(name.startsWith("org.apache.arrow.vector")) {
+//    		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+//    		    System.out.println("\t" + ste);
+//    		}
+//    	}
+    	
+    	
       return super.findClass(name);
     }
 

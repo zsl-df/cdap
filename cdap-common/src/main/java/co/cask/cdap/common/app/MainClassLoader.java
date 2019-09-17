@@ -43,11 +43,16 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+
 /**
  * The main {@link ClassLoader} used by CDAP. This class performs necessary class rewriting for the whole CDAP
  * system.
  */
 public class MainClassLoader extends InterceptableClassLoader {
+	
+  //private static final Logger LOG = LoggerFactory.getLogger(MainClassLoader.class);
 
   private static final String DATASET_CLASS_NAME = Dataset.class.getName();
   private final DatasetClassRewriter datasetRewriter;
@@ -65,6 +70,7 @@ public class MainClassLoader extends InterceptableClassLoader {
    */
   @Nullable
   public static MainClassLoader createFromContext(URL...extraClasspath) {
+	  //LOG.info("sbbbbb MainClassLoader createFromContext URL...extraClasspath :: " + Arrays.deepToString(extraClasspath));
     return createFromContext(new FilterClassLoader.Filter() {
       @Override
       public boolean acceptResource(String resource) {
@@ -78,6 +84,14 @@ public class MainClassLoader extends InterceptableClassLoader {
     }, extraClasspath);
   }
 
+//  @Override
+//	public Class<?> loadClass(String name) throws ClassNotFoundException {
+//	  if(name.startsWith("com.google.protobuf")) {
+//		  LOG.info(" MainClassLoader trying to load class :: " + name);
+//	  }
+//	  return super.loadClass(name);
+//	}
+  
   /**
    * @param filter A {@link FilterClassLoader.Filter} for filtering out classes from the
    * @param extraClasspath extra list of {@link URL} to be added to the end of the classpath for the
@@ -121,6 +135,11 @@ public class MainClassLoader extends InterceptableClassLoader {
    */
   public MainClassLoader(URL[] urls, ClassLoader parent) {
     super(urls, parent);
+    
+//    LOG.info("sbbbbb inside MainClassLoader constructor");
+//    LOG.info("sbbbbb urls:: " + Arrays.toString(urls));
+//    LOG.info("sbbbbb parent classloader :: " + parent.toString());
+    
     this.datasetRewriter = new DatasetClassRewriter();
     this.authEnforceRewriter = new AuthEnforceRewriter();
     this.resourceLookup = ClassLoaders.createClassResourceLookup(this);
@@ -139,6 +158,7 @@ public class MainClassLoader extends InterceptableClassLoader {
   @Nullable
   @Override
   public byte[] rewriteClass(String className, InputStream input) throws IOException {
+	  //LOG.info(" sbbbbbbbbb inside rewriteClass:: " + className);
     byte[] rewrittenCode = null;
 
     if (isDatasetRewriteNeeded(className)) {
@@ -156,6 +176,8 @@ public class MainClassLoader extends InterceptableClassLoader {
    * Adds {@link URL} to the given list based on the system classpath.
    */
   private static void addClassPath(List<URL> urls) {
+	  //LOG.info(" sbbbbbbbbb inside addClassPath:: " + urls.toString());
+	  
     String wildcardSuffix = File.pathSeparator + "*";
     // In case the system classloader is not a URLClassLoader, use the classpath property (maybe from non Oracle JDK)
     for (String path : Splitter.on(File.pathSeparatorChar).split(System.getProperty("java.class.path"))) {
@@ -170,6 +192,7 @@ public class MainClassLoader extends InterceptableClassLoader {
         }
       }
     }
+    //LOG.info(" sbbbbbbbbb inside addClassPath post:: " + urls.toString());
   }
 
   private boolean isRewriteNeeded(String className) throws IOException {

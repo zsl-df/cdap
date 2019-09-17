@@ -28,10 +28,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+
+
 /**
  * ClassLoader that filters out certain resources.
  */
 public final class FilterClassLoader extends ClassLoader {
+  //private static final Logger LOG = LoggerFactory.getLogger(FilterClassLoader.class);
+
 
   private final ClassLoader extensionClassLoader;
   private final Filter filter;
@@ -68,14 +74,34 @@ public final class FilterClassLoader extends ClassLoader {
         }
       }
     }
+
+       //visiblePackages.add("com.google.protobuf");
+
+//       System.out.println("sbbbbbbbbbb visiblePackages::" + visiblePackages.toString());
+//       System.out.println("sbbbbbbbbbb visibleResources::" + visibleResources.toString());
+	
     return new Filter() {
       @Override
       public boolean acceptResource(String resource) {
+//      	if(resource.startsWith("org.apache.arrow.vector")) {
+//      		
+//      		System.out.println("FilterClassLoader.acceptResource ");
+//    		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+//    		    System.out.println("\t " + ste);
+//    		}
+//    	}
         return visibleResources.contains(resource);
       }
 
       @Override
       public boolean acceptPackage(String packageName) {
+//      	if(packageName.startsWith("org.apache.arrow.vector")) {
+//      		
+//      		System.out.println("Filter.acceptPackage");
+//    		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+//    		    System.out.println("\t" + ste);
+//    		}
+//    	}
         return visiblePackages.contains(packageName);
       }
     };
@@ -108,9 +134,34 @@ public final class FilterClassLoader extends ClassLoader {
   @Override
   protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
     // Try to load it from bootstrap class loader first
+	  
+//	  if(name.startsWith("com.google.protobuf") || name.startsWith("org.apache.arrow.vector")) {
+//		  System.out.println(" FilterClassLoader trying to load class :: " + name);
+//		  System.out.println(" filter.getClass().getName():: " + filter.getClass().getName());
+//	  }
+	  
     try {
       return extensionClassLoader.loadClass(name);
     } catch (ClassNotFoundException e) {
+    	
+//    	if(name.startsWith("com.google.protobuf") || name.startsWith("org.apache.arrow.vector")) {
+//  		  System.out.println(" FilterClassLoader.loadClass ClassNotFoundException trying to load class :: " + name
+//  				  + ", filter.getClass() :: " + filter.getClass()
+//  				  + ", classNameToResourceName(name):: " + classNameToResourceName(name)
+//  				  + " , accepted? :: " + filter.acceptResource(classNameToResourceName(name)));
+//  	  	}
+//    	if(name.startsWith("org.apache.arrow.vector") && filter.getClass().getName().contains("SparkResourceFilters")) {
+//    		try {
+//    	    	//Class c = Class.forName("co.cask.cdap.app.runtime.spark.SparkResourceFilters");
+//    			//Class c = Class.forName(args[0]);
+//    			System.out.println("class SparkResourceFilters::::::::::" + filter.getClass().getProtectionDomain().getCodeSource().getLocation());
+//    		}catch(Exception ee) {
+//    			ee.printStackTrace();
+//    			
+//    		}
+//    	}
+
+    	
       if (filter.acceptResource(classNameToResourceName(name))) {
         return super.loadClass(name, resolve);
       }
@@ -137,6 +188,11 @@ public final class FilterClassLoader extends ClassLoader {
 
   @Override
   public URL getResource(String name) {
+	  
+//	  if(name.startsWith("com.google.protobuf") || name.startsWith("org.apache.arrow.vector")) {
+//		  System.out.println("FilterClassLoader trying to load resource getResource:: " + name);
+//	  }
+	  
     URL resource = extensionClassLoader.getResource(name);
     if (resource != null) {
       return resource;
@@ -146,6 +202,11 @@ public final class FilterClassLoader extends ClassLoader {
 
   @Override
   public Enumeration<URL> getResources(String name) throws IOException {
+	  
+//	  if(name.startsWith("com.google.protobuf") || name.startsWith("org.apache.arrow.vector")) {
+//		  System.out.println("FilterClassLoader trying to load resource getResources:: " + name);
+//	  }
+	  
     Enumeration<URL> resources = extensionClassLoader.getResources(name);
     if (resources.hasMoreElements()) {
       return resources;
@@ -155,6 +216,11 @@ public final class FilterClassLoader extends ClassLoader {
 
   @Override
   public InputStream getResourceAsStream(String name) {
+	  
+//	  if(name.startsWith("com.google.protobuf") || name.startsWith("org.apache.arrow.vector")) {
+//		  System.out.println("trying to load getResourceAsStream :: " + name);
+//	  }
+	  
     InputStream resourceStream = extensionClassLoader.getResourceAsStream(name);
     if (resourceStream != null) {
       return resourceStream;
