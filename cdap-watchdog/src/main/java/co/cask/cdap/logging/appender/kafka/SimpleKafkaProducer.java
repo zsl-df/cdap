@@ -22,9 +22,12 @@ import co.cask.cdap.logging.LoggingConfiguration;
 import com.google.common.util.concurrent.Futures;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
-import kafka.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.twill.common.Threads;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -37,30 +40,39 @@ import java.util.concurrent.Executors;
 final class SimpleKafkaProducer {
 
   // Kafka producer is thread safe
-  private final Producer<String, byte[]> producer;
+  private final KafkaProducer<String, byte[]> producer;
 
   SimpleKafkaProducer(CConfiguration cConf) {
     Properties props = new Properties();
-    props.setProperty("metadata.broker.list", cConf.get(LoggingConfiguration.KAFKA_SEED_BROKERS));
-    props.setProperty("serializer.class", "kafka.serializer.DefaultEncoder");
-    props.setProperty("key.serializer.class", "kafka.serializer.StringEncoder");
-    props.setProperty("partitioner.class", "co.cask.cdap.logging.appender.kafka.StringPartitioner");
-    props.setProperty("request.required.acks", "1");
+    props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, cConf.get(LoggingConfiguration.KAFKA_SEED_BROKERS));
+    try {
+    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, Class.forName("org.apache.kafka.common.serialization.StringSerializer"));
+    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, Class.forName("org.apache.kafka.common.serialization.StringSerializer"));
+    } catch (Exception ex) {
+      System.out.println("class not found exception : " + ex);
+    }
+    //props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+    //props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
+    //props.setProperty("partitioner.class", "org.apache.kafka.clients.producer.internals.DefaultPartitioner");
+    props.setProperty(ProducerConfig.ACKS_CONFIG, "1");
     props.setProperty("producer.type", cConf.get(LoggingConfiguration.KAFKA_PRODUCER_TYPE,
                        LoggingConfiguration.DEFAULT_KAFKA_PRODUCER_TYPE));
     props.setProperty("queue.buffering.max.ms", cConf.get(LoggingConfiguration.KAFKA_PRODUCER_BUFFER_MS,
                       Long.toString(LoggingConfiguration.DEFAULT_KAFKA_PRODUCER_BUFFER_MS)));
     props.setProperty(Constants.Logging.NUM_PARTITIONS, cConf.get(Constants.Logging.NUM_PARTITIONS));
 
-    ProducerConfig config = new ProducerConfig(props);
-    producer = createProducer(config);
+    producer = createProducer(props);
   }
 
-  void publish(List<KeyedMessage<String, byte[]>> messages) {
+  void publish(List<ProducerRecord<String, byte[]>> messages) {
     // Clear the interrupt flag, otherwise it won't be able to publish
     boolean threadInterrupted = Thread.interrupted();
     try {
-      producer.send(messages);
+      Iterator<ProducerRecord<String, byte[]>> it = messages.iterator();
+    	while (it.hasNext()) {
+  	    ProducerRecord<String, byte[]> producerRecord = it.next();
+            producer.send(producerRecord);
+    	}
     } finally {
       // Reset the interrupt flag if needed
       if (threadInterrupted) {
@@ -77,10 +89,10 @@ final class SimpleKafkaProducer {
    * Creates a {@link Producer} using the given configuration. The producer instance will be created from a
    * daemon thread to make sure the async thread created inside Kafka is also a daemon thread.
    */
-  private <K, V> Producer<K, V> createProducer(final ProducerConfig config) {
+  private <K, V> KafkaProducer<K, V> createProducer(final Properties props) {
     ExecutorService executor = Executors.newSingleThreadExecutor(Threads.createDaemonThreadFactory("create-producer"));
     try {
-      return Futures.getUnchecked(executor.submit(() -> new Producer<>(config)));
+      return Futures.getUnchecked(executor.submit(() -> new org.apache.kafka.clients.producer.KafkaProducer<>(props)));
     } finally {
       executor.shutdownNow();
     }

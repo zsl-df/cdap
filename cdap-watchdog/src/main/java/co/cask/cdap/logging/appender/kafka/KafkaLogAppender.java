@@ -23,6 +23,7 @@ import co.cask.cdap.logging.appender.AbstractLogPublisher;
 import co.cask.cdap.logging.appender.LogAppender;
 import co.cask.cdap.logging.appender.LogMessage;
 import co.cask.cdap.logging.serialize.LoggingEventSerializer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import com.google.inject.Inject;
 import kafka.producer.KeyedMessage;
 
@@ -73,7 +74,7 @@ public final class KafkaLogAppender extends LogAppender {
   /**
    * Publisher service to publish logs to Kafka asynchronously.
    */
-  private final class KafkaLogPublisher extends AbstractLogPublisher<KeyedMessage<String, byte[]>> {
+  private final class KafkaLogPublisher extends AbstractLogPublisher<ProducerRecord<String, byte[]>> {
 
     private final CConfiguration cConf;
     private final String topic;
@@ -106,13 +107,13 @@ public final class KafkaLogAppender extends LogAppender {
      * Creates a {@link KeyedMessage} for the given {@link LogMessage}.
      */
     @Override
-    protected KeyedMessage<String, byte[]> createMessage(LogMessage logMessage) {
+    protected ProducerRecord<String, byte[]> createMessage(LogMessage logMessage) {
       String partitionKey = logPartitionType.getPartitionKey(logMessage.getLoggingContext());
-      return new KeyedMessage<>(topic, partitionKey, loggingEventSerializer.toBytes(logMessage));
+      return new ProducerRecord<>(topic, partitionKey, loggingEventSerializer.toBytes(logMessage));
     }
 
     @Override
-    protected void publish(List<KeyedMessage<String, byte[]>> logMessages) {
+    protected void publish(List<ProducerRecord<String, byte[]>> logMessages) {
       producer.publish(logMessages);
     }
 
