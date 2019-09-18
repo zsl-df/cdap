@@ -22,6 +22,12 @@
       <value>/opt/cdap/master/artifacts;/opt/cdap/master/artifacts/${app.program.spark.compat}</value>
     </property>
 
+    <!--property for knox token-->
+    <!--property>
+      <name>security.authentication.knox.token.url.path</name>
+      <value>/gateway/knoxsso/knoxtoken/api/v1/token</value>
+    </property-->
+
     <property>
       <name>app.boss.threads</name>
       <value>1</value>

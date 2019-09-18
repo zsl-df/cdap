@@ -956,6 +956,8 @@ public final class Constants {
     public static final String KNOX_TOKEN_PUBLIC_KEY = "security.authentication.knox.token.public.key";
     /** Knox Host value */
     public static final String KNOX_HOST = "security.authentication.knox.host.value";
+    /** Enables key to set KNOX_TOKEN_URL_PATH  */
+    public static final String KNOX_TOKEN_URL_PATH = "security.authentication.knox.token.url.path";
     /** Knox Port value */
     public static final String KNOX_PORT = "security.authentication.knox.post.value";
     /** Enables security. */

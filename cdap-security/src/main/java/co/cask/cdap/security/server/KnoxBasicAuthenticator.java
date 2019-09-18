@@ -97,7 +97,6 @@ public class KnoxBasicAuthenticator extends BasicAuthenticator
         final String authorizationHeader = request.getHeader("Authorization");
         String wireToken = null;
         String username = null;
-
         //Getting either through knox UI or through cookie set 
         //but getting knox token itself.
         if (authorizationHeader!=null && !Strings.isNullOrEmpty(authorizationHeader) && (authorizationHeader.trim().toLowerCase().startsWith("bearer "))) {
@@ -167,9 +166,10 @@ public class KnoxBasicAuthenticator extends BasicAuthenticator
                             
                             String host = handlerProps.get(Constants.Security.KNOX_HOST);
 			    Log.info("host : " + host);
-                            String port = handlerProps.get(Constants.Security.KNOX_PORT);
+			    String port = handlerProps.get(Constants.Security.KNOX_PORT);
 			    Log.info("port : " + port);
-                            String strAuthURI = "https://" + host + ":" + port + "/gateway/knoxsso/knoxtoken/api/v1/token";;
+			    String strAuthURI = "https://" + host + ":" + port + handlerProps.get(Constants.Security.KNOX_TOKEN_URL_PATH);
+			    Log.info("strAuthURI: " + strAuthURI);
                     	    URI authURI = URI.create(strAuthURI);
                     	    
                     	    HttpRequest knoxRequest = HttpRequest.get(authURI.toURL()).addHeaders(getAuthenticationHeaders(encryptedCredentials)).build();
