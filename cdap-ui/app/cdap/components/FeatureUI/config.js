@@ -65,7 +65,7 @@ export const ERROR_MESSAGES = {
 export const PIPELINE_SAVED_MSG = "Pipeline saved successfully";
 
 export const IS_OFFLINE = false;
-export const USE_REMOTE_SERVER = true;
+export const USE_REMOTE_SERVER = false;
 
 export const PIPELINE_RUN_NAME = "pipelineRunName";
 export const PIPELINE_SCHEMAS = "dataSchemaNames";
