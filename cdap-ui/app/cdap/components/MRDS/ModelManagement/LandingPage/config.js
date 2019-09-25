@@ -50,6 +50,8 @@ export const EXP_COLUMN_DEF = [
     field: "experimentLastUpdatedTime",
     valueFormatter: timeFormatter,
     width: 100,
+    tooltip: timeFormatter,
+
   },
   {
     headerName: "Experiment Name",
@@ -62,31 +64,33 @@ export const EXP_COLUMN_DEF = [
     headerName: "Dataset Name",
     field: "datasetName",
     width: 150,
-    tooltipField: "experimentName",
+    tooltipField: "datasetName",
   },
   {
     headerName: "Prediction Column",
     field: "predictionField",
     width: 100,
-    tooltipField: "experimentName",
+    tooltipField: "predictionField",
   },
 
   {
     headerName: "Category",
     field: "category",
     width: 100,
-    tooltipField: "experimentName",
+    tooltipField: "category",
   },
   {
     headerName: "Framework",
     field: "framework",
     width: 100,
-    tooltipField: "experimentName",
+    tooltipField: "framework",
   },
   {
     headerName: "# Models",
     field: "noOfModels",
     width: 80,
+    tooltipField: "noOfModels",
+
   },
   {
     headerName: "Author",
