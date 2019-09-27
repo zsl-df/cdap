@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -79,6 +80,11 @@ public class IncrementHandler implements  RegionCoprocessor,RegionObserver  {
 
   private Region region;
   private IncrementHandlerState state;
+
+  @Override
+  public Optional<RegionObserver> getRegionObserver() {
+    return Optional.of(this);
+  }
 
   @Override
   public void start(CoprocessorEnvironment e) throws IOException {
