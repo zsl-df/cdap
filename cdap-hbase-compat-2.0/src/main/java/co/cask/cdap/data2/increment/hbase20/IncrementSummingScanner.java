@@ -80,6 +80,7 @@ class IncrementSummingScanner implements RegionScanner {
 
   IncrementSummingScanner(Region region, int batchSize, InternalScanner internalScanner, ScanType scanType,
                           long compationUpperBound, long oldestTsByTTL) {
+    LOG.error("inside IncrementSummingScanner");
     this.region = region;
     this.batchSize = batchSize;
     this.baseScanner = new WrappedScanner(internalScanner);
@@ -164,7 +165,7 @@ class IncrementSummingScanner implements RegionScanner {
 
   private boolean nextInternal(List<Cell> cells, ScannerContext scannerContext) throws IOException {
     //if (LOG.isTraceEnabled()) {
-      LOG.info("nextInternal called with limit=" + scannerContext);
+      LOG.info("IncrementSummingScanner nextInternal called with limit=" + scannerContext);
     //}
     Cell previousIncrement = null;
     long runningSum = 0;
