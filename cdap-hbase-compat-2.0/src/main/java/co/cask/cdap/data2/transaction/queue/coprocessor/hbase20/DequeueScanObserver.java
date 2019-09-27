@@ -29,6 +29,8 @@ import org.apache.hadoop.hbase.regionserver.RegionScanner;
 import org.apache.tephra.Transaction;
 
 import java.io.IOException;
+import java.util.Optional;
+
 /**
  *
  */
@@ -55,4 +57,10 @@ public class DequeueScanObserver implements RegionCoprocessor,RegionObserver {
 //
 //	    return s;
 //	  }
+
+	@Override
+	public Optional<RegionObserver> getRegionObserver() {
+		return Optional.of(this);
 	}
+
+}
