@@ -368,8 +368,15 @@ public class ProgramLifecycleHttpHandler extends AbstractAppFabricHttpHandler {
     // we have already validated that the action is valid
     switch (action.toLowerCase()) {
       case "start":
-    	lifecycleService.stop(program);
-    	applicationLifecycleService.removeApplication(program.getParent());
+        if (!lifecycleService.isStopped(program)) {
+          LOG.info("stopping the program"); 
+    	  lifecycleService.stop(program);
+        }
+        ApplicationSpecification spec = store.getApplication(program.getParent());
+        if (spec != null) {
+          LOG.info("delete the program");
+    	  applicationLifecycleService.removeApplication(program.getParent());
+        }
         lifecycleService.run(program, args, false);
         break;
       case "debug":
