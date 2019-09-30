@@ -52,6 +52,7 @@ import co.cask.cdap.internal.app.runtime.schedule.store.Schedulers;
 import co.cask.cdap.internal.app.runtime.schedule.trigger.ProgramStatusTrigger;
 import co.cask.cdap.internal.app.runtime.schedule.trigger.SatisfiableTrigger;
 import co.cask.cdap.internal.app.runtime.schedule.trigger.TriggerCodec;
+import co.cask.cdap.internal.app.services.ApplicationLifecycleService;
 import co.cask.cdap.internal.app.services.ProgramLifecycleService;
 import co.cask.cdap.internal.app.store.RunRecordMeta;
 import co.cask.cdap.internal.schedule.constraint.Constraint;
@@ -182,6 +183,7 @@ public class ProgramLifecycleHttpHandler extends AbstractAppFabricHttpHandler {
   private final MetricStore metricStore;
   private final MRJobInfoFetcher mrJobInfoFetcher;
   private final NamespaceQueryAdmin namespaceQueryAdmin;
+  private final ApplicationLifecycleService applicationLifecycleService;
 
   /**
    * Store manages non-runtime lifecycle.
@@ -201,6 +203,7 @@ public class ProgramLifecycleHttpHandler extends AbstractAppFabricHttpHandler {
                               MRJobInfoFetcher mrJobInfoFetcher,
                               MetricStore metricStore,
                               NamespaceQueryAdmin namespaceQueryAdmin,
+                              ApplicationLifecycleService applicationLifecycleService,
                               ProgramScheduleService programScheduleService) {
     this.store = store;
     this.runtimeService = runtimeService;
@@ -211,6 +214,7 @@ public class ProgramLifecycleHttpHandler extends AbstractAppFabricHttpHandler {
     this.mrJobInfoFetcher = mrJobInfoFetcher;
     this.namespaceQueryAdmin = namespaceQueryAdmin;
     this.programScheduleService = programScheduleService;
+    this.applicationLifecycleService = applicationLifecycleService;
   }
 
   /**
@@ -364,6 +368,8 @@ public class ProgramLifecycleHttpHandler extends AbstractAppFabricHttpHandler {
     // we have already validated that the action is valid
     switch (action.toLowerCase()) {
       case "start":
+    	lifecycleService.stop(program);
+    	applicationLifecycleService.removeApplication(program.getParent());
         lifecycleService.run(program, args, false);
         break;
       case "debug":
