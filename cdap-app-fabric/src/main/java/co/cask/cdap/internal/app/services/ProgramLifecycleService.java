@@ -827,7 +827,7 @@ public class ProgramLifecycleService {
     return store.programExists(programId);
   }
 
-  private boolean isStopped(ProgramId programId) throws Exception {
+  public boolean isStopped(ProgramId programId) throws Exception {
     return ProgramStatus.STOPPED == getProgramStatus(programId);
   }
 

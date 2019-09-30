@@ -44,6 +44,7 @@ import co.cask.cdap.internal.app.runtime.schedule.TimeSchedulerService;
 import co.cask.cdap.internal.app.runtime.schedule.constraint.ConstraintCodec;
 import co.cask.cdap.internal.app.runtime.schedule.trigger.SatisfiableTrigger;
 import co.cask.cdap.internal.app.runtime.schedule.trigger.TriggerCodec;
+import co.cask.cdap.internal.app.services.ApplicationLifecycleService;
 import co.cask.cdap.internal.app.services.ProgramLifecycleService;
 import co.cask.cdap.internal.dataset.DatasetCreationSpec;
 import co.cask.cdap.internal.schedule.constraint.Constraint;
@@ -117,9 +118,10 @@ public class WorkflowHttpHandler extends ProgramLifecycleHttpHandler {
                       MRJobInfoFetcher mrJobInfoFetcher, ProgramLifecycleService lifecycleService,
                       MetricStore metricStore, NamespaceQueryAdmin namespaceQueryAdmin,
                       DatasetFramework datasetFramework, DiscoveryServiceClient discoveryServiceClient,
+                      ApplicationLifecycleService applicationLifecycleService,
                       ProgramScheduleService programScheduleService) {
     super(store, runtimeService, discoveryServiceClient, lifecycleService, queueAdmin,
-          mrJobInfoFetcher, metricStore, namespaceQueryAdmin, programScheduleService);
+          mrJobInfoFetcher, metricStore, namespaceQueryAdmin, applicationLifecycleService, programScheduleService);
     this.datasetFramework = datasetFramework;
     this.timeScheduler = timeScheduler;
   }
