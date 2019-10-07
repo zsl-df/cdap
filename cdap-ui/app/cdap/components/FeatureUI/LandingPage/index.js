@@ -110,6 +110,13 @@ class LandingPage extends React.Component {
     }
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.showFeatureWizard !== prevState.showFeatureWizard) {
+      var wizard = new CustomEvent('afe-add-new', {detail: {'isOpen': this.state.showFeatureWizard}});
+      window.top.dispatchEvent(wizard);
+    }
+  }
+
 
   fetchWizardData() {
     this.fetchProperties();
@@ -127,6 +134,7 @@ class LandingPage extends React.Component {
     this.setState({
       showFeatureWizard: open
     });
+
   }
 
   toggleDropDown() {
