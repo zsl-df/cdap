@@ -55,7 +55,7 @@ import FEDataServiceApi from '../feDataService';
 import { Theme } from 'services/ThemeHelper';
 import StatusBar from "./StatusBar";
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { SUCCEEDED, DEPLOYED, FAILED, RUNNING, FEATURE_GENERATED, FEATURE_SELECTED } from '../config';
+import { SUCCEEDED, DEPLOYED, FAILED, RUNNING, FEATURE_GENERATED, FEATURE_SELECTED, NEW_FEATURE_EVENT } from '../config';
 
 
 require('./LandingPage.scss');
@@ -112,7 +112,7 @@ class LandingPage extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.showFeatureWizard !== prevState.showFeatureWizard) {
-      var wizard = new CustomEvent('afe-add-new', {detail: {'isOpen': this.state.showFeatureWizard}});
+      var wizard = new CustomEvent(NEW_FEATURE_EVENT, {detail: {'isOpen': this.state.showFeatureWizard}});
       window.top.dispatchEvent(wizard);
     }
   }
