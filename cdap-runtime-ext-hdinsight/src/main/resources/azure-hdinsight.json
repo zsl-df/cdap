@@ -1,0 +1,225 @@
+{
+  "icon": {
+    "type": "inline",
+    "arguments": {
+      "data": "data:image/png;base64,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"
+    }
+  },
+  "configuration-groups": [
+    {
+      "label": "Azure Account Information",
+      "properties": [
+        {
+          "widget-type": "textbox",
+          "label": "Subscription ID",
+          "name": "subscriptionId",
+          "required": true,
+          "description": "Azure Subscription ID",
+          "widget-attributes": {
+            "placeholder": "Subscription ID"
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Tenant ID",
+          "name": "tenantId",
+          "required": true,
+          "description": "Tenant ID for your Azure Subscription",
+          "widget-attributes": {
+            "placeholder": "Tenant ID"
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Client ID",
+          "name": "clientId",
+          "required": true,
+          "description": "Service Principal Client ID used to make call to azure management API",
+          "widget-attributes": {
+            "placeholder": "Client ID"
+          }
+        },
+        {
+          "widget-type": "securekey-textarea",
+          "label": "Client Secret",
+          "name": "clientSecret",
+          "required": true,
+          "description": "Service Principal Client Secret used to make call to azure management API",
+          "widget-attributes": {
+            "placeholder": "Client Secret"
+          }
+        }
+      ]
+    },
+    {
+      "label": "Cluster Settings",
+      "properties": [
+        {
+          "widget-type": "textbox",
+          "label": "Resource Group Name",
+          "name": "resourceGroupName",
+          "required": true,
+          "description": "A resource group is a container that holds related resources for an Azure solution. The resource group includes those resources that you want to manage as a group.",
+          "widget-attributes": {
+            "placeholder": "Specify your Resource Group Name"
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Storage Account Name",
+          "name": "storageAccountName",
+          "required": true,
+          "description": "An Azure storage account contains all of your Azure Storage data objects: blobs, files, queues, tables, and disks.",
+          "widget-attributes": {
+            "placeholder": "Specify your Storage Account Name"
+          }
+        },
+        {
+          "widget-type": "securekey-textarea",
+          "label": "Storage Account Key",
+          "name": "storageAccountKey",
+          "required": true,
+          "description": "Key used to authorize access to your storage account via Shared Key.",
+          "widget-attributes": {
+            "placeholder": "Specify your Storage Account Key"
+          }
+        },
+        {
+          "widget-type": "securekey-textarea",
+          "label": "Cluster Password",
+          "name": "clusterPassword",
+          "required": true,
+          "description": "Password used to access HDInsight ambari UI and to log on the vm with the cdap user. The password must be at least 10 characters in length and must contain at least one digit, one uppercase and one lower case letter, one non-alphanumeric character (except characters ' \" ` \\).,",
+          "widget-attributes": {
+            "placeholder": "Specify your Cluster Password"
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Cluster Name prefix",
+          "name": "clusterNamePrefix",
+          "required": false,
+          "description": "A prefix to use for all cluster name created with this profile. Choose something unique. Must start with a letter and can only contains letter, number and hyphen. Length of the prefix must be between 4 and 30 characters.",
+          "widget-attributes": {
+            "placeholder": "Specify your Cluster Name Prefix",
+            "default": "cdap-"
+          }
+        },
+        {
+          "widget-type": "select",
+          "label": "Location",
+          "name": "location",
+          "description": "Location where to launch the HDInsight cluster. For more information, refer to https://azure.microsoft.com/en-ca/global-infrastructure/locations/.",
+          "widget-attributes": {
+            "values_sourced_from": "az account list-locations -o json | jq '.[].displayName'",
+            "values": [
+              "East Asia",
+              "Southeast Asia",
+              "Central US",
+              "East US",
+              "East US 2",
+              "West US",
+              "North Central US",
+              "South Central US",
+              "North Europe",
+              "West Europe",
+              "Japan West",
+              "Japan East",
+              "Brazil South",
+              "Australia East",
+              "Australia Southeast",
+              "South India",
+              "Central India",
+              "West India",
+              "Canada Central",
+              "Canada East",
+              "UK South",
+              "UK West",
+              "West Central US",
+              "West US 2",
+              "Korea Central",
+              "Korea South",
+              "France Central",
+              "France South",
+              "Australia Central",
+              "Australia Central 2",
+              "UAE Central",
+              "UAE North",
+              "South Africa North",
+              "South Africa West",
+              "Switzerland North",
+              "Switzerland West",
+              "Germany North",
+              "Germany West Central"
+            ],
+            "size": "medium",
+            "default": "East US 2"
+          }
+        }
+      ]
+    },
+    {
+      "label": "Nodes Setting",
+      "properties": [
+        {
+          "widget-type": "number",
+          "label": "Worker Node Count",
+          "name": "workerNodeCount",
+          "description": "Number of worker nodes to deploy in the cluster",
+          "widget-attributes": {
+            "placeholder": "Specify your Cluster Password",
+            "default": 2,
+            "min": 2,
+            "size": "small"
+          }
+        },
+        {
+          "widget-type": "select",
+          "label": "Head nodes vm size",
+          "name": "headNodeVmSize",
+          "description": "",
+          "widget-attributes": {
+            "values": [
+              "Standard_D12_v2",
+              "Standard_D13_v2",
+              "Standard_D14_v2",
+              "Standard_E2_v3",
+              "Standard_E4_v3",
+              "Standard_E8_v3",
+              "Standard_E16_v3",
+              "Standard_E20_v3",
+              "Standard_E32_v3",
+              "Standard_E48_v3",
+              "Standard_E64_v3"
+
+            ],
+            "size": "medium",
+            "default": "Standard_D12_v2"
+          }
+        },
+        {
+          "widget-type": "select",
+          "label": "Worker nodes vm size",
+          "name": "workerNodeVmSize",
+          "description": "",
+          "widget-attributes": {
+            "values": [
+              "Standard_D12_v2",
+              "Standard_D13_v2",
+              "Standard_D14_v2",
+              "Standard_E4_v3",
+              "Standard_E8_v3",
+              "Standard_E16_v3",
+              "Standard_E20_v3",
+              "Standard_E32_v3",
+              "Standard_E48_v3",
+              "Standard_E64_v3"
+            ],
+            "size": "medium",
+            "default": "Standard_D13_v2"
+          }
+        }
+      ]
+    }
+  ]
+}
