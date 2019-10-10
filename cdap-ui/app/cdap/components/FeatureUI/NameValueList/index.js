@@ -133,7 +133,7 @@ class NameValueList extends React.Component {
                           name="value"
                           label={item.name + "_validate"}
                           validationError={this.state.inputs[item.name]}
-                          inputInfo={item.ToolTip ? item.toolTip : ""}
+                          inputInfo={item.description ?  item.description : ""}
                           placeholder='value'
                           defaultValue={item.value}
                           onChange={this.onValueUpdated.bind(this, item)}
