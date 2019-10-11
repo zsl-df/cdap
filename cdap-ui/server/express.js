@@ -220,7 +220,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
     res.header({
       'Connection': 'close'
     });
-    if (!urlValidator.isValidURL(req.url)) {
+    if (!urlValidator.isValidURL(url) || !this.urlValidator.isValidRequest(url, undefined)) {
       log.error('Bad Request');
       var err = {
         error: 400,
@@ -292,7 +292,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
     res.header({
       'Connection': 'close'
     });
-    if (!urlValidator.isValidURL(url)) {
+    if (!urlValidator.isValidURL(url) || !this.urlValidator.isValidRequest(url, undefined)) {
       log.error('Bad Request');
       var err = {
         error: 400,
