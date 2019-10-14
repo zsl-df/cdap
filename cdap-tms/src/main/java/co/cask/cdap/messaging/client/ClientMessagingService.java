@@ -47,6 +47,7 @@ import com.google.common.net.HttpHeaders;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Inject;
+
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
@@ -249,7 +250,7 @@ public final class ClientMessagingService implements MessagingService {
       .addHeader(HttpHeaders.CONTENT_TYPE, "avro/binary")
       .withBody(os.toByteBuffer())
       .build();
-
+    
     HttpResponse response = remoteClient.execute(httpRequest);
 
     if (response.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
@@ -286,7 +287,7 @@ public final class ClientMessagingService implements MessagingService {
       case HttpURLConnection.HTTP_UNAVAILABLE:
         throw new ServiceUnavailableException(Constants.Service.MESSAGING_SERVICE);
       default:
-        throw new IOException(errorPrefix + ". Reason: " + responseBodySupplier.get());
+        throw new IOException(errorPrefix + ".HTTP Response code: " + responseCode + " .Reason: " + responseBodySupplier.get());
     }
   }
 
