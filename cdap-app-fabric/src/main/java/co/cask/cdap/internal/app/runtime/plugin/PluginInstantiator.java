@@ -130,7 +130,9 @@ public class PluginInstantiator implements Closeable {
    */
   public void addArtifact(Location artifactLocation, ArtifactId destArtifact) throws IOException {
     File destFile = new File(pluginDir, Artifacts.getFileName(destArtifact));
-    Files.copy(Locations.newInputSupplier(artifactLocation), destFile);
+    if (!destFile.exists()) {
+      Files.copy(Locations.newInputSupplier(artifactLocation), destFile);
+    }
   }
 
   /**

@@ -123,7 +123,9 @@ public final class InMemoryConfigurator implements Configurator {
   }
 
   private ConfigResponse createResponse(Application app) throws Exception {
+    LOG.info("start specJson :");
     String specJson = getSpecJson(app);
+    LOG.info("stop specjson :");
     return new DefaultConfigResponse(0, CharStreams.newReaderSupplier(specJson));
   }
 
@@ -134,7 +136,9 @@ public final class InMemoryConfigurator implements Configurator {
     // Now, we call configure, which returns application specification.
     DefaultAppConfigurer configurer;
 
+    LOG.info("start tempDir : ");
     File tempDir = DirUtils.createTempDir(baseUnpackDir);
+    LOG.info("stop tempDir : ");
     try (
       PluginInstantiator pluginInstantiator = new PluginInstantiator(cConf, app.getClass().getClassLoader(), tempDir)
     ) {
@@ -142,6 +146,7 @@ public final class InMemoryConfigurator implements Configurator {
                                             configString, artifactRepository, pluginInstantiator);
       T appConfig;
       Type configType = Artifacts.getConfigType(app.getClass());
+      LOG.info("start json : ");
       if (configString.isEmpty()) {
         //noinspection unchecked
         appConfig = ((Class<T>) configType).newInstance();
@@ -152,7 +157,10 @@ public final class InMemoryConfigurator implements Configurator {
           throw new IllegalArgumentException("Invalid JSON configuration was provided. Please check the syntax.", e);
         }
       }
+      LOG.info("stop json : ");
 
+
+      LOG.info("start classloading : ");
       try {
         ClassLoader oldClassLoader = ClassLoaders.setContextClassLoader(
           new CombineClassLoader(null, app.getClass().getClassLoader(), getClass().getClassLoader()));
@@ -196,6 +204,7 @@ public final class InMemoryConfigurator implements Configurator {
         }
         throw t;
       }
+      LOG.info("stop classloading : ");
     } finally {
       try {
         DirUtils.deleteDirectoryContents(tempDir);
@@ -203,7 +212,9 @@ public final class InMemoryConfigurator implements Configurator {
         LOG.warn("Exception raised when deleting directory {}", tempDir, e);
       }
     }
+    LOG.info("start specification :");
     ApplicationSpecification specification = configurer.createSpecification(applicationName, applicationVersion);
+    LOG.info("stop specification :");
 
     // Convert the specification to JSON.
     // We write the Application specification to output file in JSON format.

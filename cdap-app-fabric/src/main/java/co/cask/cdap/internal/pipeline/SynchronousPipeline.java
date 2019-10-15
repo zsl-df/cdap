@@ -54,7 +54,9 @@ public final class SynchronousPipeline<T> extends AbstractPipeline<T> {
     StageContext ctx = new StageContext(o);
     try {
       for (Stage stage : getStages()) {
+        LOG.info("stage start : " + stage.toString());
         stage.process(ctx);
+        LOG.info("stage stop : " + stage.toString());
         // Output of previous stage is input to next stage
         ctx = StageContext.next(ctx);
       }

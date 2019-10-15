@@ -40,6 +40,9 @@ import co.cask.cdap.security.spi.authorization.AuthorizationEnforcer;
 import com.google.common.reflect.TypeToken;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.apache.twill.filesystem.Location;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import java.util.concurrent.TimeUnit;
 
@@ -54,6 +57,8 @@ import java.util.concurrent.TimeUnit;
  * It is expected a {@link Pipeline#setFinally(Stage)} stage to clean it up after the pipeline execution finished.
  */
 public class LocalArtifactLoaderStage extends AbstractStage<AppDeploymentInfo> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(LocalArtifactLoaderStage.class);
   private final CConfiguration cConf;
   private final Store store;
   private final ApplicationSpecificationAdapter adapter;
@@ -95,8 +100,11 @@ public class LocalArtifactLoaderStage extends AbstractStage<AppDeploymentInfo> {
 
     EntityImpersonator classLoaderImpersonator =
       new EntityImpersonator(artifactId, impersonator);
+
+    LOG.info("start createArtifactClassLoader : ");
     ClassLoader artifactClassLoader = artifactRepository.createArtifactClassLoader(artifactLocation,
                                                                                    classLoaderImpersonator);
+    LOG.info("stop createArtifactClassLoader : ");
     getContext().setProperty(LocalApplicationManager.ARTIFACT_CLASSLOADER_KEY, artifactClassLoader);
 
     InMemoryConfigurator inMemoryConfigurator = new InMemoryConfigurator(
@@ -107,11 +115,14 @@ public class LocalArtifactLoaderStage extends AbstractStage<AppDeploymentInfo> {
       deploymentInfo.getApplicationVersion(),
       configString);
 
+    LOG.info("start result : ");
     ListenableFuture<ConfigResponse> result = inMemoryConfigurator.config();
     ConfigResponse response = result.get(120, TimeUnit.SECONDS);
+    LOG.info("stop result : ");
     if (response.getExitCode() != 0) {
       throw new IllegalArgumentException("Failed to configure application: " + deploymentInfo);
     }
+    LOG.info("start applicationid : ");
     ApplicationSpecification specification = adapter.fromJson(response.get());
     ApplicationId applicationId;
     if (appVersion == null) {
@@ -119,10 +130,15 @@ public class LocalArtifactLoaderStage extends AbstractStage<AppDeploymentInfo> {
     } else {
       applicationId = deploymentInfo.getNamespaceId().app(specification.getName(), appVersion);
     }
+    LOG.info("stop applicationif : ");
+    LOG.info("start enforce : ");
     authorizationEnforcer.enforce(applicationId, authenticationContext.getPrincipal(), Action.ADMIN);
+    LOG.info("stop enforce : ");
+    LOG.info("start emit : ");
     emit(new ApplicationDeployable(deploymentInfo.getArtifactId(), deploymentInfo.getArtifactLocation(),
                                    applicationId, specification, store.getApplication(applicationId),
                                    ApplicationDeployScope.USER, deploymentInfo.getOwnerPrincipal(),
                                    deploymentInfo.canUpdateSchedules()));
+    LOG.info("stop emit : ");
   }
 }
