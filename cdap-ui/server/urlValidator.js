@@ -20,9 +20,9 @@ var log4js = require('log4js');
 var log = log4js.getLogger('default');
 
 const createDOMPurify = require('dompurify');
-const jsdom = require('jsdom').jsdom;
+const { JSDOM } = require('jsdom');
 
-const windowDom = jsdom('').defaultView;
+const windowDom = (new JSDOM('')).window;
 const DOMPurify = createDOMPurify(windowDom);
 const unescape = require('lodash/unescape');
 
