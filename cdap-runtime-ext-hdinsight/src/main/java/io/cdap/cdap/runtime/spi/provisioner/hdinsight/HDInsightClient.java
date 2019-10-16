@@ -57,7 +57,7 @@ public class HDInsightClient {
 
   void createCluster(String name) {
     try {
-      client.clusters().createAsync(conf.getResourceGroupName(), name, conf.getClusterCreateParameters())
+      client.clusters().createAsync(conf.getResourceGroupName(), name, conf.getClusterCreateParameters(name))
         .subscribeOn(Schedulers.newThread())
         .subscribe();
     } catch (OnErrorNotImplementedException e) {

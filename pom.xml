@@ -1730,6 +1730,14 @@
                   <exclude>**/MANIFEST.MF</exclude>
                   <exclude>**/.rubocop*.yml</exclude>
                   <exclude>third-party-licenses/**</exclude>
+                  <exclude>**/dependency-reduced-pom.xml</exclude>
+                  <exclude>**/createdFiles.lst</exclude>
+                  <exclude>**/inputFiles.lst</exclude>
+                  <exclude>**/rat.txt</exclude>
+                  <exclude>**/checkstyle-result.xml</exclude>
+                  <exclude>**/package-list</exclude>
+                  <exclude>**/javadoc-options-javadoc-resources.xml</exclude>
+                  <exclude>**/script.js</exclude>
                 </excludes>
               </configuration>
             </execution>

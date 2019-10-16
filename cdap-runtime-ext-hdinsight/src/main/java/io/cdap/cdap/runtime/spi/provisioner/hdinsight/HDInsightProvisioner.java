@@ -86,10 +86,6 @@ public class HDInsightProvisioner implements Provisioner {
     return new Cluster(clusterName, ClusterStatus.CREATING, Collections.emptyList(), Collections.emptyMap());
   }
 
-  // The name must be 59 characters or less and can contain letters, numbers, and hyphens
-  // (but the first and last character must be a letter or number).
-  // The name can not contain a reserved key word.
-  @VisibleForTesting
   static String getClusterName(ProgramRun programRun, String prefix) {
     String cleanedAppName = programRun.getApplication().replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase();
     // 59 is max length, need to subtract the prefix and 1 extra for the '-' separating app name and run id
@@ -115,6 +111,7 @@ public class HDInsightProvisioner implements Provisioner {
 
   @Override
   public void deleteCluster(ProvisionerContext context, Cluster cluster) throws Exception {
+    LOG.info("Deleting Azure HDInsight cluster with name " + cluster.getName());
     HDInsightConf conf = HDInsightConf.fromProvisionerContext(context);
     HDInsightClient.fromConf(conf).deleteCluster(cluster.getName());
   }

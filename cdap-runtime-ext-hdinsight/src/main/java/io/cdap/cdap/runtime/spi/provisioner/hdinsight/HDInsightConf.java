@@ -153,7 +153,7 @@ class HDInsightConf {
       AzureEnvironment.AZURE);
   }
 
-  ClusterCreateParametersExtended getClusterCreateParameters() {
+  ClusterCreateParametersExtended getClusterCreateParameters(String storageContainerName) {
     HashMap<String, HashMap<String, String>> configurations = new HashMap<>();
     HashMap<String, String> gateway = new HashMap<>();
     gateway.put("restAuthCredential.enabled_credential", "True");
@@ -219,7 +219,7 @@ class HDInsightConf {
               new StorageAccount()
                 .withName(this.storageAccountName)
                 .withKey(this.storageAccountKey)
-                .withContainer("cdap")
+                .withContainer(storageContainerName)
                 .withIsDefault(true)
             ))
           )
