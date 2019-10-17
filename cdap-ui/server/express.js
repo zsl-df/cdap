@@ -562,6 +562,9 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
       res.header({
         'Connection': 'close'
       });
+      if (redirectToLogin(req, res)) {
+        return;
+      }
       res.sendFile(DIST_PATH + '/test.html');
     }
   ]);
@@ -759,6 +762,9 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
       } else {
         res.cookie('bcookie', req.cookies.bcookie, { expires: date });
       }
+      if (redirectToLogin(req, res)) {
+        return;
+      }
      res.sendFile(DIST_PATH + '/hydrator.html');
     }
   ]);
@@ -776,6 +782,9 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
         res.cookie('bcookie', uuidV4(), { expires: date });
       } else {
         res.cookie('bcookie', req.cookies.bcookie, { expires: date });
+      }
+      if (redirectToLogin(req, res)) {
+        return;
       }
      res.sendFile(DIST_PATH + '/tracker.html');
     }
@@ -796,15 +805,29 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
       } else {
         res.cookie('bcookie', req.cookies.bcookie, { expires: date });
       }
+      if (redirectToLogin(req, res)) {
+        return;
+      }
      res.sendFile(DIST_PATH + '/logviewer.html');
     }
   ]);
+
+  function redirectToLogin (req, res) {
+    var redirectToLoginFlag = authAddress.get() && !req.cookies.CDAP_Auth_Token;
+    if (redirectToLoginFlag) {
+      res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
+    }
+    return redirectToLoginFlag;
+  }
 
   app.all(['/', '/cdap', '/cdap*'], [
     function(req, res) {
       res.header({
         'Connection': 'close'
       });
+      if (redirectToLogin(req, res)) {
+        return;
+      }
       res.sendFile(CDAP_DIST_PATH + '/cdap_assets/cdap.html');
     }
   ]);
@@ -856,6 +879,9 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
       res.header({
         'Connection': 'close'
       });
+      if (redirectToLogin(req, res)) {
+        return;
+      }
       res.sendFile(OLD_DIST_PATH + '/index.html');
     }
   ]);
