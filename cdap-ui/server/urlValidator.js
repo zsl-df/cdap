@@ -131,7 +131,7 @@ UrlValidator.prototype.isValidRequest = function (url, req) {
   //cehck url
   if(url !== undefined && url !== null) {
     const dirtyURL = JSON.stringify(url);
-    log.info ('Request URL::  ' +dirtyURL);
+    // log.info ('Request URL::  ' +dirtyURL);
     const cleanURL = unescape(DOMPurify.sanitize(dirtyURL, { ALLOWED_TAGS: []}));
     validUrl = cleanURL === dirtyURL ? true : false;
   }
@@ -139,7 +139,7 @@ UrlValidator.prototype.isValidRequest = function (url, req) {
   // check request body
   if(req !== undefined && req !==  null){
     const dirty = JSON.stringify(req);
-    log.info ('\nRequest Body::  ' +dirty);
+    // log.info ('\nRequest Body::  ' +dirty);
     const clean = unescape(DOMPurify.sanitize(dirty, { ALLOWED_TAGS: []}));
     validrequest =  clean === dirty ? true : false;
   }
