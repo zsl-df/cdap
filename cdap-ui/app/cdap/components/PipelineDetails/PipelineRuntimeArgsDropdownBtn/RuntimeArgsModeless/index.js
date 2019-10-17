@@ -22,7 +22,6 @@ import BtnWithLoading from 'components/BtnWithLoading';
 import PipelineRunTimeArgsCounter from 'components/PipelineDetails/PipelineRuntimeArgsCounter';
 import {connect} from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
-import isNil from 'lodash/isNil';
 import {convertKeyValuePairsToMap} from 'services/helpers';
 import Popover from 'components/Popover';
 require('./RuntimeArgsModeless.scss');
@@ -31,25 +30,31 @@ class RuntimeArgsModeless extends PureComponent {
 
   static propTypes = {
     runtimeArgs: PropTypes.object,
-    onClose: PropTypes.func.isRequired
+    onClose: PropTypes.func.isRequired,
+    isInvalidKeyValues: PropTypes.bool,
+    isMissingKeyValues: PropTypes.bool,
+
   };
 
   state = {
     saving: false,
     savedSuccessMessage: null,
-    savingAndRunBtnDisabled: this.isRuntimeArgsFilled(this.props.runtimeArgs),
-    isValidValues: this.isValidValues(this.props.runtimeArgs),
+    savingAndRunBtnDisabled: this.changeSaveAndRunBtnStatus(this.props.isInvalidKeyValues, this.props.isMissingKeyValues), // this.isRuntimeArgsFilled(this.props.runtimeArgs),
     savingAndRun: false,
     error: null
   };
 
   componentWillReceiveProps(nextProps) {
-    let {runtimeArgs} = nextProps;
+    let {isInvalidKeyValues, isMissingKeyValues } = nextProps;
+
     this.setState({
-      savingAndRunBtnDisabled: this.isRuntimeArgsFilled(runtimeArgs),
-      isValidValues: this.isValidValues(this.props.runtimeArgs),
+      savingAndRunBtnDisabled: this.changeSaveAndRunBtnStatus(isInvalidKeyValues, isMissingKeyValues), // this.isRuntimeArgsFilled(runtimeArgs),
       savedSuccessMessage: null
     });
+  }
+
+  changeSaveAndRunBtnStatus(isValidValues, isMissingValues) {
+    return isValidValues || isMissingValues;
   }
 
   isRuntimeArgsFilled(runtimeArgs) {
@@ -61,19 +66,6 @@ class RuntimeArgsModeless extends PureComponent {
         (isEmpty(runtimearg.key) && !isEmpty(runtimearg.value))
       ))
       .length > 0;
-  }
-
-  isValidValues(runtimeArgs) {
-    let isValidArgs = true;
-    let pairs = runtimeArgs.pairs;
-    for(let i=0; i<pairs.length; i++) {
-      let item = pairs[0];
-      if((!isNil(item.validKey) && !item.validKey) || (!isNil(item.validValue) && !item.validValue)) {
-        isValidArgs = false;
-        break;
-      }
-    }
-    return isValidArgs;
   }
 
   toggleSaving = () => {
@@ -122,7 +114,7 @@ class RuntimeArgsModeless extends PureComponent {
           loading={this.state.saving}
           className="btn btn-primary"
           onClick={this.saveRuntimeArgs}
-          disabled={!this.state.isValidValues || this.state.saving || !isEmpty(this.state.savedSuccessMessage)}
+          disabled={this.state.savingAndRunBtnDisabled  || this.state.saving || !isEmpty(this.state.savedSuccessMessage)}
           label="Save"
         />
       );
@@ -133,7 +125,7 @@ class RuntimeArgsModeless extends PureComponent {
           loading={this.state.savingAndRun}
           className="btn btn-secondary"
           onClick={this.saveRuntimeArgsAndRun}
-          disabled={ !this.state.isValidValues || this.state.savingAndRunBtnDisabled || this.state.saving}
+          disabled={this.state.savingAndRunBtnDisabled || this.state.saving}
           label="Run"
         />
       );
@@ -176,7 +168,9 @@ class RuntimeArgsModeless extends PureComponent {
 
 const mapStateToProps = (state) => {
   return {
-    runtimeArgs: state.runtimeArgs
+    runtimeArgs: state.runtimeArgs,
+    isInvalidKeyValues: state.isInvalidKeyValues,
+    isMissingKeyValues: state.isMissingKeyValues,
   };
 };
 

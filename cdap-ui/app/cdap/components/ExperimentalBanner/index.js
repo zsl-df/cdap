@@ -16,16 +16,21 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
+import isNil from 'lodash/isNil';
 require('./ExperimentalBanner.scss');
 
 export default function ExperimentalBanner({...props}) {
   let { entity } = props;
-  if (entity.beta) {
+  if (isNil(entity)) {
     return <div className="experimental-banner">BETA</div>;
-  } else if (entity.alpha) {
-    return <div className=" experimental-banner alpha-background">ALPHA</div>;
   } else {
-    return null;
+    if (entity.beta) {
+      return <div className="experimental-banner">BETA</div>;
+    } else if (entity.alpha) {
+      return <div className=" experimental-banner alpha-background">ALPHA</div>;
+    } else {
+      return null;
+    }
   }
 }
 
