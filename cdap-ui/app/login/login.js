@@ -196,7 +196,6 @@ class Login extends Component {
         cookie.save('CDAP_Auth_User', res.userName);
         var queryObj = util.getQueryParams(location.search);
         console.logquery("redirect URL:: "+queryObj.redirectUrl +" LOcation Path :: "+location.pathname);
-        queryObj.redirectUrl
         queryObj.redirectUrl = queryObj.redirectUrl || (location.pathname.endsWith('/login') ? '/' : location.pathname);
         window.location.href = queryObj.redirectUrl;
       });
