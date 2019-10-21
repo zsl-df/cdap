@@ -141,6 +141,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   // serve the config file
   app.get('/config.js', function (req, res) {
+    console.log("1: get Config  ");
     var data = JSON.stringify({
       // the following will be available in angular via the "MY_CONFIG" injectable
 
@@ -176,6 +177,8 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
    // serve the login config file
    app.get('/loginConfig', function (req, res) {
+
+    console.log("2: get loginConfig  ");
     var data = {
       marketUrl: cdapConfig['market.base.url'],
       localMarketUrl: cdapConfig['local.market.base.url'],
@@ -193,6 +196,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   });
 
   app.get('/ui-config.js', function (req, res) {
+    console.log("3: get ui-config.js  ");
     var path = __dirname + '/config/cdap-ui-config.json';
 
     var fileConfig = {};
@@ -207,6 +211,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   });
 
   app.get('/ui-theme.js', function (req, res) {
+    console.log("4: get ui-theme.js  ");
     res.header({
       'Content-Type': 'text/javascript',
       'Cache-Control': 'no-store, must-revalidate',
@@ -216,6 +221,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   });
 
   app.post('/downloadQuery', function(req, res) {
+    console.log("5: get ui-downloadQuery  ");
     var url = req.body.backendUrl;
     res.header({
       'Connection': 'close'
@@ -259,6 +265,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
    *    targetMethod: HTTP method for the CDAP API (default to POST)
    **/
   app.get('/forwardMarketToCdap', function(req, res) {
+    console.log("6: get forwardMarketToCdap  ");
     var sourceLink = req.query.source,
         targetLink = req.query.target,
         sourceMethod = req.query.sourceMethod || 'GET',
@@ -287,6 +294,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   });
 
   app.get('/downloadLogs', function(req, res) {
+    console.log("7: get downloadLogs  ");
     var url = decodeURIComponent(req.query.backendUrl);
     var method = (req.query.method || 'GET');
     res.header({
@@ -368,6 +376,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   app.post('/accessToken', authentication);
 
   app.get('/cdapToken', function (req, res) {
+    console.log("8: get cdapToken  ");
     // Invalid Knox Token Handler
     res.header({
       'Connection': 'close'
@@ -431,6 +440,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
     For now it handles file upload POST /namespaces/:namespace/apps API
   */
   app.post('/namespaces/:namespace/:path(*)', function (req, res) {
+    console.log("9: get /namespaces/:namespace/:path(*)  ");
     var protocol,
         port;
     if (cdapConfig['ssl.external.enabled'] === 'true') {
@@ -486,6 +496,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   app.use('/old_assets', [
     express.static(OLD_DIST_PATH + '/assets', getExpressStaticConfig()),
     function(req, res) {
+      console.log("10: get /old_assets  ");
       finalhandler(req, res)(false); // 404
     }
   ]);
@@ -493,24 +504,28 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   app.use('/assets', [
     express.static(DIST_PATH + '/assets',{setHeaders: _headers}),
     function(req, res) {
+      console.log("11: get /assets  ");
       finalhandler(req, res)(false); // 404
     }
   ]);
   app.use('/cdap_assets', [
     express.static(CDAP_DIST_PATH + '/cdap_assets', getExpressStaticConfig()),
     function(req, res) {
+      console.log("12: get /cdap_assets  ");
       finalhandler(req, res)(false); // 404
     }
   ]);
   app.use('/dll_assets', [
     express.static(DLL_PATH, getExpressStaticConfig()),
     function(req, res) {
+      console.log("13: get /dll_assets  ");
       finalhandler(req, res)(false);
     }
   ]);
   app.use('/login_assets', [
     express.static(LOGIN_DIST_PATH + '/login_assets', getExpressStaticConfig()),
     function(req, res) {
+      console.log("14: get /login_assets  ");
       finalhandler(req, res)(false); // 404
     }
   ]);
@@ -520,11 +535,13 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
       setHeaders: _headers
     }),
     function(req, res) {
+      console.log("15: get /common_assets  ");
       finalhandler(req, res)(false); // 404
     }
   ]);
   app.get('/robots.txt', [
     function (req, res) {
+      console.log("16: get /robots.txt  ");
       res.header({
         'Connection': 'close'
       });
@@ -534,6 +551,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   ]);
 
   function authentication(req, res) {
+    console.log("17: get authentication  ");
     var opts = {
       auth: {
         user: req.body.username,
@@ -559,18 +577,20 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.get('/test/playground', [
     function (req, res) {
+      console.log("18: get /test/playground  ");
       res.header({
         'Connection': 'close'
       });
-      if (redirectToLogin(req, res)) {
-        return;
-      }
+      // if (redirectToLogin(req, res)) {
+      //   return;
+      // }
       res.sendFile(DIST_PATH + '/test.html');
     }
   ]);
 
   // CDAP-678, CDAP-8260 This is added for health check on node proxy.
   app.get('/status', function(req, res) {
+    console.log("19: get /status  ");
     res.header({
       'Connection': 'close'
     });
@@ -579,6 +599,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.get('/login', [
     function(req, res) {
+      console.log("20: get /login  ");
       res.header({
         'Connection': 'close'
       });
@@ -601,6 +622,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.get('/backendstatus', [
     function (req, res) {
+      console.log("21: get /backendstatus  ");
       var protocol,
           port;
       if (cdapConfig['ssl.external.enabled'] === 'true') {
@@ -658,6 +680,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.get('/predefinedapps/:apptype', [
       function (req, res) {
+        console.log("22: get /predefinedapps/:apptype  ");
         var apptype = req.params.apptype;
         var config = {};
         var fileConfig = {};
@@ -690,6 +713,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.get('/predefinedapps/:apptype/:appname', [
     function (req, res) {
+      console.log("23: get /predefinedapps/:apptype/:appname  ");
       var apptype = req.params.apptype;
       var appname = req.params.appname;
       var filesToMetadataMap = [];
@@ -728,6 +752,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.get('/validators', [
     function (req, res) {
+      console.log("24: get /validators  ");
       var filePath = __dirname + '/../templates/validators/validators.json';
       var config = {};
       var validators = {};
@@ -749,9 +774,14 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   // any other path, serve index.html
   app.all(['/pipelines', '/pipelines*'], [
     function (req, res) {
+      console.log("25: get /pipelines  ");
       res.header({
         'Connection': 'close'
       });
+      if (redirectToLogin(req, res)) {
+        return;
+      }
+
       // BCookie is the browser cookie, that is generated and will live for a year.
       // This cookie is always generated to provide unique id for the browser that
       // is being used to interact with the CDAP backend.
@@ -761,15 +791,13 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
         res.cookie('bcookie', uuidV4(), { expires: date });
       } else {
         res.cookie('bcookie', req.cookies.bcookie, { expires: date });
-      }
-      if (redirectToLogin(req, res)) {
-        return;
       }
      res.sendFile(DIST_PATH + '/hydrator.html');
     }
   ]);
   app.all(['/metadata', '/metadata*'], [
     function (req, res) {
+      console.log("26: get /metadata  ");
       res.header({
         'Connection': 'close'
       });
@@ -783,6 +811,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
       } else {
         res.cookie('bcookie', req.cookies.bcookie, { expires: date });
       }
+
       if (redirectToLogin(req, res)) {
         return;
       }
@@ -792,9 +821,15 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.all(['/logviewer', '/logviewer*'], [
     function (req, res) {
+      console.log("27: get /logviewer  ");
       res.header({
         'Connection': 'close'
       });
+
+      if (redirectToLogin(req, res)) {
+        return;
+      }
+
       // BCookie is the browser cookie, that is generated and will live for a year.
       // This cookie is always generated to provide unique id for the browser that
       // is being used to interact with the CDAP backend.
@@ -805,16 +840,19 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
       } else {
         res.cookie('bcookie', req.cookies.bcookie, { expires: date });
       }
-      if (redirectToLogin(req, res)) {
-        return;
-      }
+
      res.sendFile(DIST_PATH + '/logviewer.html');
     }
   ]);
 
   function redirectToLogin (req, res) {
+    console.log("Auth Address:: "+authAddress.get() + " :: "+req.cookies.CDAP_Auth_Token);
     var redirectToLoginFlag = authAddress.get() && !req.cookies.CDAP_Auth_Token;
+    console.log("Is redirect to login :: "+redirectToLoginFlag);
+    console.log("Time :: "+new Date());
+
     if (redirectToLoginFlag) {
+      console.log("App redirect to login :: ");
       res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
     }
     return redirectToLoginFlag;
@@ -822,17 +860,19 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.all(['/', '/cdap', '/cdap*'], [
     function(req, res) {
+      console.log("28: get /,/cdap,/cdap*'  ");
       res.header({
         'Connection': 'close'
       });
-      if (redirectToLogin(req, res)) {
-        return;
-      }
+      // if (redirectToLogin(req, res)) {
+      //   return;
+      // }
       res.sendFile(CDAP_DIST_PATH + '/cdap_assets/cdap.html');
     }
   ]);
 
   app.get('/ui-config-old.js', function (req, res) {
+    console.log("29: get /ui-config-old.js  ");
     var path = __dirname + '/config/cdap-ui-config.json';
 
     var fileConfig = {};
@@ -847,7 +887,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
               '.constant("UI_CONFIG",'+fileConfig+');');
   });
   app.get('/config-old.js', function (req, res) {
-
+    console.log("30: get /config-old.js  ");
     var data = JSON.stringify({
       // the following will be available in angular via the "MY_CONFIG" injectable
 
@@ -876,12 +916,13 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.all(['/oldcdap', '/oldcdap*'], [
     function (req, res) {
+      console.log("31: get /oldcdap, /oldcdap*  ");
       res.header({
         'Connection': 'close'
       });
-      if (redirectToLogin(req, res)) {
-        return;
-      }
+      // if (redirectToLogin(req, res)) {
+      //   return;
+      // }
       res.sendFile(OLD_DIST_PATH + '/index.html');
     }
   ]);

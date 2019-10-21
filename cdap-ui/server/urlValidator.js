@@ -16,9 +16,6 @@
 
 /*global require, module */
 
-var log4js = require('log4js');
-var log = log4js.getLogger('default');
-
 const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 
