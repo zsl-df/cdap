@@ -131,7 +131,6 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(cookieParser());
-
   app.use(function (err, req, res, next) {
     log.error(err);
     res.status(500).send(err);
@@ -574,7 +573,6 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
     );
   }
 
-
   app.get('/test/playground', [
     function (req, res) {
       console.log("18: get /test/playground  ");
@@ -599,12 +597,11 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.get('/login', [
     function(req, res) {
-      console.log("20: get /login  ");
       res.header({
         'Connection': 'close'
       });
       if (!authAddress.get() || req.cookies.CDAP_Auth_Token) {
-        res.redirect('/');
+          res.redirect('/');
         return;
       }
       res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
@@ -774,74 +771,69 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   // any other path, serve index.html
   app.all(['/pipelines', '/pipelines*'], [
     function (req, res) {
-      console.log("25: get /pipelines  ");
-      res.header({
-        'Connection': 'close'
-      });
-      if (redirectToLogin(req, res)) {
-        return;
-      }
-
-      // BCookie is the browser cookie, that is generated and will live for a year.
-      // This cookie is always generated to provide unique id for the browser that
-      // is being used to interact with the CDAP backend.
-      var date = new Date();
-      date.setDate(date.getDate() + 365); // Expires after a year.
-      if (!req.cookies.bcookie) {
-        res.cookie('bcookie', uuidV4(), { expires: date });
+      if (!authAddress.enabled || req.cookies.CDAP_Auth_Token) {
+        res.header({
+          'Connection': 'close'
+        });
+        // BCookie is the browser cookie, that is generated and will live for a year.
+        // This cookie is always generated to provide unique id for the browser that
+        // is being used to interact with the CDAP backend.
+        var date = new Date();
+        date.setDate(date.getDate() + 365); // Expires after a year.
+        if (!req.cookies.bcookie) {
+          res.cookie('bcookie', uuidV4(), { expires: date });
+        } else {
+          res.cookie('bcookie', req.cookies.bcookie, { expires: date });
+        }
+      res.sendFile(DIST_PATH + '/hydrator.html');
       } else {
-        res.cookie('bcookie', req.cookies.bcookie, { expires: date });
+        res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
       }
-     res.sendFile(DIST_PATH + '/hydrator.html');
     }
   ]);
   app.all(['/metadata', '/metadata*'], [
     function (req, res) {
-      console.log("26: get /metadata  ");
-      res.header({
-        'Connection': 'close'
-      });
-      // BCookie is the browser cookie, that is generated and will live for a year.
-      // This cookie is always generated to provide unique id for the browser that
-      // is being used to interact with the CDAP backend.
-      var date = new Date();
-      date.setDate(date.getDate() + 365); // Expires after a year.
-      if (!req.cookies.bcookie) {
-        res.cookie('bcookie', uuidV4(), { expires: date });
+      if (!authAddress.enabled || req.cookies.CDAP_Auth_Token) {
+        res.header({
+          'Connection': 'close'
+        });
+        // BCookie is the browser cookie, that is generated and will live for a year.
+        // This cookie is always generated to provide unique id for the browser that
+        // is being used to interact with the CDAP backend.
+        var date = new Date();
+        date.setDate(date.getDate() + 365); // Expires after a year.
+        if (!req.cookies.bcookie) {
+          res.cookie('bcookie', uuidV4(), { expires: date });
+        } else {
+          res.cookie('bcookie', req.cookies.bcookie, { expires: date });
+        }
+       res.sendFile(DIST_PATH + '/tracker.html');
       } else {
-        res.cookie('bcookie', req.cookies.bcookie, { expires: date });
+        res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
       }
-
-      if (redirectToLogin(req, res)) {
-        return;
-      }
-     res.sendFile(DIST_PATH + '/tracker.html');
     }
   ]);
 
   app.all(['/logviewer', '/logviewer*'], [
     function (req, res) {
-      console.log("27: get /logviewer  ");
-      res.header({
-        'Connection': 'close'
-      });
-
-      if (redirectToLogin(req, res)) {
-        return;
-      }
-
-      // BCookie is the browser cookie, that is generated and will live for a year.
-      // This cookie is always generated to provide unique id for the browser that
-      // is being used to interact with the CDAP backend.
-      var date = new Date();
-      date.setDate(date.getDate() + 365); // Expires after a year.
-      if (!req.cookies.bcookie) {
-        res.cookie('bcookie', uuidV4(), { expires: date });
+      if (!authAddress.enabled || req.cookies.CDAP_Auth_Token) {
+        res.header({
+          'Connection': 'close'
+        });
+        // BCookie is the browser cookie, that is generated and will live for a year.
+        // This cookie is always generated to provide unique id for the browser that
+        // is being used to interact with the CDAP backend.
+        var date = new Date();
+        date.setDate(date.getDate() + 365); // Expires after a year.
+        if (!req.cookies.bcookie) {
+          res.cookie('bcookie', uuidV4(), { expires: date });
+        } else {
+          res.cookie('bcookie', req.cookies.bcookie, { expires: date });
+        }
+       res.sendFile(DIST_PATH + '/logviewer.html');
       } else {
-        res.cookie('bcookie', req.cookies.bcookie, { expires: date });
+        res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
       }
-
-     res.sendFile(DIST_PATH + '/logviewer.html');
     }
   ]);
 
@@ -860,14 +852,15 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.all(['/', '/cdap', '/cdap*'], [
     function(req, res) {
-      console.log("28: get /,/cdap,/cdap*'  ");
-      res.header({
-        'Connection': 'close'
-      });
-      // if (redirectToLogin(req, res)) {
-      //   return;
-      // }
-      res.sendFile(CDAP_DIST_PATH + '/cdap_assets/cdap.html');
+      console.log("CDAP URL ", req.url);
+      if (!authAddress.enabled || req.cookies.CDAP_Auth_Token) {
+        res.header({
+          'Connection': 'close'
+        });
+        res.sendFile(CDAP_DIST_PATH + '/cdap_assets/cdap.html');
+      } else {
+        res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
+      }
     }
   ]);
 
@@ -916,14 +909,14 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.all(['/oldcdap', '/oldcdap*'], [
     function (req, res) {
-      console.log("31: get /oldcdap, /oldcdap*  ");
-      res.header({
-        'Connection': 'close'
-      });
-      // if (redirectToLogin(req, res)) {
-      //   return;
-      // }
-      res.sendFile(OLD_DIST_PATH + '/index.html');
+      if (!authAddress.enabled || req.cookies.CDAP_Auth_Token) {
+        res.header({
+          'Connection': 'close'
+        });
+        res.sendFile(OLD_DIST_PATH + '/index.html');
+      } else {
+        res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
+      }
     }
   ]);
   return app;
