@@ -92,9 +92,9 @@ class Login extends Component {
       })
       .then((res) => {
         cookie.save('CDAP_Auth_Token', res.access_token, { path: '/'});
-        cookie.save('CDAP_Auth_User', this.state.username);
+        cookie.save('CDAP_Auth_User', this.state.username, { path: '/'});
         var queryObj = util.getQueryParams(location.search);
-        queryObj.redirectUrl = queryObj.redirectUrl || '/';
+        queryObj.redirectUrl = queryObj.redirectUrl || (location.pathname.endsWith('/login') ? '/': location.pathname);
         window.location.href = queryObj.redirectUrl;
       });
   }
@@ -192,9 +192,9 @@ class Login extends Component {
       })
       .then((res) => {
         cookie.save('CDAP_Auth_Token', res.access_token, { path: '/'});
-        cookie.save('CDAP_Auth_User', res.userName);
+        cookie.save('CDAP_Auth_User', res.userName, { path: '/'});
         var queryObj = util.getQueryParams(location.search);
-        queryObj.redirectUrl = queryObj.redirectUrl || '/';
+        queryObj.redirectUrl = queryObj.redirectUrl || (location.pathname.endsWith('/login') ? '/' : location.pathname);
         window.location.href = queryObj.redirectUrl;
       });
   }

@@ -320,7 +320,7 @@ function onSocketData (message) {
   try {
     message = JSON.parse(message);
     var r = message.resource;
-    if (!this.urlValidator.isValidURL(r.url)) {
+    if (!this.urlValidator.isValidURL(r.url) || !this.urlValidator.isValidRequest(r.url, r.body)) {
       var err = {
         statusCode: 400,
       };
