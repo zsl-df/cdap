@@ -579,9 +579,6 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
       res.header({
         'Connection': 'close'
       });
-      // if (redirectToLogin(req, res)) {
-      //   return;
-      // }
       res.sendFile(DIST_PATH + '/test.html');
     }
   ]);
@@ -604,7 +601,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
           res.redirect('/');
         return;
       }
-      res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
+      sendLoginPage(res);
     }
   ]);
 
@@ -771,7 +768,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   // any other path, serve index.html
   app.all(['/pipelines', '/pipelines*'], [
     function (req, res) {
-      if (!authAddress.enabled || req.cookies.CDAP_Auth_Token) {
+      if (isAuthenticated(req,res)) {
         res.header({
           'Connection': 'close'
         });
@@ -787,13 +784,13 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
         }
       res.sendFile(DIST_PATH + '/hydrator.html');
       } else {
-        res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
+        sendLoginPage(res);
       }
     }
   ]);
   app.all(['/metadata', '/metadata*'], [
     function (req, res) {
-      if (!authAddress.enabled || req.cookies.CDAP_Auth_Token) {
+      if (isAuthenticated(req,res)) {
         res.header({
           'Connection': 'close'
         });
@@ -809,14 +806,14 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
         }
        res.sendFile(DIST_PATH + '/tracker.html');
       } else {
-        res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
+        sendLoginPage(res);
       }
     }
   ]);
 
   app.all(['/logviewer', '/logviewer*'], [
     function (req, res) {
-      if (!authAddress.enabled || req.cookies.CDAP_Auth_Token) {
+      if (isAuthenticated(req,res)) {
         res.header({
           'Connection': 'close'
         });
@@ -832,34 +829,37 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
         }
        res.sendFile(DIST_PATH + '/logviewer.html');
       } else {
-        res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
+        sendLoginPage(res);
       }
     }
   ]);
-
-  function redirectToLogin (req, res) {
-    console.log("Auth Address:: "+authAddress.get() + " :: "+req.cookies.CDAP_Auth_Token);
-    var redirectToLoginFlag = authAddress.get() && !req.cookies.CDAP_Auth_Token;
-    console.log("Is redirect to login :: "+redirectToLoginFlag);
-    console.log("Time :: "+new Date());
-
-    if (redirectToLoginFlag) {
-      console.log("App redirect to login :: ");
-      res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
+  
+  function isAuthenticated(req,res) {
+    if (!authAddress.enabled) {
+      return true;
+    } else {
+      if (req.cookies.CDAP_Auth_Token) {
+        return true;
+      } else {
+        return false;
+      }
     }
-    return redirectToLoginFlag;
+  }
+
+  function sendLoginPage(res) {
+    res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
   }
 
   app.all(['/', '/cdap', '/cdap*'], [
     function(req, res) {
       console.log("CDAP URL ", req.url);
-      if (!authAddress.enabled || req.cookies.CDAP_Auth_Token) {
+      if (isAuthenticated(req,res)) {
         res.header({
           'Connection': 'close'
         });
         res.sendFile(CDAP_DIST_PATH + '/cdap_assets/cdap.html');
       } else {
-        res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
+        sendLoginPage(res);
       }
     }
   ]);
@@ -909,13 +909,13 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.all(['/oldcdap', '/oldcdap*'], [
     function (req, res) {
-      if (!authAddress.enabled || req.cookies.CDAP_Auth_Token) {
+      if (isAuthenticated(req,res)) {
         res.header({
           'Connection': 'close'
         });
         res.sendFile(OLD_DIST_PATH + '/index.html');
       } else {
-        res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
+        sendLoginPage(res);
       }
     }
   ]);
