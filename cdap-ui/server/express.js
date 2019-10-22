@@ -122,7 +122,6 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(cookieParser());
-
   app.use(function (err, req, res, next) {
     log.error(err);
     res.status(500).send(err);
@@ -161,6 +160,25 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
     res.send('window.CDAP_CONFIG = '+data+';');
   });
 
+   // serve the login config file
+   app.get('/loginConfig', function (req, res) {
+
+    var data = {
+      marketUrl: cdapConfig['market.base.url'],
+      localMarketUrl: cdapConfig['local.market.base.url'],
+      sslEnabled: cdapConfig['ssl.external.enabled'] === 'true',
+      knoxLoginUrl: cdapConfig['knox.login.url'],
+      securityEnabled: authAddress.enabled,
+      knoxEnabled: cdapConfig['knox.enabled'] === 'true',
+      applicationPrefix: cdapConfig['application.prefix']
+    };
+    res.header({
+      'Connection': 'close'
+    });
+    log.info('Data -> ', data);
+    res.status(200).send(data);
+  });
+
   app.get('/ui-config.js', function (req, res) {
     var path = __dirname + '/config/cdap-ui-config.json';
 
@@ -184,7 +202,18 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.post('/downloadQuery', function(req, res) {
     var url = req.body.backendUrl;
-
+    res.header({
+      'Connection': 'close'
+    });
+    if (!urlValidator.isValidURL(url) || !this.urlValidator.isValidRequest(url, undefined)) {
+      log.error('Bad Request');
+      var err = {
+        error: 400,
+        message: 'Bad Request'
+      };
+      res.status(400).send(err);
+      return;
+    }
     log.info('Download Query Start: ', req.body.queryHandle);
 
     request({
@@ -244,6 +273,18 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   app.get('/downloadLogs', function(req, res) {
     var url = decodeURIComponent(req.query.backendUrl);
     var method = (req.query.method || 'GET');
+    res.header({
+      'Connection': 'close'
+    });
+    if (!urlValidator.isValidURL(url) || !this.urlValidator.isValidRequest(url, undefined)) {
+      log.error('Bad Request');
+      var err = {
+        error: 400,
+        message: 'Bad Request'
+      };
+      res.status(400).send(err);
+      return;
+    }
     log.info('Download Logs Start: ', url);
     var customHeaders;
     var requestObject = {
@@ -445,10 +486,10 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   app.get('/login', [
     function(req, res) {
       if (!authAddress.get() || req.cookies.CDAP_Auth_Token) {
-        res.redirect('/');
+          res.redirect('/');
         return;
       }
-      res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
+      sendLoginPage(res);
     }
   ]);
 
@@ -600,55 +641,134 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   // any other path, serve index.html
   app.all(['/pipelines', '/pipelines*'], [
     function (req, res) {
-      // BCookie is the browser cookie, that is generated and will live for a year.
-      // This cookie is always generated to provide unique id for the browser that
-      // is being used to interact with the CDAP backend.
-      var date = new Date();
-      date.setDate(date.getDate() + 365); // Expires after a year.
-      if (!req.cookies.bcookie) {
-        res.cookie('bcookie', uuidV4(), { expires: date });
-      } else {
-        res.cookie('bcookie', req.cookies.bcookie, { expires: date });
-      }
-     res.sendFile(DIST_PATH + '/hydrator.html');
+      isAuthenticated(req, res)
+        .then(function (authFlag) {
+          if (authFlag) {
+            res.header({
+              'Connection': 'close'
+            });
+            // BCookie is the browser cookie, that is generated and will live for a year.
+            // This cookie is always generated to provide unique id for the browser that
+            // is being used to interact with the CDAP backend.
+            var date = new Date();
+            date.setDate(date.getDate() + 365); // Expires after a year.
+            if (!req.cookies.bcookie) {
+              res.cookie('bcookie', uuidV4(), { expires: date });
+            } else {
+              res.cookie('bcookie', req.cookies.bcookie, { expires: date });
+            }
+            res.sendFile(DIST_PATH + '/hydrator.html');
+          } else {
+            sendLoginPage(res);
+          }
+        });
     }
   ]);
   app.all(['/metadata', '/metadata*'], [
     function (req, res) {
-      // BCookie is the browser cookie, that is generated and will live for a year.
-      // This cookie is always generated to provide unique id for the browser that
-      // is being used to interact with the CDAP backend.
-      var date = new Date();
-      date.setDate(date.getDate() + 365); // Expires after a year.
-      if (!req.cookies.bcookie) {
-        res.cookie('bcookie', uuidV4(), { expires: date });
-      } else {
-        res.cookie('bcookie', req.cookies.bcookie, { expires: date });
-      }
-     res.sendFile(DIST_PATH + '/tracker.html');
+      isAuthenticated(req, res)
+        .then(function (authFlag) {
+          if (authFlag) {
+            res.header({
+              'Connection': 'close'
+            });
+            // BCookie is the browser cookie, that is generated and will live for a year.
+            // This cookie is always generated to provide unique id for the browser that
+            // is being used to interact with the CDAP backend.
+            var date = new Date();
+            date.setDate(date.getDate() + 365); // Expires after a year.
+            if (!req.cookies.bcookie) {
+              res.cookie('bcookie', uuidV4(), { expires: date });
+            } else {
+              res.cookie('bcookie', req.cookies.bcookie, { expires: date });
+            }
+            res.sendFile(DIST_PATH + '/tracker.html');
+          } else {
+            sendLoginPage(res);
+          }
+        });
     }
   ]);
 
   app.all(['/logviewer', '/logviewer*'], [
     function (req, res) {
-      // BCookie is the browser cookie, that is generated and will live for a year.
-      // This cookie is always generated to provide unique id for the browser that
-      // is being used to interact with the CDAP backend.
-      var date = new Date();
-      date.setDate(date.getDate() + 365); // Expires after a year.
-      if (!req.cookies.bcookie) {
-        res.cookie('bcookie', uuidV4(), { expires: date });
-      } else {
-        res.cookie('bcookie', req.cookies.bcookie, { expires: date });
-      }
-     res.sendFile(DIST_PATH + '/logviewer.html');
+      isAuthenticated(req, res)
+        .then(function (authFlag) {
+          if (authFlag) {
+            res.header({
+              'Connection': 'close'
+            });
+            // BCookie is the browser cookie, that is generated and will live for a year.
+            // This cookie is always generated to provide unique id for the browser that
+            // is being used to interact with the CDAP backend.
+            var date = new Date();
+            date.setDate(date.getDate() + 365); // Expires after a year.
+            if (!req.cookies.bcookie) {
+              res.cookie('bcookie', uuidV4(), { expires: date });
+            } else {
+              res.cookie('bcookie', req.cookies.bcookie, { expires: date });
+            }
+            res.sendFile(DIST_PATH + '/logviewer.html');
+          } else {
+            sendLoginPage(res);
+          }
+        });
     }
   ]);
 
+  function isAuthenticated(req) {
+    return new Promise(function(resolve) {
+      if (!authAddress.enabled) {
+        return resolve(true);
+      } else {
+        if (req.cookies.CDAP_Auth_Token) {
+          var checkAuthorizedUrl = [
+            cdapConfig['ssl.external.enabled'] === 'true' ? 'https://' : 'http://',
+            cdapConfig['router.server.address'],
+            ':',
+            cdapConfig['ssl.external.enabled'] === 'true' ? cdapConfig['router.ssl.server.port']: cdapConfig['router.server.port'],
+            '/v3/version'
+          ].join('');
+          var opts = {
+            url: checkAuthorizedUrl,
+            headers: {
+              authorization: 'Bearer ' + req.cookies['CDAP_Auth_Token']
+            }
+          };
+          request(opts,
+            function (nerr, nres) {
+              if (nerr || nres.statusCode !== 200) {
+                return resolve(false);
+              } else {
+                return resolve(true);
+              }
+            }
+          );
+        } else {
+          return resolve(false);
+        }
+      }
+    });
+  }
+
+  function sendLoginPage(res) {
+    res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
+  }
+
   app.all(['/', '/cdap', '/cdap*'], [
     function(req, res) {
-      res.sendFile(CDAP_DIST_PATH + '/cdap_assets/cdap.html');
-    }
+      isAuthenticated(req,res)
+        .then(function (authFlag) {
+          if (authFlag) {
+              res.header({
+                'Connection': 'close'
+              });
+              res.sendFile(CDAP_DIST_PATH + '/cdap_assets/cdap.html');
+            } else {
+              sendLoginPage(res);
+            }
+          });
+      }
   ]);
 
   app.get('/ui-config-old.js', function (req, res) {
@@ -665,7 +785,6 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
               '.constant("UI_CONFIG",'+fileConfig+');');
   });
   app.get('/config-old.js', function (req, res) {
-
     var data = JSON.stringify({
       // the following will be available in angular via the "MY_CONFIG" injectable
 
@@ -693,7 +812,17 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
 
   app.all(['/oldcdap', '/oldcdap*'], [
     function (req, res) {
-      res.sendFile(OLD_DIST_PATH + '/index.html');
+      isAuthenticated(req, res)
+        .then(function (authFlag) {
+          if (authFlag) {
+            res.header({
+              'Connection': 'close'
+            });
+            res.sendFile(OLD_DIST_PATH + '/index.html');
+          } else {
+            sendLoginPage(res);
+          }
+        });
     }
   ]);
   return app;

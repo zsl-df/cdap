@@ -14,7 +14,16 @@
  * the License.
  */
 
-/*global  module */
+/*global require, module */
+
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+
+const windowDom = (new JSDOM('')).window;
+const DOMPurify = createDOMPurify(windowDom);
+const unescape = require('lodash/unescape');
+
+
 
 function UrlValidator(cdapConfig) {
   this.whiteListIps = this.getWhiltListIps(cdapConfig);
@@ -106,5 +115,28 @@ UrlValidator.prototype.getWhiltListIps = function (config) {
   }
   return whiteList;
 };
+
+UrlValidator.prototype.isValidRequest = function (url, req) {
+  var validUrl = true;
+  var validrequest = true;
+  //cehck url
+  if(url !== undefined && url !== null) {
+    const dirtyURL = JSON.stringify(url);
+    // log.info ('Request URL::  ' +dirtyURL);
+    const cleanURL = unescape(DOMPurify.sanitize(dirtyURL, { ALLOWED_TAGS: []}));
+    validUrl = cleanURL === dirtyURL ? true : false;
+  }
+
+  // check request body
+  if(req !== undefined && req !==  null){
+    const dirty = JSON.stringify(req);
+    // log.info ('\nRequest Body::  ' +dirty);
+    const clean = unescape(DOMPurify.sanitize(dirty, { ALLOWED_TAGS: []}));
+    validrequest =  clean === dirty ? true : false;
+  }
+
+  return validUrl && validrequest;
+};
+
 
 module.exports = UrlValidator;

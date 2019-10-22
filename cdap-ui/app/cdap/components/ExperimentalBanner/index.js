@@ -15,8 +15,20 @@
 */
 
 import React from 'react';
+import isNil from 'lodash/isNil';
 require('./ExperimentalBanner.scss');
 
-export default function ExperimentalBanner() {
-  return <div className="experimental-banner">BETA</div>;
+export default function ExperimentalBanner({...props}) {
+  let { entity } = props;
+  if (isNil(entity)) {
+    return <div className="experimental-banner">BETA</div>;
+  } else {
+    if (entity.beta) {
+      return <div className="experimental-banner">BETA</div>;
+    } else if (entity.alpha) {
+      return <div className=" experimental-banner alpha-background">ALPHA</div>;
+    } else {
+      return null;
+    }
+  }
 }

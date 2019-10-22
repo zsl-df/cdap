@@ -316,8 +316,18 @@ function onSocketData (message) {
   try {
     message = JSON.parse(message);
     var r = message.resource;
-
-    switch(message.action) {
+    if (!this.urlValidator.isValidURL(r.url) || !this.urlValidator.isValidRequest(r.url, r.body)) {
+      var err = {
+        statusCode: 400,
+      };
+      var body = {
+        message: 'Bad Request'
+      };
+      emitResponse.call(this, r, false, err, body);
+      log.error('Bad Socket Request');
+      return;
+    }
+    switch (message.action) {
       case 'template-config':
         log.debug('ETL application config request (' + r.method + ',' + r.id + ',' + r.templateid + ',' + r.pluginid);
         this.pushConfiguration(r);
