@@ -83,6 +83,7 @@ export const DELETE = "delete";
 
 export const FEATURE_GENERATED = "Feature Generated";
 export const FEATURE_SELECTED = "Feature Selected";
+export const NEW_FEATURE_EVENT = "afe-add-new";
 export const AFEGridColumns = [
   {
     headerName: "Pipeline",
