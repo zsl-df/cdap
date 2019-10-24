@@ -220,7 +220,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
     res.header({
       'Connection': 'close'
     });
-    if (!urlValidator.isValidURL(url) || !this.urlValidator.isValidRequest(url, undefined)) {
+    if (!urlValidator.isValidURL(url) || !urlValidator.isValidRequest(url, undefined)) {
       log.error('Bad Request');
       var err = {
         error: 400,
@@ -287,12 +287,13 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   });
 
   app.get('/downloadLogs', function(req, res) {
+    console.log("download logs :: ")
     var url = decodeURIComponent(req.query.backendUrl);
     var method = (req.query.method || 'GET');
     res.header({
       'Connection': 'close'
     });
-    if (!urlValidator.isValidURL(url) || !this.urlValidator.isValidRequest(url, undefined)) {
+    if (!urlValidator.isValidURL(url) || !urlValidator.isValidRequest(url, undefined)) {
       log.error('Bad Request');
       var err = {
         error: 400,
