@@ -22,7 +22,7 @@
   <parent>
     <groupId>co.cask.cdap</groupId>
     <artifactId>cdap</artifactId>
-    <version>5.1.212</version>
+    <version>5.1.211</version>
   </parent>
 
   <artifactId>cdap-archetypes</artifactId>
