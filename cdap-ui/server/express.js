@@ -205,7 +205,7 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
     res.header({
       'Connection': 'close'
     });
-    if (!urlValidator.isValidURL(url) || !this.urlValidator.isValidRequest(url, undefined)) {
+    if (!urlValidator.isValidURL(url) || !urlValidator.isValidRequest(url, undefined)) {
       log.error('Bad Request');
       var err = {
         error: 400,
@@ -271,12 +271,13 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
   });
 
   app.get('/downloadLogs', function(req, res) {
+    console.log("download logs :: ")
     var url = decodeURIComponent(req.query.backendUrl);
     var method = (req.query.method || 'GET');
     res.header({
       'Connection': 'close'
     });
-    if (!urlValidator.isValidURL(url) || !this.urlValidator.isValidRequest(url, undefined)) {
+    if (!urlValidator.isValidURL(url) || !urlValidator.isValidRequest(url, undefined)) {
       log.error('Bad Request');
       var err = {
         error: 400,
@@ -715,6 +716,45 @@ function makeApp (authAddress, cdapConfig, uiSettings) {
         });
     }
   ]);
+
+  function isAuthenticated(req) {
+    return new Promise(function(resolve) {
+      if (!authAddress.enabled) {
+        return resolve(true);
+      } else {
+        if (req.cookies.CDAP_Auth_Token) {
+          var checkAuthorizedUrl = [
+            cdapConfig['ssl.external.enabled'] === 'true' ? 'https://' : 'http://',
+            cdapConfig['router.server.address'],
+            ':',
+            cdapConfig['ssl.external.enabled'] === 'true' ? cdapConfig['router.ssl.server.port']: cdapConfig['router.server.port'],
+            '/v3/version'
+          ].join('');
+          var opts = {
+            url: checkAuthorizedUrl,
+            headers: {
+              authorization: 'Bearer ' + req.cookies['CDAP_Auth_Token']
+            }
+          };
+          request(opts,
+            function (nerr, nres) {
+              if (nerr || nres.statusCode !== 200) {
+                return resolve(false);
+              } else {
+                return resolve(true);
+              }
+            }
+          );
+        } else {
+          return resolve(false);
+        }
+      }
+    });
+  }
+
+  function sendLoginPage(res) {
+    res.sendFile(LOGIN_DIST_PATH + '/login_assets/login.html');
+  }
 
   function isAuthenticated(req) {
     return new Promise(function(resolve) {
