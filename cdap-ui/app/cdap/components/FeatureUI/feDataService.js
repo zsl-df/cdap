@@ -28,6 +28,10 @@ const autoFeatureGenerationService = `${appPath}/services/AutoFeatureGenerationS
 const manualFeatureSelectionService = `${appPath}/services/ManualFeatureSelectionService/methods/featureengineering`;
 
 const FEDataServiceApi = {
+  appDetails: serviceCreator(dataSrc, "GET", "REQUEST",`${appPath}`),
+  status: serviceCreator(dataSrc, "POST", "REQUEST",'/namespaces/:namespace/status'),
+  start: serviceCreator(dataSrc, "POST", "REQUEST",'/namespaces/:namespace/start'),
+  stop: serviceCreator(dataSrc, "POST", "REQUEST",'/namespaces/:namespace/stop'),
   pipelines: serviceCreator(dataSrc, "GET", "REQUEST",`${fePipelineService}/pipeline/getall?pipelineType=:type`),
   schema: serviceCreator(dataSrc, "GET", "REQUEST",`${dataPrepSchemaService}/dataschema/getall`),
   metadataConfig: serviceCreator(dataSrc, "GET", "REQUEST",`${autoFeatureGenerationService}/feature/generation/configparams/get?getSchemaParams=true`),

@@ -44,7 +44,11 @@ import {
   CLOSE,
   OK,
   CANCEL,
-  SHOW_PIPELINE
+  SHOW_PIPELINE,
+  GET_APP_DETAILS,
+  GET_STATUS,
+  CHECK_AFE_PROGRAM_INTERVAL,
+  CHECK_AFE_PIPELINES_INTERVAL
 } from '../config';
 import { Observable } from 'rxjs/Observable';
 import AlertModal from '../AlertModal';
@@ -56,6 +60,7 @@ import { Theme } from 'services/ThemeHelper';
 import StatusBar from "./StatusBar";
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { SUCCEEDED, DEPLOYED, FAILED, RUNNING, FEATURE_GENERATED, FEATURE_SELECTED, NEW_FEATURE_EVENT } from '../config';
+import { isNilOrEmpty } from 'services/helpers';
 
 
 require('./LandingPage.scss');
@@ -74,6 +79,11 @@ class LandingPage extends React.Component {
   ]
   data_original = [];
   currentOperation = "";
+  programs;
+  runningProgramsId;
+  checkStatusInterval;
+  checkPipelineInterval;
+
   constructor(props) {
     super(props);
     this.toggleFeatureWizard = this.toggleFeatureWizard.bind(this);
@@ -84,6 +94,7 @@ class LandingPage extends React.Component {
       showFeatureWizard: false,
       openAlertModal: false,
       alertMessage: "",
+      isAnyAFEServiceRunning: false,
       primaryAlertBtnText: "OK",
       secondaryAlertBtnText: "CANCEL",
       pipelineTypes: PIPELINE_TYPES,
@@ -93,6 +104,7 @@ class LandingPage extends React.Component {
       selectedPipeline: {},
       selectedPipelineRequestConfig: {},
       isDataLoading: false,
+      enablingInProgress: false,
       currentNamespace: NamespaceStore.getState().selectedNamespace,
       statusList: this.generateStatusList([])
 
@@ -100,7 +112,7 @@ class LandingPage extends React.Component {
   }
 
   componentWillMount() {
-    this.getPipelines(this.state.selectedPipelineType);
+    this.fetchAppDetails();
     if (IS_OFFLINE) {
       this.props.setAvailableProperties(PropertyData);
       this.props.setAvailableConfigurations(ConfigurationData);
@@ -185,6 +197,96 @@ class LandingPage extends React.Component {
       { id: 2, name: SUCCEEDED, count: sucessCount, selected: false },
       { id: 3, name: DEPLOYED, count: deployedCount, selected: false },
       { id: 4, name: FAILED, count: failCount, selected: false }];
+  }
+
+  fetchAppDetails() {
+    FEDataServiceApi.appDetails(
+      {
+        namespace: NamespaceStore.getState().selectedNamespace
+      }, {}, getDefaultRequestHeader()).subscribe(
+        result => {
+          if (isNil(result) || isNil(result.programs)) {
+            this.handleError(result, GET_APP_DETAILS);
+          } else {
+            this.programs = result.programs.map((program) => {
+              return {"appId": program.app,"programType":program.type,"programId":program.name};
+            });
+            console.log(this.programs);
+            this.checkStatusCounter = 0;
+            this.fetchProgramStatus();
+          }
+        },
+        error => {
+          this.handleError(error, GET_APP_DETAILS);
+        }
+      );
+  }
+
+  fetchProgramStatus() {
+    this.runningProgramsId = new Set();
+    FEDataServiceApi.status(
+      {
+        namespace: NamespaceStore.getState().selectedNamespace
+      }, this.programs, getDefaultRequestHeader()).subscribe(
+        result => {
+          if (isNilOrEmpty(result)) {
+            this.handleError(result, GET_STATUS);
+          } else {
+            result.forEach((program) => {
+              if (program.status == "RUNNING") {
+                this.runningProgramsId.add(program.programId);
+              }
+            });
+            const isAnyAFEServiceRunning = this.runningProgramsId.size > 0;
+            this.setState({
+              isAnyAFEServiceRunning: isAnyAFEServiceRunning,
+            });
+            if (isAnyAFEServiceRunning) {
+              clearInterval(this.checkStatusInterval);
+              this.getPipelines(this.state.selectedPipelineType);
+              this.startPipeLineInterval();
+            }
+             console.log(this.runningProgramsId);
+            }
+        },
+        error => {
+          this.handleError(error, GET_STATUS);
+        }
+      );
+  }
+
+  startAFEPrograms() {
+    clearInterval(this.checkStatusInterval);
+    this.setState({
+      enablingInProgress: true
+    });
+    this.checkStatusCounter = 0;
+    FEDataServiceApi.start(
+      {
+        namespace: NamespaceStore.getState().selectedNamespace
+      }, this.programs.filter((program) => {
+        return !this.runningProgramsId.has(program.programId);
+      }), getDefaultRequestHeader()).subscribe(
+        result => {
+          if (isNilOrEmpty(result)) {
+            this.handleError(result, GET_STATUS);
+          } else {
+            this.checkStatusInterval = setInterval(() => {
+              this.fetchProgramStatus();
+            }, CHECK_AFE_PROGRAM_INTERVAL);
+          }
+        },
+        error => {
+          this.handleError(error, GET_STATUS);
+        }
+      );
+  }
+
+  startPipeLineInterval() {
+    clearInterval(this.checkPipelineInterval);
+    this.checkPipelineInterval = setInterval(() => {
+       this.getPipelines(this.state.selectedPipelineType);
+    }, CHECK_AFE_PIPELINES_INTERVAL);
   }
 
   getPipelines(type) {
@@ -723,7 +825,10 @@ class LandingPage extends React.Component {
 
   render() {
     return (
-      <div className='landing-page-container'>{
+      <div className='landing-page-container'>
+      { 
+        this.state.isAnyAFEServiceRunning ? 
+        (
         this.state.displayFeatureSelection ?
           <div className="feature-selection">
             <FeatureSelection nagivateToParent={this.viewFeatureGeneration}
@@ -771,6 +876,9 @@ class LandingPage extends React.Component {
               primaryBtnText = {this.state.primaryAlertBtnText} secondaryBtnText = {this.state.secondaryBtnText}
               onClose={this.onAlertClose.bind(this)} />
           </div>
+        ): (<div className = "fullscreen-layout">
+            <button className="feature-button" disabled = {this.state.enablingInProgress} onClick={this.startAFEPrograms.bind(this)}>Enable Feature Engineering</button>
+        </div>)
       }
       </div>
     );
