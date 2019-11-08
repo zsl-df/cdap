@@ -16,11 +16,9 @@
 
 import { getEpochDateString } from "./GridFormatters";
 export const REMOTE_IP = "http://192.168.156.36:11015";
-const SERVICE_PORT = "10443";
 export const IS_OFFLINE = false;
 export const USE_REMOTE_SERVER = false;
 export const RAF_ACCESS_TOKEN = "AhpkZWVwaWthLm1laHRhAOr1lLjcWurlx4rdWuaF+qACQMwUZZXczEPF//98fX+jkzY1tXFY1Lg6oBw+RDAskaSe";
-export const SERVER_IP = (window.location.hostname == "localhost") ? REMOTE_IP : (window.location.protocol + "//" + window.location.hostname + ":" + SERVICE_PORT);
 export const GET_PIPE_LINE_CORRELATED_DATA = "/v3/namespaces/default/apps/FeatureEngineeringApp/services/ManualFeatureSelectionService/methods/featureengineering/features/correlation/matrix/get?pipelineName=";
 
 export const FEATURE_GENERATED_PIPELINE = "Feature Generation Pipeline";

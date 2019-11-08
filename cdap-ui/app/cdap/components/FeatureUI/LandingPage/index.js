@@ -255,7 +255,7 @@ class LandingPage extends React.Component {
       );
   }
 
-  startAFEPrograms() {
+  startPrograms() {
     clearInterval(this.checkStatusInterval);
     this.setState({
       enablingInProgress: true
@@ -826,8 +826,8 @@ class LandingPage extends React.Component {
   render() {
     return (
       <div className='landing-page-container'>
-      { 
-        this.state.isAnyAFEServiceRunning ? 
+      {
+        this.state.isAnyAFEServiceRunning ?
         (
         this.state.displayFeatureSelection ?
           <div className="feature-selection">
@@ -877,7 +877,7 @@ class LandingPage extends React.Component {
               onClose={this.onAlertClose.bind(this)} />
           </div>
         ): (<div className = "fullscreen-layout">
-            <button className="feature-button" disabled = {this.state.enablingInProgress} onClick={this.startAFEPrograms.bind(this)}>Enable Feature Engineering</button>
+            <button className="feature-button" disabled = {this.state.enablingInProgress} onClick={this.startPrograms.bind(this)}>Enable Feature Engineering</button>
         </div>)
       }
       </div>
