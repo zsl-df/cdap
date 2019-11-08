@@ -17,8 +17,13 @@
 import isNil from 'lodash/isNil';
 import cookie from 'react-cookie';
 export const USE_REMOTE_SERVER = false;
-export const REMOTE_IP = "https://platacc001-mst-01.cloud.in.guavus.com:10443";
+export const REMOTE_IP = "http://192.168.156.36:11015";
 export const RAF_ACCESS_TOKEN = "Agp1c3IwMQCs0NzvlVuswI/ClluwuMGmC0C1B07J4qgUqVTQQFN67O/6tK8ptiyE10qYYTgGXfxMPA==";
+
+export const GET_MRDS_APP_DETAILS = "GET_MRDS_APP_DETAILS";
+export const GET_MRDS_PROGRAM_STATUS= "GET_MRDS_PROGRAM_STATUS";
+export const CHECK_MRDS_PROGRAM_INTERVAL = 1500;
+export const CHECK_EXPERIMENT_INTERVAL = 30000;
 
 
 export function getDefaultRequestHeader() {

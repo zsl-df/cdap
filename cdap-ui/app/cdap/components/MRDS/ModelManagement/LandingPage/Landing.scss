@@ -14,6 +14,22 @@
  * the License.
  */
 
+.mrds-fullscreen-layout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  .mrds-button {
+    background-color: #0275d8;
+    border-color: #0275d8;
+    padding: 5px 10px;
+    font-size: 16px;
+    border-radius: 3px;
+    color: white;
+  }
+}
+
 .landing-page {
   height: 100%;
   padding: 2px;

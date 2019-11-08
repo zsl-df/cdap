@@ -25,6 +25,10 @@ const appPath = '/namespaces/:namespace/apps/ModelRepoMgmtApp';
 const servicePath = `${appPath}/spark/ModelRepoMgmtService/methods`;
 
 const MRDSServiceApi = {
+  appDetails: serviceCreator(dataSrc, "GET", "REQUEST",`${appPath}`),
+  status: serviceCreator(dataSrc, "POST", "REQUEST",'/namespaces/:namespace/status'),
+  start: serviceCreator(dataSrc, "POST", "REQUEST",'/namespaces/:namespace/start'),
+  stop: serviceCreator(dataSrc, "POST", "REQUEST",'/namespaces/:namespace/stop'),
   fetchExperimentsDetails: serviceCreator(dataSrc, "GET", "REQUEST",`${servicePath}/experimentsDetails`),
 };
 
