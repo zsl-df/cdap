@@ -53,8 +53,6 @@ class MyBatchPipelineConfigCtrl {
       this.customEngineConfig.pairs.push({
         key: '',
         value: '',
-        validKey: true,
-        validValue: true,
         uniqueId: 'id-' + this.uuid.v4()
       });
     }
@@ -139,15 +137,6 @@ class MyBatchPipelineConfigCtrl {
     }
   }
 
-  invalidValues(values) {
-    if (values && values.pairs && values.pairs.length>0) {
-      return values.pairs.some((keyValuePair) => {
-        return !keyValuePair.validKey || !keyValuePair.validValue;
-      });
-    }
-    return false;
-  }
-
   buttonsAreDisabled() {
     let runtimeArgsMissingValues = false;
     let customConfigMissingValues = false;
@@ -156,15 +145,8 @@ class MyBatchPipelineConfigCtrl {
       runtimeArgsMissingValues = this.HydratorPlusPlusHydratorService.keyValuePairsHaveMissingValues(this.runtimeArguments);
     }
     customConfigMissingValues = this.HydratorPlusPlusHydratorService.keyValuePairsHaveMissingValues(this.customEngineConfig);
-
-    //check the invalid value
-
-    return runtimeArgsMissingValues || customConfigMissingValues || this.invalidValues(this.customEngineConfig);
+    return runtimeArgsMissingValues || customConfigMissingValues;
   }
-
-
-
-
 
   onDriverMemoryChange(value) {
     this.driverResources.memoryMB = value;

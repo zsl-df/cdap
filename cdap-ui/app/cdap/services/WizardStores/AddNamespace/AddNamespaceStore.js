@@ -56,9 +56,7 @@ const defaultPreferencesState = Object.assign({
     pairs : [{
       key : '',
       value : '',
-      uniqueId : uuidV4(),
-      validKey: true,
-      validValue:true
+      uniqueId : uuidV4()
     }]
   }
 }, skippableDefaultState);
@@ -88,32 +86,13 @@ const defaultInitialState = {
 
 // Utilities. FIXME: Move to a common place?
 const isNil = (value) => value === null || typeof value === 'undefined' || value === '';
-const isComplete = (state, requiredFields, validFields) => {
-  const stateFields = Object.keys(state);
-
-  let isAnyFieldInvalids = validFields
-    .filter(field => {
-      return stateFields.indexOf(field) !== -1 && !state[field];
-    });
-
-  let emptyFieldsInState = stateFields
+const isComplete = (state, requiredFields) => {
+  let emptyFieldsInState = Object.keys(state)
     .filter(fieldName => {
       return isNil(state[fieldName]) && requiredFields.indexOf(fieldName) !== -1;
     });
-  return !isAnyFieldInvalids.length && !emptyFieldsInState.length  ? true : false;
+  return !emptyFieldsInState.length ? true : false;
 };
-
-const isKeyValueComplete = (state) => {
-  const paris = state.preferences.pairs;
-
-  let invalidParis = paris.filter( pair => {
-    return !pair.validKey || !pair.validValue;
-  });
-
-  return !invalidParis.length  ? true : false;
-};
-
-
 
 const generalStepRequiredFields = head(
   AddNamespaceWizardConfig
@@ -141,14 +120,12 @@ const general = (state = defaultGeneralState, action = defaultAction) => {
   switch (action.type) {
     case AddNamespaceActions.setName:
       stateCopy = Object.assign({}, state, {
-        name: action.payload.name,
-        name_valid: action.payload.name_valid
+        name: action.payload.name
       });
       break;
     case AddNamespaceActions.setDescription:
       stateCopy = Object.assign({}, state, {
-        description: action.payload.description,
-        description_valid: action.payload.description_valid
+        description: action.payload.description
       });
       break;
     case AddNamespaceActions.setSchedulerQueue:
@@ -173,7 +150,7 @@ const general = (state = defaultGeneralState, action = defaultAction) => {
       return state;
   }
   return Object.assign({}, stateCopy, {
-    __complete: isComplete(stateCopy, generalStepRequiredFields,['name_valid','description_valid']),
+    __complete: isComplete(stateCopy, generalStepRequiredFields),
     __error: action.payload.error || false
   });
 };
@@ -183,26 +160,22 @@ const mapping = (state = defaultMappingState, action = defaultAction) => {
   switch (action.type) {
     case AddNamespaceActions.setHDFSDirectory:
       stateCopy = Object.assign({}, state, {
-        hdfsDirectory: action.payload.hdfsDirectory,
-        hdfsDirectory_valid: action.payload.hdfsDirectory_valid
+        hdfsDirectory: action.payload.hdfsDirectory
       });
       break;
     case AddNamespaceActions.setHiveDatabaseName:
       stateCopy = Object.assign({}, state, {
-        hiveDatabaseName: action.payload.hiveDatabaseName,
-        hiveDatabaseName_valid: action.payload.hiveDatabaseName_valid
+        hiveDatabaseName: action.payload.hiveDatabaseName
       });
       break;
     case AddNamespaceActions.setHBaseNamespace:
       stateCopy = Object.assign({}, state, {
-        hbaseNamespace: action.payload.hbaseNamespace,
-        hbaseNamespace_valid: action.payload.hbaseNamespace_valid
+        hbaseNamespace: action.payload.hbaseNamespace
       });
       break;
     case AddNamespaceActions.setSchedulerQueueName:
       stateCopy = Object.assign({}, state, {
-        schedulerQueueName: action.payload.schedulerQueueName,
-        schedulerQueueName_valid: action.payload.schedulerQueueName_valid
+        schedulerQueueName: action.payload.schedulerQueueName
       });
       break;
     case AddNamespaceActions.setProperties:
@@ -223,9 +196,7 @@ const mapping = (state = defaultMappingState, action = defaultAction) => {
     default:
       return state;
   }
-
   return Object.assign({}, stateCopy, {
-    __complete: isComplete(stateCopy, [], ['hdfsDirectory_valid','hiveDatabaseName_valid', 'hbaseNamespace_valid', 'schedulerQueueName_valid']),
     __skipped: false,
     __error: action.payload.error || false
   });
@@ -236,14 +207,12 @@ const security = (state = defaultSecurityState, action = defaultAction) => {
   switch (action.type) {
     case AddNamespaceActions.setPrincipal:
       stateCopy = Object.assign({}, state, {
-        principal: action.payload.principal,
-        principal_valid: action.payload.principal_valid
+        principal: action.payload.principal
       });
       break;
     case AddNamespaceActions.setKeytab:
       stateCopy = Object.assign({}, state, {
-        keyTab: action.payload.keyTab,
-        keyTab_valid: action.payload.keyTab_valid
+        keyTab: action.payload.keyTab
       });
       break;
     case AddNamespaceActions.setProperties:
@@ -262,13 +231,10 @@ const security = (state = defaultSecurityState, action = defaultAction) => {
     default:
       return state;
   }
-
   return Object.assign({}, stateCopy, {
-    __complete: isComplete(stateCopy, [], ['principal_valid','keyTab_valid']),
     __skipped: false,
     __error: action.payload.error || false
   });
-
 };
 
 const preferences = (state = defaultPreferencesState, action = defaultAction) => {
@@ -291,7 +257,6 @@ const preferences = (state = defaultPreferencesState, action = defaultAction) =>
       return state;
   }
   return Object.assign({}, stateCopy, {
-    __complete: isKeyValueComplete(stateCopy),
     __skipped: false,
     __error: action.payload.error || false
   });

@@ -30,31 +30,23 @@ class RuntimeArgsModeless extends PureComponent {
 
   static propTypes = {
     runtimeArgs: PropTypes.object,
-    onClose: PropTypes.func.isRequired,
-    isInvalidKeyValues: PropTypes.bool,
-    isMissingKeyValues: PropTypes.bool,
-
+    onClose: PropTypes.func.isRequired
   };
 
   state = {
     saving: false,
     savedSuccessMessage: null,
-    savingAndRunBtnDisabled: this.changeSaveAndRunBtnStatus(this.props.isInvalidKeyValues, this.props.isMissingKeyValues), // this.isRuntimeArgsFilled(this.props.runtimeArgs),
+    savingAndRunBtnDisabled: this.isRuntimeArgsFilled(this.props.runtimeArgs),
     savingAndRun: false,
     error: null
   };
 
   componentWillReceiveProps(nextProps) {
-    let {isInvalidKeyValues, isMissingKeyValues } = nextProps;
-
+    let {runtimeArgs} = nextProps;
     this.setState({
-      savingAndRunBtnDisabled: this.changeSaveAndRunBtnStatus(isInvalidKeyValues, isMissingKeyValues), // this.isRuntimeArgsFilled(runtimeArgs),
+      savingAndRunBtnDisabled: this.isRuntimeArgsFilled(runtimeArgs),
       savedSuccessMessage: null
     });
-  }
-
-  changeSaveAndRunBtnStatus(isValidValues, isMissingValues) {
-    return isValidValues || isMissingValues;
   }
 
   isRuntimeArgsFilled(runtimeArgs) {
@@ -114,7 +106,7 @@ class RuntimeArgsModeless extends PureComponent {
           loading={this.state.saving}
           className="btn btn-primary"
           onClick={this.saveRuntimeArgs}
-          disabled={this.state.savingAndRunBtnDisabled  || this.state.saving || !isEmpty(this.state.savedSuccessMessage)}
+          disabled={this.state.saving || !isEmpty(this.state.savedSuccessMessage)}
           label="Save"
         />
       );
@@ -168,9 +160,7 @@ class RuntimeArgsModeless extends PureComponent {
 
 const mapStateToProps = (state) => {
   return {
-    runtimeArgs: state.runtimeArgs,
-    isInvalidKeyValues: state.isInvalidKeyValues,
-    isMissingKeyValues: state.isMissingKeyValues,
+    runtimeArgs: state.runtimeArgs
   };
 };
 

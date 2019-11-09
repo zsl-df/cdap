@@ -29,8 +29,6 @@ import ee from 'event-emitter';
 import CardActionFeedback, {CARD_ACTION_TYPES} from 'components/CardActionFeedback';
 import BtnWithLoading from 'components/BtnWithLoading';
 import {ConnectionType} from 'components/DataPrepConnections/ConnectionType';
-import ValidatedInput from 'components/ValidatedInput';
-import types from 'services/inputValidationTemplates';
 
 const PREFIX = 'features.DataPrepConnections.AddConnections.Kafka';
 const ADDCONN_PREFIX = 'features.DataPrepConnections.AddConnections';
@@ -49,8 +47,7 @@ export default class KafkaConnection extends Component {
       brokersList: [{
         host: 'localhost',
         port: '9092',
-        uniqueId: uuidV4(),
-        valid: true,
+        uniqueId: uuidV4()
       }],
       connectionResult: {
         type: null,
@@ -58,14 +55,6 @@ export default class KafkaConnection extends Component {
       },
       testConnectionLoading: false,
       error: null,
-      inputs: {
-        'name': {
-          'error': '',
-          'required': true,
-          'template': 'NAME',
-          'label': 'Connection Name'
-        },
-      },
       loading: false
     };
 
@@ -120,8 +109,7 @@ export default class KafkaConnection extends Component {
       let obj = {
         host: split[0] || '',
         port: split[1] || '',
-        uniqueId: uuidV4(),
-        valid: true
+        uniqueId: uuidV4()
       };
 
       brokersList.push(obj);
@@ -246,37 +234,10 @@ export default class KafkaConnection extends Component {
       });
   }
 
-  /** Return true if there is some error. */
-  testInputs() {
-    let isSomeError = Object.keys(this.state.inputs).some(key => this.state.inputs[key]['error'] !== '');
-    isSomeError = isSomeError || this.state.brokersList.some(broker => !broker.valid);
-    return (isSomeError ? true : false);
-  }
-
   handleChange(key, e) {
-    if (Object.keys(this.state.inputs).includes(key)) {
-      // validate input
-      const isValid = types[this.state.inputs[key]['template']].validate(e.target.value);
-      let errorMsg = '';
-      if (e.target.value && !isValid) {
-        errorMsg = types[this.state.inputs[key]['template']].getErrorMsg();
-      }
-
-      this.setState({
-        [key]: e.target.value,
-        inputs: {
-          ...this.state.inputs,
-          [key]: {
-            ...this.state.inputs[key],
-            'error': errorMsg
-          }
-        }
-      });
-    } else {
-      this.setState({
-        [key]: e.target.value
-      });
-    }
+    this.setState({
+      [key]: e.target.value
+    });
   }
 
   renderKafka() {
@@ -297,7 +258,7 @@ export default class KafkaConnection extends Component {
   }
 
   renderAddConnectionButton() {
-    let disabled = this.testInputs() || !this.state.name;
+    let disabled = !this.state.name;
     disabled = disabled ||
       this.state.brokersList.length === 0 ||
       this.state.testConnectionLoading ||
@@ -328,7 +289,7 @@ export default class KafkaConnection extends Component {
   }
 
   renderTestButton() {
-    let disabled = this.testInputs() || this.state.testConnectionLoading || !this.state.name;
+    let disabled = this.state.testConnectionLoading || !this.state.name;
     disabled = disabled || this.state.brokersList.length === 0 || (this.state.brokersList.length === 1 && (!this.state.brokersList[0].host || !this.state.brokersList[0].port));
 
     return (
@@ -383,16 +344,12 @@ export default class KafkaConnection extends Component {
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.name`)}
-              { this.state.inputs['name']['required'] &&
-                <span className="asterisk">*</span>
-              }
+              <span className="asterisk">*</span>
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-name">
-                <ValidatedInput
+                <input
                   type="text"
-                  label={this.state.inputs['name']['label']}
-                  validationError={this.state.inputs['name']['error']}
                   className="form-control"
                   value={this.state.name}
                   onChange={this.handleChange.bind(this, 'name')}

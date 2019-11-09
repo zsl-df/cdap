@@ -17,7 +17,7 @@
 import PropTypes from 'prop-types';
 
 import React, { Component } from 'react';
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button, FormGroup, Label, Col} from 'reactstrap';
+import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
 import DataPrepStore from 'components/DataPrep/store';
 import { objectQuery } from 'services/helpers';
 import T from 'i18n-react';
@@ -29,8 +29,6 @@ import NamespaceStore from 'services/NamespaceStore';
 import { directiveRequestBodyCreator, viewSchemaPersistRequestBodyCreator } from 'components/DataPrep/helper';
 import isNil from 'lodash/isNil';
 import cookie from 'react-cookie';
-import types from 'services/inputValidationTemplates';
-import ValidatedInput from 'components/ValidatedInput';
 const PREFIX = 'features.DataPrep.TopPanel';
 const mapErrorToMessage = (message) => {
   if (message.indexOf('invalid field name') !== -1) {
@@ -62,8 +60,6 @@ export default class PersistViewSchemaModal extends Component {
       datasetName: "",
       formloaded: false,
       navigateFE: false,
-      inputError: '',
-      inputTemplate: 'NAME'
     };
   }
 
@@ -76,7 +72,6 @@ export default class PersistViewSchemaModal extends Component {
     this.setState({
       error: false,
       loading: true,
-      inputError: ''
     });
 
     let config = this.state.realtimeConfig;
@@ -152,18 +147,7 @@ export default class PersistViewSchemaModal extends Component {
   }
 
   handleChange = (e) => {
-    const isValid = types[this.state.inputTemplate].validate(e.target.value);
-    let errorMsg = '';
-    if (e.target.value && !isValid) {
-      errorMsg = types[this.state.inputTemplate].getErrorMsg();
-    }
-    if (!e.target.value) {
-      errorMsg = 'Dataset Name is required.';
-    }
-    this.setState({
-      datasetName: e.target.value,
-      inputError: errorMsg
-    });
+    this.setState({ datasetName: e.target.value });
   }
 
 
@@ -202,7 +186,8 @@ export default class PersistViewSchemaModal extends Component {
 
    navigateToFeature = () => {
     const namespace = NamespaceStore.getState().selectedNamespace;
-    const fePath = `/cdap/ns/${namespace}/featureEngineering`;
+    const feURL = `/ns/${namespace}/featureEngineering`;
+    const fePath = `/cdap${feURL}`;
     window.location.href = fePath;
   }
 
@@ -256,21 +241,12 @@ export default class PersistViewSchemaModal extends Component {
       >
         <ModalHeader>Persist Dataset</ModalHeader>
         <ModalBody>
-          <FormGroup row>
-            <Label xs="4" className="text-xs-left">
+          <div className="text-xs-left">
+            <label>
               Dataset Name:
-              <span className="text-danger">*</span>
-            </Label>
-            <Col xs="8" className="dataset-name-group">
-              <ValidatedInput
-                type="text"
-                label="Dataset Name"
-                validationError={this.state.inputError}
-                value={this.state.datasetName}
-                onChange={this.handleChange}
-              />
-            </Col>
-          </FormGroup>
+                <input type="text" className='input-style' value={this.state.datasetName} onChange={this.handleChange} />
+            </label>
+          </div>
         </ModalBody>
         <ModalFooter>
           {content}
@@ -285,7 +261,7 @@ export default class PersistViewSchemaModal extends Component {
               <div>
                 <Button className="btn-margin" color="secondary" onClick={this.props.toggle}>Close</Button>
                 <Button className="btn-margin" color="primary" onClick={this.handleSubmit}
-                  disabled={this.state.datasetName.trim().length < 1 || this.state.inputError.length > 0} >OK</Button>
+                  disabled={this.state.datasetName.trim().length < 1} >OK</Button>
             </div>
             }
           </fieldset>

@@ -25,29 +25,25 @@ const PREFIX = 'features.PipelineConfigurations.ActionButtons';
 const mapStateToProps = (state, ownProps) => {
   return {
     saveLoading: ownProps.saveLoading,
-    saveConfig: ownProps.saveConfig,
-    invalidVaues: state.isInvalidKeyValues,
-    missingValues: state.isMissingKeyValues,
+    saveConfig: ownProps.saveConfig
   };
 };
 
-const ConfigModelessSaveBtn = ({saveLoading, saveConfig, invalidVaues, missingValues}) => {
+const ConfigModelessSaveBtn = ({saveLoading, saveConfig}) => {
   return (
     <BtnWithLoading
       loading={saveLoading}
       className="btn btn-primary"
       onClick={saveConfig}
       label={T.translate(`${PREFIX}.save`)}
-      disabled={missingValues || invalidVaues || saveLoading }
+      disabled={saveLoading}
     />
   );
 };
 
 ConfigModelessSaveBtn.propTypes = {
   saveLoading: PropTypes.bool,
-  saveConfig: PropTypes.func,
-  invalidVaues: PropTypes.bool,
-  missingValues: PropTypes.bool,
+  saveConfig: PropTypes.func
 };
 
 const ConnectedConfigModelessSaveBtn = connect(mapStateToProps)(ConfigModelessSaveBtn);

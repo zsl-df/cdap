@@ -16,7 +16,6 @@
 
 import {getDefaultKeyValuePair} from 'components/KeyValuePairs/KeyValueStore';
 import {convertMapToKeyValuePairs, convertKeyValuePairsToMap} from 'services/helpers';
-import isNil from 'lodash/isNil';
 
 const KeyValueStoreActions = {
   setKey: 'SET-KEY',
@@ -55,23 +54,9 @@ const keyValuePairsHaveMissingValues = (keyValues) => {
   return false;
 };
 
-const keyValuePairsHaveInvalidValues = (keyValues) => {
-  if (keyValues.pairs) {
-    return keyValues.pairs.some((keyValuePair) => {
-      if (keyValuePair.notDeletable && keyValuePair.provided) { return false; }
-      let invalidKeyField = (!isNil(keyValuePair.validKey) && !keyValuePair.validKey);
-      let invalidValueField = (!isNil(keyValuePair.validValue) && !keyValuePair.validValue);
-      // buttons are disabled when either the key or the value has invalid value.
-      return (invalidKeyField || invalidValueField);
-    });
-  }
-  return false;
-};
-
 export default KeyValueStoreActions;
 export {
   convertMapToKeyValuePairsObj,
   convertKeyValuePairsObjToMap,
-  keyValuePairsHaveMissingValues,
-  keyValuePairsHaveInvalidValues
+  keyValuePairsHaveMissingValues
 };

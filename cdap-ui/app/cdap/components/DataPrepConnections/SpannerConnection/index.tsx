@@ -24,8 +24,6 @@ import CardActionFeedback, {CARD_ACTION_TYPES} from 'components/CardActionFeedba
 import {objectQuery} from 'services/helpers';
 import BtnWithLoading from 'components/BtnWithLoading';
 import {ConnectionType} from 'components/DataPrepConnections/ConnectionType';
-import ValidatedInput from 'components/ValidatedInput';
-import types from 'services/inputValidationTemplates';
 
 const PREFIX = 'features.DataPrepConnections.AddConnections.Spanner';
 const ADDCONN_PREFIX = 'features.DataPrepConnections.AddConnections';
@@ -58,7 +56,6 @@ interface ISpannerConnectionState {
     message?: string;
     type?: string
   };
-  inputs?: object;
   loading?: boolean;
 }
 
@@ -66,15 +63,6 @@ interface IProperties {
   projectId?: string;
   'service-account-keyfile'?: string;
 }
-
-const errorMap = 'error';
-const requiredMap = 'required';
-const templateMap = 'template';
-const labelMap = 'label';
-
-const nameMap = 'name';
-const projectIdMap = 'projectId';
-const serviceAccountKeyfileMap = 'serviceAccountKeyfile';
 
 export default class SpannerConnection extends React.PureComponent<ISpannerConnectionProps, ISpannerConnectionState> {
   public state: ISpannerConnectionState = {
@@ -86,26 +74,6 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
     connectionResult: {
       message: '',
       type: '',
-    },
-    inputs: {
-      name: {
-        error: '',
-        required: true,
-        template: 'NAME',
-        label: 'Connection Name',
-      },
-      projectId: {
-        error: '',
-        required: false,
-        template: 'GCS_PROJECT_ID',
-        label: 'Project ID',
-      },
-      serviceAccountKeyfile: {
-        error: '',
-        required: false,
-        template: 'FILE_PATH',
-        label: 'file location',
-      },
     },
     loading: false,
   };
@@ -250,40 +218,14 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
       });
   }
 
-  /** Return true if there is some error. */
-  private testInputs = () => {
-    const isSomeError = Object.keys(this.state.inputs).some((key) => this.state.inputs[key][errorMap] !== '');
-    return (isSomeError ? true : false);
-  }
-
   private handleChange = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    if (Object.keys(this.state.inputs).indexOf(key) > -1) {
-      // validate input
-      const isValid = types[this.state.inputs[key][templateMap]].validate(e.target.value);
-      let errorMsg = '';
-      if (e.target.value && !isValid) {
-        errorMsg = types[this.state.inputs[key][templateMap]].getErrorMsg();
-      }
-
-      this.setState({
-        [key]: e.target.value,
-        inputs: {
-          ...this.state.inputs,
-          [key]: {
-            ...this.state.inputs[key],
-            error: errorMsg,
-          },
-        },
-      });
-    } else {
-      this.setState({
-        [key]: e.target.value,
-      });
-    }
+    this.setState({
+      [key]: e.target.value,
+    });
   }
 
   private renderTestButton = () => {
-    const disabled = this.testInputs() || !this.state.name;
+    const disabled = !this.state.name;
 
     return (
       <span className="test-connection-button">
@@ -300,7 +242,7 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
   }
 
   private renderAddConnectionButton = () => {
-    const disabled = this.testInputs() || !this.state.name || this.state.testConnectionLoading;
+    const disabled = !this.state.name || this.state.testConnectionLoading;
 
     let onClickFn = this.addConnection;
 
@@ -339,16 +281,12 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.name`)}
-              { this.state.inputs[nameMap][requiredMap] &&
-                <span className="asterisk">*</span>
-              }
+              <span className="asterisk">*</span>
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-text">
-                <ValidatedInput
+                <input
                   type="text"
-                  label={this.state.inputs[nameMap][labelMap]}
-                  validationError={this.state.inputs[nameMap][errorMap]}
                   className="form-control"
                   value={this.state.name}
                   onChange={this.handleChange.bind(this, 'name')}
@@ -362,16 +300,11 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.projectId`)}
-              { this.state.inputs[projectIdMap][requiredMap] &&
-                <span className="asterisk">*</span>
-              }
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-text">
-                <ValidatedInput
+                <input
                   type="text"
-                  label={this.state.inputs[projectIdMap][labelMap]}
-                  validationError={this.state.inputs[projectIdMap][errorMap]}
                   className="form-control"
                   value={this.state.projectId}
                   onChange={this.handleChange.bind(this, 'projectId')}
@@ -384,16 +317,11 @@ export default class SpannerConnection extends React.PureComponent<ISpannerConne
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.serviceAccountKeyfile`)}
-              { this.state.inputs[serviceAccountKeyfileMap][requiredMap] &&
-                <span className="asterisk">*</span>
-              }
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-text">
-                <ValidatedInput
+                <input
                   type="text"
-                  label={this.state.inputs[serviceAccountKeyfileMap][labelMap]}
-                  validationError={this.state.inputs[serviceAccountKeyfileMap][errorMap]}
                   className="form-control"
                   value={this.state.serviceAccountKeyfile}
                   onChange={this.handleChange.bind(this, 'serviceAccountKeyfile')}

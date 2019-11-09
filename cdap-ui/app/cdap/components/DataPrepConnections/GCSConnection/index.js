@@ -27,8 +27,6 @@ import {objectQuery} from 'services/helpers';
 import ee from 'event-emitter';
 import BtnWithLoading from 'components/BtnWithLoading';
 import {ConnectionType} from 'components/DataPrepConnections/ConnectionType';
-import ValidatedInput from 'components/ValidatedInput';
-import types from 'services/inputValidationTemplates';
 
 const PREFIX = 'features.DataPrepConnections.AddConnections.GCS';
 const ADDCONN_PREFIX = 'features.DataPrepConnections.AddConnections';
@@ -51,26 +49,6 @@ export default class GCSConnection extends Component {
       connectionResult: {
         message: null,
         type: null
-      },
-      inputs: {
-        'name': {
-          'error': '',
-          'required': true,
-          'template': 'NAME',
-          'label': 'Connection Name'
-        },
-        'projectId': {
-          'error': '',
-          'required': false,
-          'template': 'GCS_PROJECT_ID',
-          'label': 'Project ID'
-        },
-        'serviceAccountKeyfile': {
-          'error': '',
-          'required': false,
-          'template': 'FILE_PATH',
-          'label': 'file location'
-        }
       }
     };
 
@@ -222,40 +200,14 @@ export default class GCSConnection extends Component {
       });
   }
 
-  /** Return true if there is some error. */
-  testInputs() {
-    const isSomeError = Object.keys(this.state.inputs).some(key => this.state.inputs[key]['error'] !== '');
-    return (isSomeError ? true : false);
-  }
-
   handleChange(key, e) {
-    if (Object.keys(this.state.inputs).includes(key)) {
-      // validate input
-      const isValid = types[this.state.inputs[key]['template']].validate(e.target.value);
-      let errorMsg = '';
-      if (e.target.value && !isValid) {
-        errorMsg = types[this.state.inputs[key]['template']].getErrorMsg();
-      }
-
-      this.setState({
-        [key]: e.target.value,
-        inputs: {
-          ...this.state.inputs,
-          [key]: {
-            ...this.state.inputs[key],
-            'error': errorMsg
-          }
-        }
-      });
-    } else {
-      this.setState({
-        [key]: e.target.value
-      });
-    }
+    this.setState({
+      [key]: e.target.value
+    });
   }
 
   renderTestButton() {
-    let disabled = this.testInputs() || !this.state.name || this.state.testConnectionLoading;
+    let disabled = !this.state.name || this.state.testConnectionLoading;
 
     return (
       <BtnWithLoading
@@ -270,7 +222,7 @@ export default class GCSConnection extends Component {
   }
 
   renderAddConnectionButton() {
-    let disabled = this.testInputs() || !this.state.name;
+    let disabled = !this.state.name;
 
     let onClickFn = this.addConnection;
 
@@ -310,16 +262,12 @@ export default class GCSConnection extends Component {
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.name`)}
-              { this.state.inputs['name']['required'] &&
-                <span className="asterisk">*</span>
-              }
+              <span className="asterisk">*</span>
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-text">
-                <ValidatedInput
+                <input
                   type="text"
-                  label={this.state.inputs['name']['label']}
-                  validationError={this.state.inputs['name']['error']}
                   className="form-control"
                   value={this.state.name}
                   onChange={this.handleChange.bind(this, 'name')}
@@ -333,16 +281,11 @@ export default class GCSConnection extends Component {
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.projectId`)}
-              { this.state.inputs['projectId']['required'] &&
-                <span className="asterisk">*</span>
-              }
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-text">
-                <ValidatedInput
+                <input
                   type="text"
-                  label={this.state.inputs['projectId']['label']}
-                  validationError={this.state.inputs['projectId']['error']}
                   className="form-control"
                   value={this.state.projectId}
                   onChange={this.handleChange.bind(this, 'projectId')}
@@ -355,16 +298,11 @@ export default class GCSConnection extends Component {
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.serviceAccountKeyfile`)}
-              { this.state.inputs['serviceAccountKeyfile']['required'] &&
-                <span className="asterisk">*</span>
-              }
             </label>
             <div className={INPUT_COL_CLASS}>
               <div className="input-text">
-                <ValidatedInput
+                <input
                   type="text"
-                  label={this.state.inputs['serviceAccountKeyfile']['label']}
-                  validationError={this.state.inputs['serviceAccountKeyfile']['error']}
                   className="form-control"
                   value={this.state.serviceAccountKeyfile}
                   onChange={this.handleChange.bind(this, 'serviceAccountKeyfile')}

@@ -34,7 +34,6 @@ import KeyValueStoreActions from './KeyValueStoreActions';
 import KeyValuePair from './KeyValuePair';
 import {objectQuery} from 'services/helpers';
 import cloneDeep from 'lodash/cloneDeep';
-import types from 'services/inputValidationTemplates';
 
 // Prop Name is used in place of the reserved prop 'key'
 const mapStateToFieldNameProps = (state, ownProps) => {
@@ -43,20 +42,13 @@ const mapStateToFieldNameProps = (state, ownProps) => {
     value: objectQuery(state.keyValues.pairs, ownProps.index, 'value'),
     provided: objectQuery(state.keyValues.pairs, ownProps.index, 'provided'),
     notDeletable: objectQuery(state.keyValues.pairs, ownProps.index, 'notDeletable'),
-    showReset: objectQuery(state.keyValues.pairs, ownProps.index, 'showReset'),
-    validKey: objectQuery(state.keyValues.pairs, ownProps.index, 'validKey'),
-    validValue: objectQuery(state.keyValues.pairs, ownProps.index, 'validValue'),
+    showReset: objectQuery(state.keyValues.pairs, ownProps.index, 'showReset')
   };
 };
 
 const fieldToActionMap = {
   key: KeyValueStoreActions.setKey,
   value: KeyValueStoreActions.setVal
-};
-
-const isValid = (value) => {
-  if (value === '') {return true;}
-  return types['NAME'].validate(value);
 };
 
 const mapDispatchToFieldNameProps = (dispatch, ownProps) => {
@@ -74,20 +66,12 @@ const mapDispatchToFieldNameProps = (dispatch, ownProps) => {
       });
     },
     onChange: (fieldProp, e) => {
-      const payload = {
-        index: ownProps.index,
-        [fieldProp]: e.target.value
-      };
-
-      if (fieldProp === "key") {
-        payload.validKey = isValid(e.target.value);
-      } else {
-        payload.validValue = isValid(e.target.value);
-      }
-
       dispatch({
         type: fieldToActionMap[fieldProp],
-        payload: payload
+        payload: {
+          index: ownProps.index,
+          [fieldProp]: e.target.value
+        }
       });
     },
     onProvided: (e) => {
@@ -175,8 +159,6 @@ KeyValuePairs.propTypes = {
     pairs: PropTypes.arrayOf(PropTypes.shape({
       key : PropTypes.string,
       value : PropTypes.string,
-      validKey: PropTypes.bool,
-      validValue: PropTypes.bool,
       uniqueId : PropTypes.string,
       provided: PropTypes.bool,
       notDeletable : PropTypes.bool,

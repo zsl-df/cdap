@@ -18,34 +18,8 @@ import {Col, FormGroup, Label, Form} from 'reactstrap';
 import AddNamespaceActions  from 'services/WizardStores/AddNamespace/AddNamespaceActions';
 import AddNamespaceStore from 'services/WizardStores/AddNamespace/AddNamespaceStore';
 import {Provider, connect} from 'react-redux';
+import InputWithValidations from 'components/InputWithValidations';
 import T from 'i18n-react';
-import ValidatedInput from 'components/ValidatedInput';
-import types from 'services/inputValidationTemplates';
-
-
-var inputs = {
-  name: {
-    error: '',
-    required: true,
-    template: 'NAME',
-    label: 'GeneralInfo Name',
-  },
-  description: {
-    error: '',
-    required: false,
-    template: 'NAME',
-    label: 'GeneralInfo Description',
-  },
-};
-
-const getErrorMessage = (value, field) => {
-  const isValid = types[inputs[field].template].validate(value);
-  if (value && !isValid) {
-    return types[inputs[field].template].getErrorMsg();
-  } else {
-    return '';
-  }
-};
 
 // Namespace Name
 const mapStateToNamespaceNameProps = (state) => {
@@ -53,23 +27,18 @@ const mapStateToNamespaceNameProps = (state) => {
     value: state.general.name,
     type: 'text',
     placeholder: T.translate('features.Wizard.Add-Namespace.Step1.name-placeholder'),
-    disabled: state.editableFields.fields.indexOf('name') === -1,
-    label:  inputs.name.label,
-    validationError: inputs.name.error
+    disabled: state.editableFields.fields.indexOf('name') === -1
   };
 };
-
 
 const mapDispatchToNamespaceNameProps = (dispatch) => {
   return {
     onChange: (e) => {
-      inputs.name.error = getErrorMessage(e.target.value, 'name');
       dispatch({
         type: AddNamespaceActions.setName,
-        payload: { name : e.target.value, name_valid: inputs.name.error !== '' ? false : true }
+        payload: { name : e.target.value }
       });
     }
-
   };
 };
 
@@ -79,19 +48,16 @@ const mapStateToNamespaceDescriptionProps = (state) => {
     value: state.general.description,
     type: 'text',
     placeholder: T.translate('features.Wizard.Add-Namespace.Step1.description-placeholder'),
-    disabled: state.editableFields.fields.indexOf('description') === -1,
-    label:  inputs.description.label,
-    validationError: inputs.description.error
+    disabled: state.editableFields.fields.indexOf('description') === -1
   };
 };
 
 const mapDispatchToNamespaceDescriptionProps = (dispatch) => {
   return {
     onChange: (e) => {
-      inputs.description.error = getErrorMessage(e.target.value, 'description');
       dispatch({
         type: AddNamespaceActions.setDescription,
-        payload: { description: e.target.value, description_valid: inputs.description.error !== '' ? false : true  }
+        payload: { description: e.target.value }
       });
     }
   };
@@ -100,12 +66,12 @@ const mapDispatchToNamespaceDescriptionProps = (dispatch) => {
 const InputNamespaceName = connect(
   mapStateToNamespaceNameProps,
   mapDispatchToNamespaceNameProps
-)(ValidatedInput);
+)(InputWithValidations);
 
 const InputNamespaceDescription = connect(
   mapStateToNamespaceDescriptionProps,
   mapDispatchToNamespaceDescriptionProps
-)(ValidatedInput);
+)(InputWithValidations);
 
 export default function GeneralInfoStep() {
   return (
@@ -122,7 +88,7 @@ export default function GeneralInfoStep() {
               <Label className="control-label">{T.translate('features.Wizard.Add-Namespace.Step1.name-label')}</Label>
             </Col>
             <Col xs="7">
-              <InputNamespaceName/>
+              <InputNamespaceName />
             </Col>
             <span className="fa fa-asterisk text-danger float-xs-left" />
           </FormGroup>

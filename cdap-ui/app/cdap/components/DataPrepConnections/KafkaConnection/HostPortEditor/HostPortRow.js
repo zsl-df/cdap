@@ -33,7 +33,6 @@ export default class HostPortRow extends Component {
 
   render() {
     return (
-      <div className="host-port-row-outer-container">
       <div className="host-port-row-container">
         <div className="host-input-container">
           <input
@@ -74,12 +73,6 @@ export default class HostPortRow extends Component {
           </button>
         </div>
       </div>
-      <div>
-        { !this.props.valid &&
-          <div className="invalid-feedback">Invalid Hostname.</div>
-        }
-      </div>
-      </div>
     );
   }
 }
@@ -88,7 +81,6 @@ HostPortRow.propTypes = {
   className: PropTypes.string,
   host: PropTypes.string,
   port: PropTypes.string,
-  valid: PropTypes.bool,
   index: PropTypes.number,
   onChange: PropTypes.func,
   addRow: PropTypes.func,

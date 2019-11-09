@@ -17,36 +17,9 @@ import React from 'react';
 import {Col, FormGroup, Label, Form} from 'reactstrap';
 import AddNamespaceStore from 'services/WizardStores/AddNamespace/AddNamespaceStore';
 import AddNamespaceActions  from 'services/WizardStores/AddNamespace/AddNamespaceActions';
+import InputWithValidations from 'components/InputWithValidations';
 import {Provider, connect} from 'react-redux';
 import T from 'i18n-react';
-import ValidatedInput from 'components/ValidatedInput';
-import types from 'services/inputValidationTemplates';
-
-
-var inputs = {
-  principal: {
-    error: '',
-    required: false,
-    template: 'NAME',
-    label: 'principal',
-  },
-  keyTab: {
-    error: '',
-    required: false,
-    template: 'NAME',
-    label: 'keyTab',
-  },
-};
-
-const getErrorMessage = (value, field) => {
-  const isValid = types[inputs[field].template].validate(value);
-  if (value && !isValid) {
-    return types[inputs[field].template].getErrorMsg();
-  } else {
-    return '';
-  }
-};
-
 
 // Principal
 const mapStateToPrincipalProps = (state) => {
@@ -54,19 +27,16 @@ const mapStateToPrincipalProps = (state) => {
     value: state.security.principal,
     type: 'text',
     placeholder: T.translate('features.Wizard.Add-Namespace.Step3.principal-placeholder'),
-    disabled: state.editableFields.fields.indexOf('principal') === -1,
-    label:  inputs.principal.label,
-    validationError: inputs.principal.error
+    disabled: state.editableFields.fields.indexOf('principal') === -1
   };
 };
 
 const mapDispatchToPrincipalProps = (dispatch) => {
   return {
     onChange: (e) => {
-      inputs.principal.error = getErrorMessage(e.target.value, 'principal');
       dispatch({
         type: AddNamespaceActions.setPrincipal,
-        payload: { principal : e.target.value, principal_valid: inputs.principal.error !== '' ? false : true }
+        payload: { principal : e.target.value }
       });
     }
   };
@@ -78,19 +48,16 @@ const mapStateTokeytabURIProps = (state) => {
     value: state.security.keyTab,
     type: 'text',
     placeholder: T.translate('features.Wizard.Add-Namespace.Step3.keytab-uri-placeholder'),
-    disabled: state.editableFields.fields.indexOf('keyTab') === -1,
-    label:  inputs.keyTab.label,
-    validationError: inputs.keyTab.error
+    disabled: state.editableFields.fields.indexOf('keyTab') === -1
   };
 };
 
 const mapDispatchTokeytabURIProps = (dispatch) => {
   return {
     onChange: (e) => {
-      inputs.keyTab.error = getErrorMessage(e.target.value, 'keyTab');
       dispatch({
         type: AddNamespaceActions.setKeytab,
-        payload: { keyTab : e.target.value, keyTab_valid: inputs.keyTab.error !== '' ? false : true }
+        payload: { keyTab : e.target.value }
       });
     }
   };
@@ -99,12 +66,12 @@ const mapDispatchTokeytabURIProps = (dispatch) => {
 const InputPrincipal = connect(
   mapStateToPrincipalProps,
   mapDispatchToPrincipalProps
-)(ValidatedInput);
+)(InputWithValidations);
 
 const InputKeytabURI = connect(
   mapStateTokeytabURIProps,
   mapDispatchTokeytabURIProps
-)(ValidatedInput);
+)(InputWithValidations);
 
 export default function PreferencesStep() {
   return (

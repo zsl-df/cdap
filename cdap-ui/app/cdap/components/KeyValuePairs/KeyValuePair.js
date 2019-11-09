@@ -37,9 +37,7 @@ class KeyValuePair extends Component {
     keyPlaceholder: PropTypes.string,
     valuePlaceholder: PropTypes.string,
     disabled: PropTypes.bool,
-    onPaste: PropTypes.func,
-    validKey:PropTypes.bool,
-    validValue:PropTypes.bool,
+    onPaste: PropTypes.func
   };
 
   static defaultProps = {
@@ -72,24 +70,17 @@ class KeyValuePair extends Component {
     }
 
     return (
-      <div className={classnames("key-container")}>
-          <input
-          type="text"
-          value={this.props.name}
-          autoFocus
-          onKeyDown={this.keyDown}
-          onChange={this.props.onChange.bind(null, 'key')}
-          placeholder={keyPlaceholder}
-          className={classnames(" form-control key-input", {"wider": this.props.disabled})}
-          disabled={this.props.notDeletable || this.props.disabled}
-          onPaste={this.handlePaste}
-          />
-          {
-            ((this.props.validKey !== undefined) && !this.props.validKey) &&
-            <div className="invalid-feedback">Invalid Key</div>
-          }
-      </div>
-
+      <input
+        type="text"
+        value={this.props.name}
+        autoFocus
+        onKeyDown={this.keyDown}
+        onChange={this.props.onChange.bind(null, 'key')}
+        placeholder={keyPlaceholder}
+        className={classnames("form-control key-input", {"wider": this.props.disabled})}
+        disabled={this.props.notDeletable || this.props.disabled}
+        onPaste={this.handlePaste}
+      />
     );
   }
 
@@ -111,23 +102,16 @@ class KeyValuePair extends Component {
     }
 
     return (
-      <div className={classnames("value-container")}>
-          <input
-          type="text"
-          value={this.props.value}
-          onKeyDown={this.keyDown}
-          onChange={this.props.onChange.bind(null, 'value')}
-          placeholder={valuePlaceholder}
-          className={classnames(" form-control key-input", {"wider": this.props.disabled})}
-          disabled={this.props.disabled}
-          onPaste={this.handlePaste}
-          />
-          {
-            ((this.props.validValue !== undefined) && !this.props.validValue)&&
-            <div className="invalid-feedback">Invalid value</div>
-          }
-      </div>
-
+      <input
+        type="text"
+        value={this.props.value}
+        onKeyDown={this.keyDown}
+        onChange={this.props.onChange.bind(null, 'value')}
+        placeholder={valuePlaceholder}
+        className={classnames("form-control value-input", {"wider": this.props.disabled})}
+        disabled={this.props.disabled}
+        onPaste={this.handlePaste}
+      />
     );
   }
 
@@ -194,4 +178,3 @@ class KeyValuePair extends Component {
 }
 
 export default KeyValuePair;
-

@@ -34,8 +34,6 @@ const INITIAL_STORE_STATE = cloneDeep({
 export const getDefaultKeyValuePair = () => ({
   key : '',
   value : '',
-  validKey: true,
-  validValue: true,
   uniqueId: uuidV4(),
   provided: null
 });
@@ -49,7 +47,6 @@ const keyValues = (state = initialState, action = defaultAction) => {
         return stateCopy;
       }
       stateCopy.pairs[action.payload.index].key = action.payload.key;
-      stateCopy.pairs[action.payload.index].validKey = action.payload.validKey;
       return stateCopy;
     case KeyValueStoreActions.setVal:
       stateCopy = Object.assign({}, state);
@@ -57,7 +54,6 @@ const keyValues = (state = initialState, action = defaultAction) => {
         return stateCopy;
       }
       stateCopy.pairs[action.payload.index].value = action.payload.value;
-      stateCopy.pairs[action.payload.index].validValue = action.payload.validValue;
       return stateCopy;
     case KeyValueStoreActions.setProvided:
       stateCopy = Object.assign({}, state);
