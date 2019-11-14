@@ -29,6 +29,7 @@ import CardActionFeedback from 'components/CardActionFeedback';
 import getPipelineConfig from 'components/DataPrep/TopPanel/PipelineConfigHelper';
 import isString from 'lodash/isString';
 import If from 'components/If';
+import { Theme } from 'services/ThemeHelper';
 
 const mapErrorToMessage = (message) => {
   if (message.indexOf('invalid field name') !== -1) {
@@ -210,20 +211,24 @@ export default class AddToHydratorModal extends Component {
               <i className="fa icon-ETLBatch"/>
               <span>{T.translate(`${PREFIX}.addToPipelineModal.batchPipelineBtn`)}</span>
             </a>
-            <a
-              href={this.state.realtimeUrl}
-              className={classnames('btn btn-secondary', {
-                'inactive': !this.state.realtimeUrl || this.state.error
-              })}
-              onClick={(() => {
-                if (!this.state.realtimeUrl) { return; }
-                window.localStorage.setItem(this.state.workspaceId, JSON.stringify(this.state.realtimeConfig));
-              }).bind(this)}
-              title={realtimeDisabledTooltip}
-            >
-              <i className="fa icon-sparkstreaming"/>
-              <span>{T.translate(`${PREFIX}.addToPipelineModal.realtimePipelineBtn`)}</span>
-            </a>
+            {
+              Theme.isCustomerJIO ? null
+                                  :
+                                    <a
+                                      href={this.state.realtimeUrl}
+                                      className={classnames('btn btn-secondary', {
+                                        'inactive': !this.state.realtimeUrl || this.state.error
+                                      })}
+                                      onClick={(() => {
+                                        if (!this.state.realtimeUrl) { return; }
+                                        window.localStorage.setItem(this.state.workspaceId, JSON.stringify(this.state.realtimeConfig));
+                                      }).bind(this)}
+                                      title={realtimeDisabledTooltip}
+                                      >
+                                      <i className="fa icon-sparkstreaming"/>
+                                      <span>{T.translate(`${PREFIX}.addToPipelineModal.realtimePipelineBtn`)}</span>
+                                    </a>
+            }
           </div>
         </div>
       );
