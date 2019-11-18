@@ -199,7 +199,7 @@ const getRuntimeArgsForDisplay = (currentRuntimeArgs, macrosMap) => {
         providedMacros[key] = currentPair.value;
       }
       // keep status of key and value field for create macro object
-      keyValidMap[key] = isNil(currentPair['validKey']) ? true :  currentPair['validKey']
+      keyValidMap[key] = isNil(currentPair['validKey']) ? true :  currentPair['validKey'];
       valueValidMap[key] = isNil(currentPair['validValue']) ? true :  currentPair['validValue'];
 
     });
