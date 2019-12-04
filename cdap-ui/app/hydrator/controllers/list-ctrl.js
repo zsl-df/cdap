@@ -345,7 +345,7 @@ angular.module(PKG.name + '.feature.hydrator')
     vm.refreshScreen = () => {
       $state.reload()
       .then(function() {
-
+        // capture the promise resolve state for feature use.
       });
     };
 
