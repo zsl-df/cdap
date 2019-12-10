@@ -1016,6 +1016,7 @@ angular.module(PKG.name + '.commons')
 
     vm.onNodeExport = (node) => {
       const config = getPluginConfig(node);
+      vm.nodeMenuOpen = null;
       if (config) {
         var blob = new Blob([JSON.stringify(config, null, 4)], { type: 'application/json' });
         const url = window.URL.createObjectURL(blob);
