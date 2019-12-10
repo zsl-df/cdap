@@ -1023,7 +1023,7 @@ angular.module(PKG.name + '.commons')
         const dummyElement = document.createElement('a');
         dummyElement.style.display = 'none';
         dummyElement.href = url;
-        dummyElement.download = `${config.plugin.name}-template.json`;
+        dummyElement.download = `${config.plugin.label?config.plugin.label:config.plugin.name}-template.json`;
         document.body.appendChild(dummyElement);
         dummyElement.click();
         document.body.removeChild(dummyElement);
