@@ -56,7 +56,22 @@ angular.module(PKG.name + '.commons')
         var oldDataset;
         var newDataset;
         var modalOpen = false;
-
+        // Dataset name encryption function
+        var encryptValue = function (referenceId) {
+          if (referenceId.startsWith("/")) {
+            referenceId = referenceId.replace("/", "file_");
+          }
+          return referenceId.replace(/[/]/g, "_--_").replace(/[:]/g, "-__-").replace(/[.]/g, "-___-")
+            .replace(/[*]/g, "_---_");
+        };
+        // Dataset name decrypt function
+        var decryptValue = function (referenceId) {
+          if (referenceId.startsWith("file_")) {
+            referenceId = referenceId.replace("file_", "/");
+          }
+          return referenceId.replace(/_--_/g, "/").replace(/-__-/g, ":").replace(/-___-/g, ".")
+            .replace(/_---_/g, "*");
+        };
         var showPopupFunc = function(schema, properties, oldDatasetName) {
           let sinkName = $scope.stageName;
           let confirmModal = $uibModal.open({
@@ -66,7 +81,7 @@ angular.module(PKG.name + '.commons')
               keyboard: false,
               windowTopClass: 'confirm-modal hydrator-modal center change-dataset-confirmation-modal',
               controller: ['$scope', function($scope) {
-                $scope.datasetName = params.datasetId;
+                $scope.datasetName = decryptValue(params.datasetId);
                 $scope.sinkName = sinkName;
                 $scope.inputProperties = properties;
                 $scope.schema = schema;
@@ -127,9 +142,13 @@ angular.module(PKG.name + '.commons')
         resource.list(params)
           .$promise
           .then(function (res) {
-            $scope.list = res;
-
-            dataMap = res.map(function (d) { return d.name; });
+            dataMap = [];
+            $scope.list = res.map(function(item) {
+                var decryptedName = decryptValue(item.name);
+                item.name = decryptedName;
+                dataMap.push(decryptedName);
+                return item;
+            });
             if (dataMap.indexOf($scope.model) === -1 ) {
               isCurrentlyExistingDataset = false;
             } else {
@@ -139,13 +158,13 @@ angular.module(PKG.name + '.commons')
 
         $scope.showConfirmationModal = function() {
           if (oldDataset !== newDataset) {
-            params.datasetId = newDataset;
+            params.datasetId = encryptValue(newDataset);
             resource.get(params)
               .$promise
               .then(function (res) {
                 schema = res.spec.properties.schema;
 
-                if (!isCurrentlyExistingDataset && dataMap.indexOf(newDataset) !== -1) {
+                if (!isCurrentlyExistingDataset && dataMap.indexOf(decryptValue(newDataset)) !== -1) {
                   if (debouncedPopup) {
                     debouncedPopup.cancel();
                   }
