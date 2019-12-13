@@ -28,6 +28,7 @@ import T from 'i18n-react';
 import {preventPropagation} from 'services/helpers';
 import { UncontrolledTooltip } from 'components/UncontrolledComponents';
 import If from 'components/If';
+import { Theme } from 'services/ThemeHelper';
 
 const PREFIX = 'features.DataPrep.Directives.ChangeDataType';
 
@@ -39,6 +40,16 @@ const DATATYPE_OPTIONS = [
   'integer',
   'long',
   'short',
+  'float',
+  'double',
+  'bytes'
+];
+
+const JIO_SPECIFIC_DATATYPE_OPTIONS = [
+  'string',
+  'boolean',
+  'integer',
+  'long',
   'float',
   'double',
   'bytes'
@@ -170,7 +181,7 @@ export default class ChangeDataTypeDirective extends Component {
 }
 
 ChangeDataTypeDirective.defaultProps = {
-  options: DATATYPE_OPTIONS
+  options: Theme.isCustomerJIO ? JIO_SPECIFIC_DATATYPE_OPTIONS : DATATYPE_OPTIONS
 };
 
 ChangeDataTypeDirective.propTypes = {
