@@ -991,6 +991,10 @@ features:
             fieldLabel: Depth
             label: XML to JSON
             placeholder: Enter depth
+          AVRORECORD:
+            placeholder: Please enter avro schema
+            modalTitle: Please Enter Avro Schema
+            label: Avro Record
         title: Parse
       SetCharEncoding:
         disabledTooltip: Character encoding can only be set on columns of data type 'bytes'
@@ -1229,6 +1233,7 @@ features:
         testConnection: Test Connection
       Kafka:
         brokersList: Broker host
+        brokerHostTooltip: List of Kafka brokers specified in host1:port1, bhost2:port2 form. For example, host1.example.com:9092, host2.example.com:9092
         Buttons:
           ADD: Add Connection
           DUPLICATE: Duplicate Connection
@@ -1239,25 +1244,32 @@ features:
           ADD: Failed to add connection
           DUPLICATE: Failed to duplicate connection
           EDIT: Failed to edit connection
+        hortonworksSchemaRegistryURL: Hortonworks Schema Registry URL
         kafka: Kafka
         kafkaProducerProperties: Additional Kafka Producer Properties
-        principal: Kerberos Principal
         keytabLocation: Keytab Location
         ModalHeader:
           ADD: "Add connection: Kafka"
           DUPLICATE: "Duplicate connection: {connection}"
           EDIT: "Edit connection: {connection}"
+        format: Message Format
         name: Connection name
+        principal: Kerberos Principal
         Placeholders:
-          name: Specify a name to identify this connection,
-          principal: Specify a Kerberos Principal to this connection
+          name: Specify a name to identify this connection
+          hortonworksSchemaRegistryURL: Specify a Hortonworks Schema Registry URL to this connection
           keytabLocation: Specify a Keytab Location to this connection
           kafkaProducerProperties:
             key: Enter Key
             value: Enter Value
+          principal: Specify a Kerberos Principal to this connection
+          schemaName: Specify a Schema Name to get avro schema
+          topic: Specify a Kafka topic name
         port: Port
         required: Required
+        schemaName: Schema Name
         testConnection: Test Connection
+        topic: Kafka Topic Name
         zkQuorum: Zookeeper host
         zookeeper: Zookeeper
       label: Add Connection
