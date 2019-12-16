@@ -18,8 +18,8 @@ import PropTypes from 'prop-types';
 
 import React, { Component } from 'react';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
-import {objectQuery, isNilOrEmpty} from 'services/helpers';
-import NamespaceStore from 'services/NamespaceStore';
+import { objectQuery, isNilOrEmpty } from 'services/helpers';
+import { getCurrentNamespace } from 'services/NamespaceStore';
 import MyDataPrepApi from 'api/dataprep';
 import T from 'i18n-react';
 import LoadingSVG from 'components/LoadingSVG';
@@ -33,6 +33,7 @@ import KeyValuePairs from 'components/KeyValuePairs';
 import ValidatedInput from 'components/ValidatedInput';
 import types from 'services/inputValidationTemplates';
 import { Theme } from 'services/ThemeHelper';
+import {UncontrolledTooltip} from 'components/UncontrolledComponents';
 
 const PREFIX = 'features.DataPrepConnections.AddConnections.Kafka';
 const ADDCONN_PREFIX = 'features.DataPrepConnections.AddConnections';
@@ -49,6 +50,13 @@ const DEFAULT_KAFKA_PRODUCER_PROPERTIES = {
   }]
 };
 
+const MESSAGE_FORMAT = [
+  "csv",
+  "avro",
+  "binary",
+  "text",
+  "tsv"
+];
 require('./KafkaConnection.scss');
 
 export default class KafkaConnection extends Component {
@@ -63,15 +71,19 @@ export default class KafkaConnection extends Component {
         uniqueId: uuidV4(),
         valid: true,
       }],
-      principal: '',
-      keytabLocation: '',
-      kafkaProducerProperties: DEFAULT_KAFKA_PRODUCER_PROPERTIES,
       connectionResult: {
         type: null,
         message: null
       },
-      testConnectionLoading: false,
       error: null,
+      keytabLocation: '',
+      kafkaProducerProperties: DEFAULT_KAFKA_PRODUCER_PROPERTIES,
+      format: 'text',
+      principal: '',
+      topic:'',
+      testConnectionLoading: false,
+      hortonworksSchemaRegistryURL: '',
+      schemaName: '',
       inputs: {
         'name': {
           'error': '',
@@ -81,13 +93,29 @@ export default class KafkaConnection extends Component {
         },
         'principal': {
           'error': '',
-          'template': 'KERBEROS_PRINCIPAL',
+          'template': 'DEFAULT',
           'label': T.translate(`${PREFIX}.principal`)
         },
         'keytabLocation': {
           'error': '',
-          'template': 'KEYTAB_LOCATION',
+          'template': 'DEFAULT',
           'label': T.translate(`${PREFIX}.keytabLocation`)
+        },
+        'topic': {
+          'error': '',
+          'required': true,
+          'template': 'DEFAULT',
+          'label': T.translate(`${PREFIX}.topic`)
+        },
+        'hortonworksSchemaRegistryURL': {
+          'error': '',
+          'template': 'DEFAULT',
+          'label': T.translate(`${PREFIX}.hortonworksSchemaRegistryURL`)
+        },
+        'schemaName': {
+          'error': '',
+          'template': 'DEFAULT',
+          'label': T.translate(`${PREFIX}.schemaName`)
         }
       },
       loading: false
@@ -108,7 +136,7 @@ export default class KafkaConnection extends Component {
 
     this.setState({ loading: true });
 
-    let namespace = NamespaceStore.getState().selectedNamespace;
+    let namespace = getCurrentNamespace();
 
     let params = {
       namespace,
@@ -125,13 +153,21 @@ export default class KafkaConnection extends Component {
         let brokersList = this.parseBrokers(brokers);
         let principal = objectQuery(info, 'properties', 'principal');
         let keytabLocation = objectQuery(info, 'properties', 'keytabLocation');
-        let kafkaProducerProperties = {'pairs': this.getKeyValPair(JSON.parse(kafkaProducerPropertiesPairs))};
+        let kafkaProducerProperties = { 'pairs': this.getKeyValPair(JSON.parse(kafkaProducerPropertiesPairs)) };
+        let topic = objectQuery(info, 'properties', 'topic');
+        let format = objectQuery(info, 'properties', 'format');
+        let hortonworksSchemaRegistryURL = objectQuery(info, 'properties', 'schema.registry.url');
+        let schemaName = objectQuery(info, 'properties', 'schema.name');
         this.setState({
           name,
           brokersList,
           principal,
           keytabLocation,
           kafkaProducerProperties,
+          topic,
+          format,
+          hortonworksSchemaRegistryURL,
+          schemaName,
           loading: false
         });
       }, (err) => {
@@ -210,7 +246,11 @@ export default class KafkaConnection extends Component {
   getProperties() {
     const prop = {
       brokers: this.convertBrokersList(),
-      kafkaProducerProperties: JSON.stringify(this.getKeyValObject())
+      kafkaProducerProperties: JSON.stringify(this.getKeyValObject()),
+      topic: this.state.topic,
+      format: this.state.format,
+      'schema.registry.url': this.state.hortonworksSchemaRegistryURL,
+      'schema.name': this.state.schemaName
     };
     return Theme.isCustomerJIO ? prop :
       {
@@ -220,7 +260,7 @@ export default class KafkaConnection extends Component {
       };
   }
   addConnection() {
-    let namespace = NamespaceStore.getState().selectedNamespace;
+    let namespace = getCurrentNamespace();
 
     let requestBody = {
       name: this.state.name,
@@ -242,7 +282,7 @@ export default class KafkaConnection extends Component {
   }
 
   editConnection() {
-    let namespace = NamespaceStore.getState().selectedNamespace;
+    let namespace = getCurrentNamespace();
 
     let params = {
       namespace,
@@ -286,7 +326,7 @@ export default class KafkaConnection extends Component {
       error: null
     });
 
-    let namespace = NamespaceStore.getState().selectedNamespace;
+    let namespace = getCurrentNamespace();
 
     let requestBody = {
       name: this.state.name,
@@ -319,11 +359,22 @@ export default class KafkaConnection extends Component {
   }
 
   /** Return true if there is some error. */
-  testInputs() {
+  testErrorsInInputs() {
     let isSomeErrorInputs = Object.keys(this.state.inputs).some(key => this.state.inputs[key]['error'] !== '');
+
+    /* check for kafka-properties */
     let kafkaProducerProperties = this.state.kafkaProducerProperties ? this.state.kafkaProducerProperties.pairs : DEFAULT_KAFKA_PRODUCER_PROPERTIES.pairs;
     let isSomeErrorKeyValuePairs = kafkaProducerProperties.some(property => { return (!property.validKey || !property.validValue);});
-    return isSomeErrorInputs || isSomeErrorKeyValuePairs;
+
+    /* check for broker list */
+    let isSomeErrorBrokerList = this.state.brokersList.some(broker => { return !broker.valid; });
+
+    return isSomeErrorInputs || isSomeErrorKeyValuePairs || isSomeErrorBrokerList;
+  }
+
+  isBrokerListEmpty() {
+    let isBrokerEmpty = this.state.brokersList.some(broker => { return (broker.host === '' || broker.port === '');});
+    return isBrokerEmpty;
   }
 
   handleChange(key, e) {
@@ -352,11 +403,15 @@ export default class KafkaConnection extends Component {
     }
   }
 
-  renderKafka() {
+  renderKafkaBrokerList() {
     return (
       <div className="form-group row">
-        <label className={LABEL_COL_CLASS}>
+        <label className={LABEL_COL_CLASS} id="kafka-broker-host">
           {T.translate(`${PREFIX}.brokersList`)}
+          <UncontrolledTooltip
+              target="kafka-broker-host">
+              {T.translate(`${PREFIX}.brokerHostTooltip`)}
+          </UncontrolledTooltip>
           <span className="asterisk">*</span>
         </label>
         <div className={INPUT_COL_CLASS}>
@@ -369,15 +424,12 @@ export default class KafkaConnection extends Component {
     );
   }
 
+  isButtonDisabled() {
+    return !this.state.name || !this.state.topic || this.state.testConnectionLoading || this.testErrorsInInputs() ||  this.isBrokerListEmpty();
+  }
+
   renderAddConnectionButton() {
-    let disabled = this.testInputs() || !this.state.name;
-    disabled = disabled ||
-      this.state.brokersList.length === 0 ||
-      this.state.testConnectionLoading ||
-      (
-        this.state.brokersList.length === 1 &&
-        (!this.state.brokersList[0].host || !this.state.brokersList[0].port)
-      );
+    let disabled = this.isButtonDisabled();
 
     let onClickFn = this.addConnection;
 
@@ -401,8 +453,7 @@ export default class KafkaConnection extends Component {
   }
 
   renderTestButton() {
-    let disabled = this.testInputs() || this.state.testConnectionLoading || !this.state.name;
-    disabled = disabled || this.state.brokersList.length === 0 || (this.state.brokersList.length === 1 && (!this.state.brokersList[0].host || !this.state.brokersList[0].port));
+    let disabled = this.isButtonDisabled();
 
     return (
       <BtnWithLoading
@@ -468,17 +519,14 @@ export default class KafkaConnection extends Component {
             {T.translate(`${PREFIX}.principal`)}
           </label>
           <div className={INPUT_COL_CLASS}>
-            <div className="input-name">
-              <ValidatedInput
-                type="text"
-                label={this.state.inputs['principal']['label']}
-                validationError={this.state.inputs['principal']['error']}
-                className="form-control"
-                value={this.state.principal}
-                onChange={this.handleChange.bind(this, 'principal')}
-                placeholder={T.translate(`${PREFIX}.Placeholders.principal`)}
-              />
-            </div>
+            <ValidatedInput
+              type="text"
+              label={this.state.inputs['principal']['label']}
+              validationError={this.state.inputs['principal']['error']}
+              value={this.state.principal}
+              onChange={this.handleChange.bind(this, 'principal')}
+              placeholder={T.translate(`${PREFIX}.Placeholders.principal`)}
+            />
           </div>
         </div>
 
@@ -488,22 +536,114 @@ export default class KafkaConnection extends Component {
             {T.translate(`${PREFIX}.keytabLocation`)}
           </label>
           <div className={INPUT_COL_CLASS}>
-            <div className="input-name">
-              <ValidatedInput
-                type="text"
-                label={this.state.inputs['keytabLocation']['label']}
-                validationError={this.state.inputs['keytabLocation']['error']}
-                className="form-control"
-                value={this.state.keytabLocation}
-                onChange={this.handleChange.bind(this, 'keytabLocation')}
-                placeholder={T.translate(`${PREFIX}.Placeholders.keytabLocation`)}
-              />
-            </div>
+            <ValidatedInput
+              type="text"
+              label={this.state.inputs['keytabLocation']['label']}
+              validationError={this.state.inputs['keytabLocation']['error']}
+              value={this.state.keytabLocation}
+              onChange={this.handleChange.bind(this, 'keytabLocation')}
+              placeholder={T.translate(`${PREFIX}.Placeholders.keytabLocation`)}
+            />
           </div>
         </div>
       </div>
     );
   }
+
+  renderKafkaTopicName() {
+    return (
+      <div className="form-group row">
+        <label className={LABEL_COL_CLASS}>
+          {T.translate(`${PREFIX}.topic`)}
+          {this.state.inputs['topic']['required'] &&
+            <span className="asterisk">*</span>
+          }
+        </label>
+        <div className={INPUT_COL_CLASS}>
+          <ValidatedInput
+            type="text"
+            label={this.state.inputs['topic']['label']}
+            validationError={this.state.inputs['topic']['error']}
+            value={this.state.topic}
+            onChange={this.handleChange.bind(this, 'topic')}
+            placeholder={T.translate(`${PREFIX}.Placeholders.topic`)}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  renderMessageFormat() {
+    return (
+      <div className="form-group row">
+        <label className={LABEL_COL_CLASS}>
+          {T.translate(`${PREFIX}.format`)}
+        </label>
+        <div className={INPUT_COL_CLASS}>
+          <div className="input-text">
+            <select
+              className="form-control"
+              value={this.state.format}
+              onChange={this.handleChange.bind(this, 'format')}
+            >
+              {
+                MESSAGE_FORMAT.map((format) => {
+                  return (
+                    <option value={format}
+                      key={format}>
+                      {format}
+                    </option>
+                  );
+                })
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  renderAvroSpecificInputs() {
+    return (
+      <div>
+        {/* Hortonworks Schema Registry URL */}
+        <div className="form-group row">
+          <label className={LABEL_COL_CLASS}>
+            {T.translate(`${PREFIX}.hortonworksSchemaRegistryURL`)}
+          </label>
+          <div className={INPUT_COL_CLASS}>
+            <ValidatedInput
+              type="text"
+              label={this.state.inputs['hortonworksSchemaRegistryURL']['label']}
+              validationError={this.state.inputs['hortonworksSchemaRegistryURL']['error']}
+              value={this.state.hortonworksSchemaRegistryURL}
+              onChange={this.handleChange.bind(this, 'hortonworksSchemaRegistryURL')}
+              placeholder={T.translate(`${PREFIX}.Placeholders.hortonworksSchemaRegistryURL`)}
+            />
+          </div>
+        </div>
+
+        {/* Schema Name */}
+        <div className="form-group row">
+          <label className={LABEL_COL_CLASS}>
+            {T.translate(`${PREFIX}.schemaName`)}
+          </label>
+          <div className={INPUT_COL_CLASS}>
+            <ValidatedInput
+              type="text"
+              label={this.state.inputs['schemaName']['label']}
+              validationError={this.state.inputs['schemaName']['error']}
+              value={this.state.schemaName}
+              onChange={this.handleChange.bind(this, 'schemaName')}
+              placeholder={T.translate(`${PREFIX}.Placeholders.schemaName`)}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
   renderContent() {
     if (this.state.loading) {
       return (
@@ -518,6 +658,8 @@ export default class KafkaConnection extends Component {
       <div className="kafka-detail">
 
         <div className="form">
+
+          {/* connection name */}
           <div className="form-group row">
             <label className={LABEL_COL_CLASS}>
               {T.translate(`${PREFIX}.name`)}
@@ -526,22 +668,24 @@ export default class KafkaConnection extends Component {
               }
             </label>
             <div className={INPUT_COL_CLASS}>
-              <div className="input-name">
-                <ValidatedInput
-                  type="text"
-                  label={this.state.inputs['name']['label']}
-                  validationError={this.state.inputs['name']['error']}
-                  className="form-control"
-                  value={this.state.name}
-                  onChange={this.handleChange.bind(this, 'name')}
-                  disabled={this.props.mode === 'EDIT'}
-                  placeholder={T.translate(`${PREFIX}.Placeholders.name`)}
-                />
-              </div>
+              <ValidatedInput
+                type="text"
+                label={this.state.inputs['name']['label']}
+                validationError={this.state.inputs['name']['error']}
+                value={this.state.name}
+                onChange={this.handleChange.bind(this, 'name')}
+                disabled={this.props.mode === 'EDIT'}
+                placeholder={T.translate(`${PREFIX}.Placeholders.name`)}
+              />
             </div>
           </div>
 
-          {this.renderKafka()}
+          {this.renderKafkaBrokerList()}
+          {this.renderKafkaTopicName()}
+          {this.renderMessageFormat()}
+          {
+            this.state.format === 'avro' ? this.renderAvroSpecificInputs() : null
+          }
           {
             Theme.isCustomerJIO ? null : this.renderPrincipalKeytabLocation()
           }
