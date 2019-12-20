@@ -369,6 +369,10 @@ public class DefaultUGIProvider extends AbstractCachedUGIProvider {
       programId = ((ProgramRunId) entityId).getParent();
     }
 
+    /*
+     * Do Not Impersonate if program is of type Service. Services like DataPrep should
+     * continue to use Namespace level impersonation
+     */
     if (programId != null) {
       String pCategory = programId.getType().getCategoryName();
       if (!(pCategory.equalsIgnoreCase(ProgramType.SERVICE.getCategoryName()))) {
@@ -381,8 +385,6 @@ public class DefaultUGIProvider extends AbstractCachedUGIProvider {
   
   @Override
   protected String getImpersonatedUser(ImpersonationRequest impersonationRequest) {
-    Map<String, String> properties = getRuntimeImpersonationProperties(impersonationRequest.getEntityId());
-
     String defaultRes;
     try {
       defaultRes = new KerberosName(impersonationRequest.getPrincipal()).getShortName();
@@ -391,7 +393,30 @@ public class DefaultUGIProvider extends AbstractCachedUGIProvider {
                 impersonationRequest.getPrincipal(), e);
         defaultRes = impersonationRequest.getPrincipal();
     }
+
+    ProgramId progId = null;
+    if (impersonationRequest.getEntityId() instanceof ProgramRunId) {
+      progId = ((ProgramRunId) impersonationRequest.getEntityId()).getParent();
+    } else if (impersonationRequest.getEntityId() instanceof ProgramId) {
+      progId = (ProgramId)(impersonationRequest.getEntityId());
+    } else if (impersonationRequest.getEntityId() instanceof TwillRunProgramId) {
+      progId = ((TwillRunProgramId)impersonationRequest.getEntityId()).getProgramId();
+    }
     
+    if (progId != null) {
+      /*
+       * Program of type Service is not impersonated with loggedIn user. Services like DataPrep should
+       * continue to use Namespace level impersonation
+       */
+      String pCategory = progId.getType().getCategoryName();
+      if (pCategory.equalsIgnoreCase(ProgramType.SERVICE.getCategoryName())) {
+        LOG.debug("Entity {} is of type Service. Impersonating as namespace/system user {}",
+            progId, defaultRes);
+        return defaultRes;
+      }
+    }
+    
+    Map<String, String> properties = getRuntimeImpersonationProperties(impersonationRequest.getEntityId());
     if (properties == null) {
       return defaultRes;
     }

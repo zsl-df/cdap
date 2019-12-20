@@ -27,6 +27,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,8 +61,8 @@ public abstract class AbstractCachedUGIProvider implements UGIProvider {
   /**
    * Returns user to be impersonated
    */
-  protected String getImpersonatedUser(ImpersonationRequest impersonationRequest) {
-      return impersonationRequest.getPrincipal();
+  protected String getImpersonatedUser(ImpersonationRequest impersonationRequest) throws IOException{
+    return new KerberosName(impersonationRequest.getPrincipal()).getShortName();
   }
      
   /**
@@ -76,7 +77,6 @@ public abstract class AbstractCachedUGIProvider implements UGIProvider {
       boolean isCache = checkExploreAndDetermineCache(impersonationRequest);
       ImpersonationRequest tmpRequest = impersonationRequest;
       if (impersonationRequest.getEntityId() instanceof ProgramRunId) {
-          
           ProgramId progId = ((ProgramRunId) impersonationRequest.getEntityId()).getParent();
           tmpRequest = new ImpersonationRequest(progId, impersonationRequest.getImpersonatedOpType());
       }
@@ -86,7 +86,6 @@ public abstract class AbstractCachedUGIProvider implements UGIProvider {
                                                                  info.getPrincipal(), info.getKeytabURI());
       String impersonatedUser = getImpersonatedUser(newRequest);
       return isCache ? ugiCache.get(new UGICacheKey(newRequest, impersonatedUser)) : createUGI(newRequest);
-
     } catch (ExecutionException e) {
       Throwable cause = e.getCause();
       // Propagate if the cause is an IOException or RuntimeException
