@@ -22,6 +22,7 @@ import co.cask.cdap.api.artifact.ArtifactVersion;
 import co.cask.cdap.api.artifact.ArtifactVersionRange;
 import co.cask.cdap.client.ArtifactClient;
 import co.cask.cdap.client.NamespaceClient;
+import co.cask.cdap.common.io.CaseInsensitiveEnumTypeAdapterFactory;
 import co.cask.cdap.etl.proto.UpgradeContext;
 import co.cask.cdap.etl.proto.UpgradeableConfig;
 import co.cask.cdap.etl.proto.v2.DataStreamsConfig;
@@ -32,6 +33,7 @@ import co.cask.cdap.etl.tool.ETLVersion;
 import co.cask.cdap.proto.artifact.AppRequest;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.util.Set;
 
@@ -44,7 +46,9 @@ public class Upgrader {
   public static final String DATA_STREAMS_NAME = "cdap-data-streams";
   public static final Set<String> ARTIFACT_NAMES =
     ImmutableSet.of(BATCH_NAME, DATA_PIPELINE_NAME, DATA_STREAMS_NAME);
-  private static final Gson GSON = new Gson();
+  private static final Gson GSON = new GsonBuilder()
+		  .registerTypeAdapterFactory(new CaseInsensitiveEnumTypeAdapterFactory())
+		  .create();
   private static final ArtifactVersion LOWEST_VERSION = new ArtifactVersion("3.2.0");
 
   private final String newVersion;
