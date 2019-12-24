@@ -40,7 +40,13 @@ public class LDAPLoginService extends JAASLoginService {
             map.put(Context.INITIAL_CONTEXT_FACTORY, map.get("contextFactory").toString());
             map.put(Context.SECURITY_AUTHENTICATION, map.get("authenticationMethod").toString());
             map.put(Context.PROVIDER_URL, getLDAPURL(map));
-
+            map.put(Context.SECURITY_PRINCIPAL, map.get("bindDn").toString());
+            map.put(Context.SECURITY_CREDENTIALS, map.get("bindPassword").toString());
+            
+            if(map.containsKey("useLdaps") && map.get("useLdaps").toString().equalsIgnoreCase("true")){
+                map.put("java.naming.ldap.factory.socket", LDAPLoginModule.TrustAllSSLSocketFactory.class.getName());
+            }
+            
             LdapContext ctx = new InitialLdapContext(map, null);
 
             SearchControls constraints = new SearchControls();
