@@ -106,6 +106,7 @@ class DAGPlusPlusNodesStore {
   setCanvasPanning(panning) {
     this.state.canvasPanning.top = panning.top;
     this.state.canvasPanning.left = panning.left;
+    this.emitChange();
   }
 
   getSourceCount() {
