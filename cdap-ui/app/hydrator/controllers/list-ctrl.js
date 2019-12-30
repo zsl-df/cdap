@@ -388,11 +388,13 @@ angular.module(PKG.name + '.feature.hydrator')
         draftList:[]
       };
       angular.forEach(vm.pipelineList, function (app) {
-        if (app.isDraft) {
-          const {artifact, description, name, config} = vm.draftPipeLineList[app.id];
-          req.draftList.push({artifact, description, name, config});
-        } else {
-          req.pipelineList.push(app.name);
+        if(app.selected) {
+          if (app.isDraft) {
+            const {artifact, description, name, config} = vm.draftPipeLineList[app.id];
+            req.draftList.push({artifact, description, name, config});
+          } else {
+            req.pipelineList.push(app.name);
+          }
         }
       });
     };
