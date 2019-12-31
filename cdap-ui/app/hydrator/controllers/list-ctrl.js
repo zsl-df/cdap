@@ -438,4 +438,8 @@ angular.module(PKG.name + '.feature.hydrator')
 
     vm.getPipelines();
 
+    vm.viewMiniViewPipeline = () => {
+
+    }
+
   });

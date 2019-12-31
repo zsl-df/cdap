@@ -74,7 +74,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="pipeline in (ListController.filteredPipeline = (ListController.pipelineList | filter: {name: ListController.searchText} | filter: {displayStatus: ListController.displayStatus} )) | orderBy:sortable.predicate:sortable.reverse | myPaginate:ListController.currentPage:ListController.PAGE_SIZE">
+          <tr ng-repeat="pipeline in (ListController.filteredPipeline = (ListController.pipelineList | filter: {name: ListController.searchText} | filter: {displayStatus: ListController.displayStatus} )) | orderBy:sortable.predicate:sortable.reverse | myPaginate:ListController.currentPage:ListController.PAGE_SIZE"
+              ng-click='ListController.viewMiniViewPipeline()'>
             <td><input type="checkbox" name="name4" ng-click="ListController.selectDeselectPipeline($event, pipeline)" ng-model="pipeline.selected" /></td>
             <td class="pipeline-name" title="{{pipeline.description !== '' ?  pipeline.description : pipeline.name }}">
               <a ui-sref="hydrator.detail({ pipelineId: pipeline.name })" ng-if="::!pipeline.isDraft">
@@ -160,6 +161,23 @@
       <h3>
         <span class="fa fa-spinner fa-spin fa-2x"></span>
       </h3>
+    </div>
+  </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header" ng-show="title">
+        <h3 class="modal-title" ng-bind="title"></h3>
+      </div>
+      <div class="modal-body">
+        <div ui-view="canvas" class="canvas"></div>
+      </div>
+      <!-- <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="$hide()">Cancel</button>
+        <button type="button" class="btn btn-danger" ng-click="doConfirm()">OK</button>
+      </div> -->
     </div>
   </div>
 </div>
