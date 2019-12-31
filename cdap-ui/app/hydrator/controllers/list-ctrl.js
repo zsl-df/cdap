@@ -45,6 +45,7 @@ angular.module(PKG.name + '.feature.hydrator')
     vm.headerClass = !window.CaskCommon.ThemeHelper.Theme.showHeader ? 'no-header' : '';
     vm.isSelectAll = false;
     vm.isPipelineDownloadProgress = false;
+    vm.isPipelineView = false;
     vm.checkForValidPage = (pageNumber) => {
       return (
         !Number.isNaN(pageNumber) &&
@@ -439,7 +440,7 @@ angular.module(PKG.name + '.feature.hydrator')
     vm.getPipelines();
 
     vm.viewMiniViewPipeline = () => {
-
-    }
+      vm.isPipelineView = !vm.isPipelineView;
+    };
 
   });
