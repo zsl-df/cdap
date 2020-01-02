@@ -21,7 +21,7 @@ angular.module(PKG.name + '.feature.hydrator')
     mySettings, $state, $http, myHelpers,
     myAppsApi, myAlertOnValium, myLoadingService,
     $interval, moment, MyPipelineStatusMapper,
-    myPipelineCommonApi, PROGRAM_STATUSES) {
+    myPipelineCommonApi, PROGRAM_STATUSES, $uibModal, $q) {
     var vm = this;
     vm.$interval = $interval;
     vm.moment = moment;
@@ -45,7 +45,7 @@ angular.module(PKG.name + '.feature.hydrator')
     vm.headerClass = !window.CaskCommon.ThemeHelper.Theme.showHeader ? 'no-header' : '';
     vm.isSelectAll = false;
     vm.isPipelineDownloadProgress = false;
-    vm.isPipelineView = false;
+    vm.$uibModal = $uibModal;
     vm.checkForValidPage = (pageNumber) => {
       return (
         !Number.isNaN(pageNumber) &&
@@ -439,8 +439,62 @@ angular.module(PKG.name + '.feature.hydrator')
 
     vm.getPipelines();
 
-    vm.viewMiniViewPipeline = () => {
-      vm.isPipelineView = !vm.isPipelineView;
+    vm.viewMiniViewPipeline = (pipeline) => {
+      var params = {
+        namespace: $stateParams.namespace,
+        pipeline: pipeline.name
+      };
+
+      myPipelineApi
+        .get(params)
+        .$promise
+        .then(
+          (pipelineDetail) => {
+            let config = pipelineDetail.configuration;
+            try {
+              config = JSON.parse(config);
+              window.CaskCommon.PipelineDetailStore.dispatch({
+                type: 'SET_CONFIG',
+                payload: { config }
+              });
+              vm.$uibModal.open({
+                templateUrl: '/assets/features/hydrator/templates/detail/canvas.html',
+                size: 'lg',
+                backdrop: 'static',
+                keyboard: false,
+                windowTopClass: 'hydrator-modal node-config-modal upgrade-modal',
+                controllerAs: 'CanvasCtrl',
+                controller: 'HydratorPlusPlusDetailCanvasCtrl',
+                resolve: {
+                  rPipelineDetail: function() {
+                    return pipelineDetail;
+                  }
+                },
+              });
+
+            } catch (e) {
+              myAlertOnValium.show({
+                type: 'danger',
+                content: 'Invalid configuration JSON.'
+              });
+              $q.reject(false);
+              $state.go('hydrator.list');
+              return;
+            }
+            if (!config.stages) {
+              myAlertOnValium.show({
+                type: 'danger',
+                content: 'Pipeline is created using older version of hydrator. Please upgrage the pipeline to newer version(3.4) to view in UI.'
+              });
+              $q.reject(false);
+              $state.go('hydrator.list');
+              return;
+            }
+            return $q.resolve(pipelineDetail);
+          }
+        );
+
+
     };
 
   });
