@@ -44,6 +44,9 @@ $border-color: $grey-05;
     &:after {
       @include border-element();
     }
+    .run-spark-job-info-link {
+      cursor: pointer;
+    }
   }
   .run-container {
     display: flex;
@@ -229,11 +232,5 @@ $border-color: $grey-05;
 
   .run-status-container {
     min-width: 120px;
-  }
-
-  .run-errors-container {
-    &:after {
-      display: none;
-    }
   }
 }
