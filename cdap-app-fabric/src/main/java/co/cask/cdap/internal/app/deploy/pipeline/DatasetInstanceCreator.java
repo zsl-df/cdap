@@ -63,6 +63,25 @@ final class DatasetInstanceCreator {
       String instanceName = instanceEntry.getKey();
       final DatasetId instanceId = namespaceId.dataset(instanceName);
       final DatasetCreationSpec instanceSpec = instanceEntry.getValue();
+
+      NamespaceId defaultNamespaceId = NamespaceId.DEFAULT;
+      final DatasetId defaultInstanceId = defaultNamespaceId.dataset(instanceName);
+
+      LOG.info("Checking dataset instance: {} in Default namespace", instanceName);
+      DatasetSpecification existingDefaultSpec =
+              AuthorizationUtil.authorizeAs(authorizingUser, new Callable<DatasetSpecification>() {
+                @Override
+                public DatasetSpecification call() throws Exception {
+                  return datasetFramework.getDatasetSpec(defaultInstanceId);
+                }
+              });
+
+      if(existingDefaultSpec != null)
+      {
+        continue;
+      }
+
+      LOG.info("Checking dataset instance: {} in Current namespace", instanceName);
       DatasetSpecification existingSpec =
         AuthorizationUtil.authorizeAs(authorizingUser, new Callable<DatasetSpecification>() {
           @Override
@@ -70,6 +89,7 @@ final class DatasetInstanceCreator {
             return datasetFramework.getDatasetSpec(instanceId);
           }
         });
+
       if (existingSpec == null) {
         LOG.info("Adding dataset instance: {}", instanceName);
         AuthorizationUtil.authorizeAs(authorizingUser, new Callable<Void>() {
