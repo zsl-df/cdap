@@ -32,9 +32,12 @@ const RunSparkJobInfo = ({ currentRun }) => {
   return (
     <div className="run-info-container run-status-container">
       <div>
-        <strong>{T.translate(`${PREFIX}.sparkLink`)}</strong>
+        <strong>{T.translate(`${PREFIX}.sparkUI`)}</strong>
       </div>
-      <a ui-href={url} className='run-spark-job-info-link'>{T.translate(`${PREFIX}.sparkLink`)}</a>
+      {
+        url !== '' ? <a ui-href={url} className='run-spark-job-info-link'>{T.translate(`${PREFIX}.sparkUI`)}</a> : '-'
+      }
+
     </div>
   );
 };

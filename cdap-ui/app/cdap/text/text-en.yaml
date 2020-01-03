@@ -2021,7 +2021,7 @@ features:
         label: Compute profile
         noInfo: Profile information unavailable
       runsCurrentlyRunning: Runs currently running - select one to view
-      sparkLink: Spark Link
+      sparkUI: Spark UI
       status: Status
       warnings: Warnings
     startTime: Start time
