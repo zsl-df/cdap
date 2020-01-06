@@ -56,6 +56,7 @@ import co.cask.http.HttpResponder;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -77,9 +78,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
@@ -107,6 +111,8 @@ public class AppLifecycleHttpHandler extends AbstractAppFabricHttpHandler {
     .create();
   private static final Logger LOG = LoggerFactory.getLogger(AppLifecycleHttpHandler.class);
 
+  private static final Type LIST_OF_APPS = new TypeToken<List<String>> () { }.getType();
+  
   /**
    * Runtime program service for running and managing programs.
    */
@@ -296,6 +302,35 @@ public class AppLifecycleHttpHandler extends AbstractAppFabricHttpHandler {
                                @PathParam("app-id") final String appId) throws Exception {
     ApplicationId id = validateApplicationId(namespaceId, appId);
     applicationLifecycleService.removeApplication(id);
+    responder.sendStatus(HttpResponseStatus.OK);
+  }
+  
+  /**
+   * Delete all applications specified by list of appIds.
+   */
+  @POST
+  @Path("/apps-delete")
+  public void deleteApps(FullHttpRequest request, HttpResponder responder,
+                               @PathParam("namespace-id") String namespaceId) throws Exception {
+    List<String> appIds;
+    try (Reader reader = new InputStreamReader(new ByteBufInputStream(request.content()), StandardCharsets.UTF_8)) {
+      try {
+        appIds = DECODE_GSON.fromJson(reader, LIST_OF_APPS);
+        if (appIds == null) {
+          throw new BadRequestException("Request body is invalid json, please check that it is a json list.");
+        }
+      } catch (JsonSyntaxException e) {
+          throw new BadRequestException("Request body is invalid json: " + e.getMessage());
+      }
+    }
+    List<ApplicationId> applicationIds = new ArrayList<>();
+    for (String appId: appIds) {
+      applicationIds.add(validateApplicationId(namespaceId, appId));
+    }
+    
+    for (ApplicationId applicationId: applicationIds) {
+      applicationLifecycleService.removeApplication(applicationId);
+    }
     responder.sendStatus(HttpResponseStatus.OK);
   }
 
