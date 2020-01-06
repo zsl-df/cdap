@@ -149,7 +149,8 @@ $border-color: $grey-05;
 
   .run-logs-container,
   .run-sparkui-container {
-    .run-logs-btn, .run-sparkui-btn {
+    .run-logs-btn,
+    .run-sparkui-btn {
       border: 1px solid transparent;
       color: $grey-02;
       text-decoration: none;
