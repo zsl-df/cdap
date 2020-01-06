@@ -2022,6 +2022,7 @@ features:
         noInfo: Profile information unavailable
       runsCurrentlyRunning: Runs currently running - select one to view
       sparkUI: Spark UI
+      noSparkUI: No Spark Link available
       status: Status
       warnings: Warnings
     startTime: Start time
