@@ -20,6 +20,8 @@ import co.cask.cdap.app.program.ProgramDescriptor;
 import co.cask.cdap.proto.ProgramRunStatus;
 import co.cask.cdap.proto.id.ProgramRunId;
 
+import java.util.Map;
+
 import javax.annotation.Nullable;
 
 /**
@@ -46,6 +48,16 @@ public interface ProgramStateWriter {
    * @param twillRunId the run id of the twill application
    */
   void running(ProgramRunId programRunId, @Nullable String twillRunId);
+
+  /**
+   * Updates the program run's status to be {@link ProgramRunStatus#RUNNING} at the given start time in seconds
+   *
+   * @param programRunId the id of the program run
+   * @param twillRunId the run id of the twill application
+   * @param customProperties Property Map containing any additional properties to be published
+   */
+  void running(ProgramRunId programRunId, @Nullable String twillRunId,
+      @Nullable Map<String, String> customProperties);
 
   /**
    * Updates the program run's status to be completed

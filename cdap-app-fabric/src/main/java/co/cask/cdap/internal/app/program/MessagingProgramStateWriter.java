@@ -39,6 +39,8 @@ import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
@@ -82,12 +84,21 @@ public final class MessagingProgramStateWriter implements ProgramStateWriter {
 
   @Override
   public void running(ProgramRunId programRunId, @Nullable String twillRunId) {
+    running(programRunId, twillRunId, null);
+  }
+
+  @Override
+  public void running(ProgramRunId programRunId, @Nullable String twillRunId, 
+      @Nullable Map<String, String> customProperties) {
     ImmutableMap.Builder<String, String> properties = ImmutableMap.<String, String>builder()
       .put(ProgramOptionConstants.PROGRAM_RUN_ID, GSON.toJson(programRunId))
       .put(ProgramOptionConstants.LOGICAL_START_TIME, String.valueOf(System.currentTimeMillis()))
       .put(ProgramOptionConstants.PROGRAM_STATUS, ProgramRunStatus.RUNNING.name());
     if (twillRunId != null) {
       properties.put(ProgramOptionConstants.TWILL_RUN_ID, twillRunId);
+    }
+    if (customProperties != null) {
+      properties.putAll(customProperties);
     }
     programStatePublisher.publish(Notification.Type.PROGRAM_STATUS, properties.build());
   }
