@@ -29,6 +29,7 @@ import co.cask.cdap.proto.id.NamespaceId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -62,6 +63,13 @@ public class ClientUpgradeContext implements UpgradeContext {
         return null;
       }
 
+      plugins.sort(new Comparator<PluginInfo>() {
+        @Override
+        public int compare(PluginInfo o1, PluginInfo o2) {
+          return o1.getArtifact().getVersion().compareTo(o2.getArtifact().getVersion());
+		}
+      });
+      
       // doesn't really matter which one we choose, as all of them should be valid.
       // choosing the last one because that tends to be the one with the highest version.
       // order is not guaranteed though.
