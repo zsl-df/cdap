@@ -301,7 +301,13 @@ public class AppMetadataStore extends MetadataStoreDataset {
   }
 
   private void addWorkflowNodeState(ProgramRunId programRunId, Map<String, String> systemArgs,
-                                    ProgramRunStatus status, @Nullable BasicThrowable failureCause, byte[] sourceId) {
+      ProgramRunStatus status, @Nullable BasicThrowable failureCause, byte[] sourceId) {
+    addWorkflowNodeState(programRunId, systemArgs, status, failureCause, sourceId, null);
+  }
+  
+  private void addWorkflowNodeState(ProgramRunId programRunId, Map<String, String> systemArgs,
+                                    ProgramRunStatus status, @Nullable BasicThrowable failureCause,
+                                    byte[] sourceId, @Nullable Map<String, String> properties) {
     String workflowNodeId = systemArgs.get(ProgramOptionConstants.WORKFLOW_NODE_ID);
     String workflowName = systemArgs.get(ProgramOptionConstants.WORKFLOW_NAME);
     String workflowRun = systemArgs.get(ProgramOptionConstants.WORKFLOW_RUN_ID);
@@ -324,14 +330,28 @@ public class AppMetadataStore extends MetadataStoreDataset {
                                        RunIds.getTime(workflowRun, TimeUnit.SECONDS));
 
     RunRecordMeta record = get(key, RunRecordMeta.class);
-    if (record != null) {
-      // Update the parent Workflow run record by adding node id and program run id in the properties
-      Map<String, String> properties = new HashMap<>(record.getProperties());
-      properties.put(workflowNodeId, programRunId.getRun());
-      write(key, RunRecordMeta.builder(record).setProperties(properties).setSourceId(sourceId).build());
+    if (record == null) {
+      return;
     }
+    
+    // Update the parent Workflow run record by adding node id and program run id in the properties
+    Map<String, String> newProps = new HashMap<>(record.getProperties());
+    newProps.put(workflowNodeId, programRunId.getRun());
+    
+    if ((properties != null) && (properties.containsKey(
+        ProgramOptionConstants.YARN_APPLICATION_TRACKING_URL_KEY))) {
+      LOG.debug("Found yarn application url {} for workflow name {}, runId {}, nodeId {}",
+          properties.get(ProgramOptionConstants.YARN_APPLICATION_TRACKING_URL_KEY),
+          workflowName, workflowRun, workflowNodeId);
+      String appKey = ProgramOptionConstants.YARN_APPLICATION_TRACKING_URL_KEY + "." + workflowNodeId;
+      newProps.put(appKey, properties.get(ProgramOptionConstants.YARN_APPLICATION_TRACKING_URL_KEY));
+    }
+    write(key, RunRecordMeta.builder(record).setProperties(newProps).setSourceId(sourceId).build());
   }
 
+
+  
+  
   /**
    * Record that the program run is provisioning compute resources for the run. If the current status has
    * a higher source id, this call will be ignored.
@@ -619,6 +639,24 @@ public class AppMetadataStore extends MetadataStoreDataset {
   @Nullable
   public RunRecordMeta recordProgramRunning(ProgramRunId programRunId, long stateChangeTime, String twillRunId,
                                             byte[] sourceId) {
+    return recordProgramRunning(programRunId, stateChangeTime, twillRunId, sourceId, null);
+  }
+
+  /**
+   * Logs start of program run and persists program status to {@link ProgramRunStatus#RUNNING}.
+   * @param programRunId run id of the program
+   * @param stateChangeTime start timestamp in seconds
+   * @param twillRunId Twill run id
+   * @param sourceId unique id representing the source of program run status, such as the message id of the program
+   *                 run status notification in TMS. The source id must increase as the recording time of the program
+   *                 run status increases, so that the attempt to persist program run status older than the existing
+   *                 program run status will be ignored
+   * @param properties Property Map found in notification
+   * @return {@link RunRecordMeta} that was persisted, or {@code null} if the update was ignored.
+   */
+  @Nullable
+  public RunRecordMeta recordProgramRunning(ProgramRunId programRunId, long stateChangeTime, String twillRunId,
+                                            byte[] sourceId, @Nullable Map<String, String> properties) {
     RunRecordMeta existing = getRun(programRunId);
     if (existing == null) {
       LOG.warn("Ignoring unexpected transition of program run {} to program state {} with no existing run record.",
@@ -632,20 +670,36 @@ public class AppMetadataStore extends MetadataStoreDataset {
     Map<String, String> systemArgs = existing.getSystemArgs();
     if (systemArgs != null && systemArgs.containsKey(ProgramOptionConstants.WORKFLOW_NAME)) {
       // Program was started by Workflow. Add row corresponding to its node state.
-      addWorkflowNodeState(programRunId, systemArgs, ProgramRunStatus.RUNNING, null, sourceId);
+      addWorkflowNodeState(programRunId, systemArgs, ProgramRunStatus.RUNNING, null, sourceId,
+          properties);
     }
 
     // Delete the old run record
     delete(existing);
     MDSKey key = getProgramRunInvertedTimeKey(TYPE_RUN_RECORD_ACTIVE, programRunId, existing.getStartTs());
-
+   
     // The existing record's properties already contains the workflowRunId
-    RunRecordMeta meta = RunRecordMeta.builder(existing)
+    RunRecordMeta.Builder builder = RunRecordMeta.builder(existing)
       .setRunTime(stateChangeTime)
       .setStatus(ProgramRunStatus.RUNNING)
       .setTwillRunId(twillRunId)
-      .setSourceId(sourceId)
-      .build();
+      .setSourceId(sourceId);
+ 
+    Map<String, String> existingProps = existing.getProperties();    
+    if ((properties != null) && (properties.containsKey(
+        ProgramOptionConstants.YARN_APPLICATION_TRACKING_URL_KEY))) {
+      LOG.debug("Found yarn application url {}, for program run {}",
+          properties.get(ProgramOptionConstants.YARN_APPLICATION_TRACKING_URL_KEY), programRunId);
+      Map<String, String> newProps = new HashMap<>();
+      if (existingProps != null) {
+        newProps.putAll(existingProps);
+      }
+      newProps.put(ProgramOptionConstants.YARN_APPLICATION_TRACKING_URL_KEY,
+          properties.get(ProgramOptionConstants.YARN_APPLICATION_TRACKING_URL_KEY));
+      builder.setProperties(newProps);
+    }
+    
+    RunRecordMeta meta = builder.build();
     write(key, meta);
     LOG.trace("Recorded {} for program {}", ProgramRunStatus.RUNNING, programRunId);
     return meta;

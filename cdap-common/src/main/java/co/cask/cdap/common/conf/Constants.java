@@ -201,6 +201,8 @@ public final class Constants {
 
     public static final String PROGRAM_TRANSACTION_CONTROL = "app.program.transaction.control";
 
+    public static final String PROGRAM_YARN_WEBAPP_BASE_URL = "app.program.yarn.webapp.base.url";
+
     /**
      * Guice named bindings.
      */
