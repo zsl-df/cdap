@@ -28,14 +28,14 @@ const mapStateToProps = (state) => {
 };
 
 const RunSparkJobInfo = ({ currentRun }) => {
-  const url = currentRun.hasOwnProperty('properties') && currentRun.properties.hasOwnProperty('url') ? currentRun.properties.url : '';
+  const url = currentRun.hasOwnProperty('properties') && currentRun.properties.hasOwnProperty('yarnApplicationTrackingUrl.phase-1') ? currentRun.properties['yarnApplicationTrackingUrl.phase-1'] : '';
   return (
     <div className="run-info-container run-status-container">
       <div>
         <strong>{T.translate(`${PREFIX}.sparkUI`)}</strong>
       </div>
       {
-        url !== '' ? <a ui-href={url} className='run-spark-job-info-link'>{T.translate(`${PREFIX}.sparkUI`)}</a> : '-'
+        url !== '' ? <a href={url} target="_blank" className='run-spark-job-info-link'>{T.translate(`${PREFIX}.sparkUI`)}</a> : '-'
       }
 
     </div>
