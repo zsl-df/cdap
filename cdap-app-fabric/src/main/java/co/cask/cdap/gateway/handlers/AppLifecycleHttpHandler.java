@@ -309,7 +309,7 @@ public class AppLifecycleHttpHandler extends AbstractAppFabricHttpHandler {
    * Delete all applications specified by list of appIds.
    */
   @POST
-  @Path("/apps-list")
+  @Path("/apps-delete")
   public void deleteApps(FullHttpRequest request, HttpResponder responder,
                                @PathParam("namespace-id") String namespaceId) throws Exception {
     List<String> appIds;
