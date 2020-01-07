@@ -2021,8 +2021,8 @@ features:
         label: Compute profile
         noInfo: Profile information unavailable
       runsCurrentlyRunning: Runs currently running - select one to view
-      sparkUI: Spark UI
-      noSparkUI: No Spark Link available
+      sparkUI: Tracking URL
+      noSparkUI: No Tracking Url available
       status: Status
       warnings: Warnings
     startTime: Start time
