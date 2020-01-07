@@ -19,6 +19,8 @@ package co.cask.cdap.app.runtime;
 import co.cask.cdap.app.program.ProgramDescriptor;
 import co.cask.cdap.proto.id.ProgramRunId;
 
+import java.util.Map;
+
 import javax.annotation.Nullable;
 
 /**
@@ -33,6 +35,12 @@ public class NoOpProgramStateWriter implements ProgramStateWriter {
 
   @Override
   public void running(ProgramRunId programRunId, @Nullable String twillRunId) {
+    // no-op
+  }
+
+  @Override
+  public void running(ProgramRunId programRunId, @Nullable String twillRunId,
+      @Nullable Map<String, String> customProperties) {
     // no-op
   }
 

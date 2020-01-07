@@ -276,7 +276,8 @@ public class ProgramNotificationSubscriberService extends AbstractNotificationSu
           return Optional.empty();
         }
         recordedRunRecord =
-          appMetadataStore.recordProgramRunning(programRunId, logicalStartTimeSecs, twillRunId, messageIdBytes);
+          appMetadataStore.recordProgramRunning(programRunId, logicalStartTimeSecs, twillRunId, messageIdBytes,
+              properties);
         writeToHeartBeatDataset(recordedRunRecord, logicalStartTimeSecs, datasetContext, programHeartbeatDataset);
         break;
       case SUSPENDED:
