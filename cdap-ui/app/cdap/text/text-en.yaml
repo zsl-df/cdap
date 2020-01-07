@@ -2022,7 +2022,7 @@ features:
         noInfo: Profile information unavailable
       runsCurrentlyRunning: Runs currently running - select one to view
       sparkUI: Tracking URL
-      noSparkUI: No Tracking Url available
+      noSparkUI: No Tracking URL available
       status: Status
       warnings: Warnings
     startTime: Start time
