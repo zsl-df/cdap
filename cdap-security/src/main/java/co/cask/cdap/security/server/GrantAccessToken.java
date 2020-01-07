@@ -36,16 +36,26 @@ import com.nimbusds.jose.crypto.RSASSAVerifier;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 import org.apache.commons.codec.binary.Base64;
+
+import org.json.JSONObject;
+import org.json.XML;
+import org.keycloak.OAuth2Constants;
+import org.keycloak.adapters.KeycloakDeployment;
+import org.keycloak.adapters.KeycloakDeploymentBuilder;
+import org.keycloak.adapters.rotation.AdapterTokenVerifier;
+import org.keycloak.common.VerificationException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.io.*;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.security.auth.Subject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -60,154 +70,232 @@ import javax.ws.rs.core.Response;
  */
 @Path("/")
 public class GrantAccessToken {
-  private static final Logger LOG = LoggerFactory.getLogger(GrantAccessToken.class);
-  private final TokenManager tokenManager;
-  private final Codec<AccessToken> tokenCodec;
-  private final long tokenExpiration;
-  private final long extendedTokenExpiration;
-  private static CConfiguration conf;
+    private static final Logger LOG = LoggerFactory.getLogger(GrantAccessToken.class);
+    private final TokenManager tokenManager;
+    private final Codec<AccessToken> tokenCodec;
+    private final long tokenExpiration;
+    private final long extendedTokenExpiration;
+    private static CConfiguration conf;
+    private static KeycloakDeployment deployment;
 
-  /**
-   * Create a new GrantAccessToken object to generate tokens for authorized users.
-   */
-  @Inject
-  public GrantAccessToken(TokenManager tokenManager,
-                          Codec<AccessToken> tokenCodec,
-                          CConfiguration cConf) {
-    this.tokenManager = tokenManager;
-    this.tokenCodec = tokenCodec;
-    this.conf = cConf;
-    this.tokenExpiration = cConf.getLong(Constants.Security.TOKEN_EXPIRATION);
-    this.extendedTokenExpiration = cConf.getLong(Constants.Security.EXTENDED_TOKEN_EXPIRATION);
-  }
-
-  /**
-   * Initialize the TokenManager.
-   */
-  public void init() {
-    tokenManager.start();
-  }
-
-  /**
-   * Stop the TokenManager.
-   */
-  public void destroy() {
-    tokenManager.stop();
-  }
-
-  /**
-   * Paths to get Access Tokens.
-   */
-  public static final class Paths {
-    public static final String GET_TOKEN = "token";
-    public static final String GET_TOKEN_FROM_KNOX = "knoxToken";
-    public static final String GET_EXTENDED_TOKEN = "extendedtoken";
-  }
-
-  /**
-   *  Get an AccessToken from KNOXToken.
-   */
-  @Path(Paths.GET_TOKEN_FROM_KNOX)
-  @GET
-  @Produces("application/json")
-  public Response tokenFromKNOX(@Context HttpServletRequest request, @Context HttpServletResponse response)
-      throws IOException, ServletException {
-    AccessToken token = getTokenFromKNOX(request, response);
-    if (token != null) {
-      setResponse(request, response, token, tokenExpiration);
-      return Response.status(200).build();
-    } else {
-      return Response.status(201).build();
+    /**
+     * Create a new GrantAccessToken object to generate tokens for authorized users.
+     */
+    @Inject
+    public GrantAccessToken(TokenManager tokenManager,
+                            Codec<AccessToken> tokenCodec,
+                            CConfiguration cConf) {
+        this.tokenManager = tokenManager;
+        this.tokenCodec = tokenCodec;
+        this.conf = cConf;
+        this.tokenExpiration = cConf.getLong(Constants.Security.TOKEN_EXPIRATION);
+        this.extendedTokenExpiration = cConf.getLong(Constants.Security.EXTENDED_TOKEN_EXPIRATION);
+        this.deployment = createKeycloakDeployment(cConf.getResource("cdap-site.xml").getPath());
     }
-  }  
 
-  /**
-   * Get an AccessToken.
-   */
-  @Path(Paths.GET_TOKEN)
-  @GET
-  @Produces("application/json")
-  public Response token(@Context HttpServletRequest request, @Context HttpServletResponse response)
-      throws IOException, ServletException {
-    grantToken(request, response, tokenExpiration);
-    return Response.status(200).build();
-  }
+    /**
+     * Initialize the TokenManager.
+     */
+    public void init() {
+        tokenManager.start();
+    }
 
-  /**
-   * Get a long lasting Access Token.
-   */
-  @Path(Paths.GET_EXTENDED_TOKEN)
-  @GET
-  @Produces("application/json")
-  public Response extendedToken(@Context HttpServletRequest request, @Context HttpServletResponse response)
-    throws IOException, ServletException {
-    grantToken(request, response, extendedTokenExpiration);
-    return Response.status(200).build();
-  }
+    /**
+     * Stop the TokenManager.
+     */
+    public void destroy() {
+        tokenManager.stop();
+    }
 
-  private void setResponse(HttpServletRequest request, HttpServletResponse response, AccessToken token,
-      long tokenValidity) throws IOException, ServletException {
-    JsonObject json = new JsonObject();
-    byte[] encodedIdentifier = Base64.encodeBase64(tokenCodec.encode(token));
-    json.addProperty(ExternalAuthenticationServer.ResponseFields.ACCESS_TOKEN,
-        new String(encodedIdentifier, Charsets.UTF_8));
-    json.addProperty(ExternalAuthenticationServer.ResponseFields.TOKEN_TYPE,
-        ExternalAuthenticationServer.ResponseFields.TOKEN_TYPE_BODY);
-    json.addProperty(ExternalAuthenticationServer.ResponseFields.EXPIRES_IN,
-        TimeUnit.SECONDS.convert(tokenValidity, TimeUnit.MILLISECONDS));
+    /**
+     * Paths to get Access Tokens.
+     */
+    public static final class Paths {
+        public static final String GET_TOKEN = "token";
+        public static final String GET_TOKEN_FROM_KNOX = "knoxToken";
+        public static final String GET_EXTENDED_TOKEN = "extendedtoken";
+        public static final String GET_TOKEN_FROM_KEYCLOAK = "keycloakToken";
+        public static final String GET_REFRESH_TOKEN = "refreshToken";
+        public static final String LOGOUT_END_POINT = "logout";
+    }
 
-    response.getOutputStream().print(json.toString());
-    response.setStatus(HttpServletResponse.SC_OK);
-  }
 
-  private AccessToken getTokenFromKNOX(HttpServletRequest request, HttpServletResponse response)
-			throws IOException, ServletException {
-		
-		final String authorizationHeader = request.getHeader("knoxToken");
-        	String wireToken = null;
-        	long expireTime = -1l;
-        	String username = null;
-        	long issueTime = System.currentTimeMillis();
+    /**
+     * Get an AccessToken.
+     */
+    @Path(Paths.GET_TOKEN)
+    @GET
+    @Produces("application/json")
+    public Response token(@Context HttpServletRequest request, @Context HttpServletResponse response)
+            throws IOException, ServletException {
+        grantToken(request, response, tokenExpiration);
+        return Response.status(200).build();
+    }
 
-        	if (authorizationHeader!=null && !Strings.isNullOrEmpty(authorizationHeader)) {
-            		wireToken = authorizationHeader;
-        	} else {
-            		wireToken = getJWTTokenFromCookie(request);
-        	}
-        	if (Strings.isNullOrEmpty(wireToken)) {
-        		LOG.debug("No valid 'Bearer Authorization' or 'Cookie' found in header, send 401");
-            		return null;
-        	}
+    /**
+     * Get a long lasting Access Token.
+     */
+    @Path(Paths.GET_EXTENDED_TOKEN)
+    @GET
+    @Produces("application/json")
+    public Response extendedToken(@Context HttpServletRequest request, @Context HttpServletResponse response)
+            throws IOException, ServletException {
+        grantToken(request, response, extendedTokenExpiration);
+        return Response.status(200).build();
+    }
 
-        	JWTToken token;
-        	try {
-            		token = new JWTToken(wireToken);
-            		username = token.getSubject();
-        	} catch (ParseException | NullPointerException e) {
-            		e.printStackTrace();
-            		throw new UnauthorizedException("Authorization header missing/invalid");
-        	}
+    /**
+     *  Get an AccessToken from KNOXToken
+     */
+    @Path(Paths.GET_TOKEN_FROM_KNOX)
+    @GET
+    @Produces("application/json")
+    public Response tokenFromKNOX(@Context HttpServletRequest request, @Context HttpServletResponse response)
+            throws IOException, ServletException {
+        AccessToken token = getTokenFromKNOX(request, response);
+        if (token != null) {
+            setResponse(request, response, token,tokenExpiration);
+            return Response.status(200).build();
+        } else {
+            return Response.status(201).build();
+        }
+    }
 
-        	boolean validToken = verifyToken(token);
-        	if(!validToken)
-            		throw new UnauthorizedException("Not authorized");
-        	
-        	Date expires = token.getExpiresDate();
-        	LOG.debug("token expiry date: " + expires.toString());
-        	if (expires.before(new Date()))
-            		throw new UnauthorizedException("Token expired.");
-        
-        	expireTime = Date.parse(expires.toString());
-        
-		List<String> userGroups = Collections.emptyList();
+    /**
+     * Get an AccessToken from KeycloakToken.
+     */
 
-		AccessTokenIdentifier tokenIdentifier = new AccessTokenIdentifier(username, userGroups, issueTime, expireTime);
-		AccessToken accessToken = tokenManager.signIdentifier(tokenIdentifier);
-		LOG.debug("Issued token for user {}", username);
-		return accessToken;
-	} 
- 
-  private static boolean verifyToken(JWT token) {
+    @Path(Paths.GET_TOKEN_FROM_KEYCLOAK)
+    @GET
+    @Produces("application/json")
+    public Response tokenFromKeycloak(@Context HttpServletRequest request, @Context HttpServletResponse response)
+            throws IOException, ServletException {
+        try {
+            AccessToken token = getTokenUsingKeycloak(request, response);
+            if (token != null)
+                return Response.status(200).build();
+        } catch (Exception ex) {
+            LOG.debug(ex.getMessage());
+        }
+        return Response.status(401).build();
+    }
+
+    private void setResponse(HttpServletRequest request, HttpServletResponse response, AccessToken token,
+                             long tokenValidity) throws IOException, ServletException {
+
+        /* TO BE DONE */
+        JsonObject json = new JsonObject();
+        byte[] encodedIdentifier = Base64.encodeBase64(tokenCodec.encode(token));
+        json.addProperty(ExternalAuthenticationServer.ResponseFields.ACCESS_TOKEN,
+                new String(encodedIdentifier, Charsets.UTF_8));
+        json.addProperty(ExternalAuthenticationServer.ResponseFields.TOKEN_TYPE,
+                ExternalAuthenticationServer.ResponseFields.TOKEN_TYPE_BODY);
+        json.addProperty(ExternalAuthenticationServer.ResponseFields.EXPIRES_IN,
+                TimeUnit.SECONDS.convert(tokenValidity, TimeUnit.MILLISECONDS));
+        response.getOutputStream().print(json.toString());
+        response.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    private AccessToken getTokenUsingKeycloak(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException, UnauthorizedException {
+
+        /* TO BE DONE */
+
+        String username;
+        org.keycloak.representations.AccessToken keycloakToken = null;
+        List<String> userGroups = Collections.emptyList();
+        String authorizationHeader = request.getHeader("keycloakToken");
+        String wireToken;
+
+        if (authorizationHeader == null) {
+            authorizationHeader = request.getAttribute("keycloakToken").toString();
+        }
+
+        if (authorizationHeader != null && !Strings.isNullOrEmpty(authorizationHeader)) {
+            wireToken = authorizationHeader;
+        } else {
+            wireToken = getJWTTokenFromCookie(request);
+        }
+        if (Strings.isNullOrEmpty(wireToken)) {
+            LOG.debug("No valid 'Bearer Authorization' or 'Cookie' found in header, send 401");
+            return null;
+        }
+
+        try {
+            keycloakToken = AdapterTokenVerifier.verifyToken(wireToken, deployment);
+            username = keycloakToken.getPreferredUsername();
+
+        } catch (VerificationException e) {
+            Response.status(401).build();
+            throw new UnauthorizedException("Authorization header missing/invalid");
+        }
+
+        if (keycloakToken.isExpired()) {
+            LOG.debug("token expiry date: " + new Date(keycloakToken.getExpiration()));
+            Response.status(401).build();
+            throw new UnauthorizedException("Token expired.");
+        }
+
+        long issueTime = (long) keycloakToken.getIssuedAt() * 1000;
+        long expireTime = (long) keycloakToken.getExpiration() * 1000;
+
+        AccessTokenIdentifier tokenIdentifier = new AccessTokenIdentifier(username, userGroups, issueTime, expireTime, wireToken);
+        AccessToken cdapToken = tokenManager.signIdentifier(tokenIdentifier);
+        LOG.debug("Issued token for user {}", username);
+
+        setResponse(request, response, cdapToken , (expireTime - issueTime));
+
+        return cdapToken;
+    }
+
+    private AccessToken getTokenFromKNOX(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
+        final String authorizationHeader = request.getHeader("knoxToken");
+        String wireToken = null;
+        long expireTime = -1l;
+        String username = null;
+        long issueTime = System.currentTimeMillis();
+
+        if (authorizationHeader != null && !Strings.isNullOrEmpty(authorizationHeader)) {
+            wireToken = authorizationHeader;
+        } else {
+            wireToken = getJWTTokenFromCookie(request);
+        }
+        if (Strings.isNullOrEmpty(wireToken)) {
+            LOG.debug("No valid 'Bearer Authorization' or 'Cookie' found in header, send 401");
+            return null;
+        }
+
+        JWTToken token;
+        try {
+            token = new JWTToken(wireToken);
+            username = token.getSubject();
+        } catch (ParseException | NullPointerException e) {
+            e.printStackTrace();
+            throw new UnauthorizedException("Authorization header missing/invalid");
+        }
+
+        boolean validToken = verifyToken(token);
+        if (!validToken)
+            throw new UnauthorizedException("Not authorized");
+
+        Date expires = token.getExpiresDate();
+        LOG.debug("token expiry date: " + expires.toString());
+        if (expires.before(new Date()))
+            throw new UnauthorizedException("Token expired.");
+
+        expireTime = Date.parse(expires.toString());
+
+        List<String> userGroups = Collections.emptyList();
+
+        AccessTokenIdentifier tokenIdentifier = new AccessTokenIdentifier(username, userGroups, issueTime, expireTime);
+        AccessToken accessToken = tokenManager.signIdentifier(tokenIdentifier);
+        LOG.debug("Issued token for user {}", username);
+        return accessToken;
+    }
+
+    private static boolean verifyToken(JWT token) {
         boolean rc = false;
         String verificationPem = conf.get(Constants.Security.KNOX_TOKEN_PUBLIC_KEY);
         LOG.info("key value : " + verificationPem);
@@ -225,17 +313,17 @@ public class GrantAccessToken {
         }
         return rc;
     }
-	
-	private static String getJWTTokenFromCookie(HttpServletRequest request) {
+
+    private static String getJWTTokenFromCookie(HttpServletRequest request) {
         String rawCookie = request.getHeader("cookie");
         if (rawCookie == null) {
-        	return null;
+            return null;
         }
         String cookieToken = null;
         String cookieName = "hadoop-jwt";
 
         String[] rawCookieParams = rawCookie.split(";");
-        for(String rawCookieNameAndValue :rawCookieParams) {
+        for (String rawCookieNameAndValue : rawCookieParams) {
             String[] rawCookieNameAndValuePair = rawCookieNameAndValue.split("=");
             if ((rawCookieNameAndValuePair.length > 1) &&
                     (rawCookieNameAndValuePair[0].trim().equalsIgnoreCase(cookieName))) {
@@ -244,38 +332,94 @@ public class GrantAccessToken {
             }
         }
         return cookieToken;
-    } 
+    }
 
 
-  private void grantToken(HttpServletRequest request, HttpServletResponse response, long tokenValidity)
-    throws IOException, ServletException {
+    private void grantToken(HttpServletRequest request, HttpServletResponse response, long tokenValidity)
+            throws IOException, ServletException {
 
-    String username = request.getUserPrincipal().getName();
-    List<String> userGroups = Collections.emptyList();
+        if (request.getUserPrincipal() instanceof JAASUserPrincipal) {
+            Subject subject;
+            subject = ((JAASUserPrincipal) request.getUserPrincipal()).getSubject();
+            if (subject != null) {
+                String keycloakToken = subject.getPrivateCredentials().iterator().next().toString();
+                if (keycloakToken != null) {
+                    request.setAttribute("keycloakToken", keycloakToken);
+                    getTokenUsingKeycloak(request, response);
+                    return;
+                }
+            }
+        }
 
-    long issueTime = System.currentTimeMillis();
-    long expireTime = issueTime + tokenValidity;
-    // Create and sign a new AccessTokenIdentifier to generate the AccessToken.
-    AccessTokenIdentifier tokenIdentifier = new AccessTokenIdentifier(username, userGroups, issueTime, expireTime);
-    AccessToken token = tokenManager.signIdentifier(tokenIdentifier);
-    LOG.debug("Issued token for user {}", username);
+        String username = request.getUserPrincipal().getName();
+        List<String> userGroups = Collections.emptyList();
 
-    // Set response headers
-    response.setContentType("application/json;charset=UTF-8");
-    response.addHeader(HttpHeaderNames.CACHE_CONTROL.toString(), "no-store");
-    response.addHeader(HttpHeaderNames.PRAGMA.toString(), "no-cache");
+        long issueTime = System.currentTimeMillis();
+        long expireTime = issueTime + tokenValidity;
+        // Create and sign a new AccessTokenIdentifier to generate the AccessToken.
+        AccessTokenIdentifier tokenIdentifier = new AccessTokenIdentifier(username, userGroups, issueTime, expireTime);
+        AccessToken token = tokenManager.signIdentifier(tokenIdentifier);
+        LOG.debug("Issued token for user {}", username);
 
-    // Set response body
-    JsonObject json = new JsonObject();
-    byte[] encodedIdentifier = Base64.encodeBase64(tokenCodec.encode(token));
-    json.addProperty(ExternalAuthenticationServer.ResponseFields.ACCESS_TOKEN,
-                     new String(encodedIdentifier, Charsets.UTF_8));
-    json.addProperty(ExternalAuthenticationServer.ResponseFields.TOKEN_TYPE,
-                     ExternalAuthenticationServer.ResponseFields.TOKEN_TYPE_BODY);
-    json.addProperty(ExternalAuthenticationServer.ResponseFields.EXPIRES_IN,
-                     TimeUnit.SECONDS.convert(tokenValidity, TimeUnit.MILLISECONDS));
+        // Set response headers
+        response.setContentType("application/json;charset=UTF-8");
+        response.addHeader(HttpHeaderNames.CACHE_CONTROL.toString(), "no-store");
+        response.addHeader(HttpHeaderNames.PRAGMA.toString(), "no-cache");
 
-    response.getOutputStream().print(json.toString());
-    response.setStatus(HttpServletResponse.SC_OK);
-  }
+        // Set response body
+        JsonObject json = new JsonObject();
+        byte[] encodedIdentifier = Base64.encodeBase64(tokenCodec.encode(token));
+        json.addProperty(ExternalAuthenticationServer.ResponseFields.ACCESS_TOKEN,
+                new String(encodedIdentifier, Charsets.UTF_8));
+        json.addProperty(ExternalAuthenticationServer.ResponseFields.TOKEN_TYPE,
+                ExternalAuthenticationServer.ResponseFields.TOKEN_TYPE_BODY);
+        json.addProperty(ExternalAuthenticationServer.ResponseFields.EXPIRES_IN,
+                TimeUnit.SECONDS.convert(tokenValidity, TimeUnit.MILLISECONDS));
+
+        response.getOutputStream().print(json.toString());
+        response.setStatus(HttpServletResponse.SC_OK);
+
+    }
+
+    public static KeycloakDeployment createKeycloakDeployment(String Configfile) {
+
+        try {
+            File xmlFile = new File(Configfile);
+            Reader fileReader = new FileReader(xmlFile);
+            BufferedReader bufReader = new BufferedReader(fileReader);
+            boolean flag = false;
+            StringBuilder sb = new StringBuilder();
+            String line = bufReader.readLine().trim();
+            while (line != null) {
+                if (line.endsWith("</keycloakConfiguration>")) {
+                    flag = false;
+                    break;
+                }
+                if (line.endsWith("<keycloakConfiguration>") || flag == true) {
+                    if (flag)
+                        sb.append(line).append("\n");
+                    flag = true;
+                }
+                line = bufReader.readLine().trim();
+            }
+
+            if (sb.length() != 0) {
+                String xml2String = sb.toString();
+
+                JSONObject obj = XML.toJSONObject(xml2String);
+                String str = obj.toString();
+                InputStream is = new ByteArrayInputStream(str.getBytes());
+
+                KeycloakDeployment deployment = KeycloakDeploymentBuilder.build(is);
+                System.out.println(deployment.getRealm());
+                return deployment;
+            } else {
+                throw new RuntimeException("Keycloak configuration is not defined");
+            }
+
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
+
+    }
 }
