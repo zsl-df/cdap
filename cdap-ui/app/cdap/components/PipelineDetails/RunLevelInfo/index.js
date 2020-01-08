@@ -26,6 +26,7 @@ import RunDuration from 'components/PipelineDetails/RunLevelInfo/RunDuration';
 import RunNumWarnings from 'components/PipelineDetails/RunLevelInfo/RunNumWarnings';
 import RunNumErrors from 'components/PipelineDetails/RunLevelInfo/RunNumErrors';
 import RunComputeProfile from 'components/PipelineDetails/RunLevelInfo/RunComputeProfile';
+import RunSparkJobInfo from 'components/PipelineDetails/RunLevelInfo/RunSparkJobInfo';
 import {GLOBALS} from 'services/global-constants';
 
 require('./RunLevelInfo.scss');
@@ -42,6 +43,7 @@ const mapStateToProps = (state) => {
 const ConnectedRunConfigs = connect(mapStateToProps)(RunConfigs);
 const ConnectedRunNumWarnings = connect(mapStateToProps)(RunNumWarnings);
 const ConnectedRunNumErrors = connect(mapStateToProps)(RunNumErrors);
+const ConnectedRunSparkJobInfo = connect(mapStateToProps)(RunSparkJobInfo);
 
 export default function RunLevelInfo() {
   return (
@@ -57,6 +59,7 @@ export default function RunLevelInfo() {
             <RunDuration />
             <ConnectedRunNumWarnings />
             <ConnectedRunNumErrors />
+            <ConnectedRunSparkJobInfo />
           </div>
           <RunComputeProfile />
         </div>
