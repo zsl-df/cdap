@@ -236,7 +236,7 @@ public class ProgramNotificationSubscriberService extends AbstractNotificationSu
                                                 AppMetadataStore appMetadataStore,
                                                 ProgramHeartbeatDataset programHeartbeatDataset,
                                                 DatasetContext datasetContext) throws Exception {
-    LOG.trace("Processing program status notification: {}", notification);
+    LOG.info("Processing program status notification: {}", notification);
     Map<String, String> properties = notification.getProperties();
     String twillRunId = notification.getProperties().get(ProgramOptionConstants.TWILL_RUN_ID);
     long endTimeSecs = getTimeSeconds(notification.getProperties(), ProgramOptionConstants.END_TIME);
@@ -276,7 +276,8 @@ public class ProgramNotificationSubscriberService extends AbstractNotificationSu
           return Optional.empty();
         }
         recordedRunRecord =
-          appMetadataStore.recordProgramRunning(programRunId, logicalStartTimeSecs, twillRunId, messageIdBytes);
+          appMetadataStore.recordProgramRunning(programRunId, logicalStartTimeSecs, twillRunId, messageIdBytes,
+              properties);
         writeToHeartBeatDataset(recordedRunRecord, logicalStartTimeSecs, datasetContext, programHeartbeatDataset);
         break;
       case SUSPENDED:

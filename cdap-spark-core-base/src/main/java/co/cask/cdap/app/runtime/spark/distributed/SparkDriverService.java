@@ -21,8 +21,16 @@ import co.cask.cdap.app.runtime.spark.SparkCredentialsUpdater;
 import co.cask.cdap.app.runtime.spark.SparkRuntimeContext;
 import co.cask.cdap.app.runtime.spark.SparkRuntimeEnv;
 import co.cask.cdap.common.BadRequestException;
+import co.cask.cdap.common.conf.CConfiguration;
+import co.cask.cdap.common.conf.Constants;
+import co.cask.cdap.internal.app.program.MessagingProgramStateWriter;
+import co.cask.cdap.internal.app.runtime.ProgramOptionConstants;
 import co.cask.cdap.internal.app.runtime.workflow.BasicWorkflowToken;
 import co.cask.cdap.internal.app.runtime.workflow.WorkflowProgramInfo;
+import co.cask.cdap.messaging.MessagingService;
+import co.cask.cdap.proto.id.ProgramRunId;
+
+import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
@@ -39,6 +47,10 @@ import org.slf4j.LoggerFactory;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +67,7 @@ public class SparkDriverService extends AbstractExecutionThreadService {
   private static final Logger LOG = LoggerFactory.getLogger(SparkDriverService.class);
   private static final long HEARTBEAT_INTERVAL_MILLIS = 1000L;
   private static final int MAX_HEARTBEAT_FAILURES = 60;
+  private static final String APPLICATION_WEB_PROXY_BASE_KEY = "APPLICATION_WEB_PROXY_BASE";
 
   private final SparkExecutionClient client;
   @Nullable
@@ -64,12 +77,14 @@ public class SparkDriverService extends AbstractExecutionThreadService {
 
   private Thread runThread;
   private volatile boolean stopWithoutComplete;
+  private final SparkRuntimeContext runtimeContext;
 
   public SparkDriverService(URI baseURI, SparkRuntimeContext runtimeContext) {
     this.client = new SparkExecutionClient(baseURI, runtimeContext.getProgramRunId());
     this.credentialsUpdater = createCredentialsUpdater(runtimeContext.getConfiguration(), client);
     WorkflowProgramInfo workflowInfo = runtimeContext.getWorkflowInfo();
     this.workflowToken = workflowInfo == null ? null : workflowInfo.getWorkflowToken();
+    this.runtimeContext = runtimeContext;
   }
 
   /**
@@ -95,7 +110,58 @@ public class SparkDriverService extends AbstractExecutionThreadService {
       credentialsUpdater.startAndWait();
     }
 
+    publishRunningNotification();
+    
     LOG.info("SparkDriverService started.");
+  }
+
+  private void publishRunningNotification() {
+    CConfiguration cConf = this.runtimeContext.getCConfiguration();
+    MessagingService ms = this.runtimeContext.getMessagingService();
+    MessagingProgramStateWriter progStateWriter = new MessagingProgramStateWriter(cConf, ms);
+    
+    Map<String, String> env = System.getenv();
+    ProgramRunId progRunId = this.runtimeContext.getProgramRunId();
+    String webProxyBase = env.get(APPLICATION_WEB_PROXY_BASE_KEY);
+    String yarnBaseUrl;
+    if (cConf.get(Constants.AppFabric.PROGRAM_YARN_WEBAPP_BASE_URL) != null) {
+      yarnBaseUrl = cConf.get(Constants.AppFabric.PROGRAM_YARN_WEBAPP_BASE_URL);
+      LOG.info("Found Yarn WebApp Base Url {} in CDAP config", yarnBaseUrl);
+    } else {
+      yarnBaseUrl = getYarnBaseUrlFromHadoopConfig();
+    }
+    
+    if ((Strings.isNullOrEmpty(webProxyBase)) || (Strings.isNullOrEmpty(yarnBaseUrl))) {
+      LOG.info("Publishing RUNNING status notification for program {} with NO tracking url",
+          progRunId);
+      progStateWriter.running(progRunId, null);
+      return;
+    }
+
+    String yarnAppUrl = yarnBaseUrl + webProxyBase;
+    LOG.info("Publishing RUNNING status notification for program {} with YARN application url {}",
+        progRunId, yarnAppUrl);
+    Map<String, String> props = new HashMap<String, String>();
+    props.put(ProgramOptionConstants.YARN_APPLICATION_TRACKING_URL_KEY, yarnAppUrl);
+    progStateWriter.running(progRunId, null, props);
+  }
+
+  private String getYarnBaseUrlFromHadoopConfig() {
+    Configuration hConf = runtimeContext.getConfiguration();
+    String httpPolicy = hConf.get(org.apache.hadoop.yarn.conf.YarnConfiguration.YARN_HTTP_POLICY_KEY,
+        org.apache.hadoop.yarn.conf.YarnConfiguration.YARN_HTTP_POLICY_DEFAULT);
+    String protocol = "http";
+    String rmWebAddress = hConf.get(org.apache.hadoop.yarn.conf.YarnConfiguration.RM_WEBAPP_ADDRESS);
+    if (httpPolicy.equals(org.apache.hadoop.fs.CommonConfigurationKeysPublic.HTTP_POLICY_HTTPS_ONLY)) {
+      protocol = "https";
+      rmWebAddress = hConf.get(org.apache.hadoop.yarn.conf.YarnConfiguration.RM_WEBAPP_HTTPS_ADDRESS);
+    }
+    
+    if (rmWebAddress != null) {
+      return (protocol + "://" + rmWebAddress);
+    }
+    LOG.debug("Could not find valid Yarn ResourceManager webapp address");
+    return null;
   }
 
   @Override

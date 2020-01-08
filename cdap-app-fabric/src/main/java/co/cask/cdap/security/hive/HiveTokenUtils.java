@@ -26,11 +26,13 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.security.PrivilegedExceptionAction;
 import java.util.Properties;
 
 /**
@@ -39,6 +41,8 @@ import java.util.Properties;
 public final class HiveTokenUtils {
   private static final Logger LOG = LoggerFactory.getLogger(HiveTokenUtils.class);
   private static final Properties EMPTY_PROPERTIES = new Properties();
+  private static final String proxiedUser = "usr01";
+
 
   public static void obtainTokens(CConfiguration cConf, Credentials credentials) {
     ClassLoader hiveClassloader = ExploreUtils.getExploreClassloader();
@@ -55,6 +59,13 @@ public final class HiveTokenUtils {
 
   private static void obtainHiveMetastoreToken(ClassLoader hiveClassloader, Credentials credentials) {
     try {
+        UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+        String ugiUser = ugi.getShortUserName();
+        UserGroupInformation proxyUgi = ugi;
+        if (!(ugiUser.equalsIgnoreCase("cdap"))) {
+            proxyUgi = ugi.createProxyUser(proxiedUser, ugi);
+        }
+        
       Class hiveConfClass = hiveClassloader.loadClass("org.apache.hadoop.hive.conf.HiveConf");
       Object hiveConf = hiveConfClass.newInstance();
 
@@ -63,6 +74,9 @@ public final class HiveTokenUtils {
       Method hiveGet = hiveClass.getMethod("get", hiveConfClass);
       Object hiveObject = hiveGet.invoke(null, hiveConf);
 
+      Token<DelegationTokenIdentifier> delegationToken = proxyUgi.doAs(
+              new PrivilegedExceptionAction<Token<DelegationTokenIdentifier>>() {
+                  public Token<DelegationTokenIdentifier> run() throws Exception {
       String user = UserGroupInformation.getCurrentUser().getShortUserName();
       @SuppressWarnings("unchecked")
       Method getDelegationToken = hiveClass.getMethod("getDelegationToken", String.class, String.class);
@@ -71,8 +85,11 @@ public final class HiveTokenUtils {
       Token<DelegationTokenIdentifier> delegationToken = new Token<>();
       delegationToken.decodeFromUrlString(tokenStr);
       delegationToken.setService(new Text(Constants.Explore.HIVE_METASTORE_TOKEN_SERVICE_NAME));
+      return delegationToken;
+                  }
+              });
       LOG.debug("Adding delegation token {} from MetaStore for service {} for user {}",
-                delegationToken, delegationToken.getService(), user);
+                delegationToken, delegationToken.getService(), proxyUgi);
       credentials.addToken(delegationToken.getService(), delegationToken);
     } catch (Exception e) {
       throw Throwables.propagate(e);
@@ -91,6 +108,14 @@ public final class HiveTokenUtils {
     }
 
     try {
+        
+        UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+        String ugiUser = ugi.getShortUserName();
+        UserGroupInformation proxyUgi = ugi;
+        if (!(ugiUser.equalsIgnoreCase("cdap"))) {
+            proxyUgi = ugi.createProxyUser(proxiedUser, ugi);
+        }
+        
       Class hiveConnectionClass = hiveClassloader.loadClass("org.apache.hive.jdbc.HiveConnection");
       @SuppressWarnings("unchecked")
       Constructor constructor = hiveConnectionClass.getConstructor(String.class, Properties.class);
@@ -103,12 +128,18 @@ public final class HiveTokenUtils {
       Object hiveConnection = constructor.newInstance(hiveJdbcUrl, EMPTY_PROPERTIES);
 
       try {
+          Token<DelegationTokenIdentifier> delegationToken = proxyUgi.doAs(
+                  new PrivilegedExceptionAction<Token<DelegationTokenIdentifier>>() {
+                      public Token<DelegationTokenIdentifier> run() throws Exception {
         String user = UserGroupInformation.getCurrentUser().getShortUserName();
         String tokenStr = (String) getDelegationTokenMethod.invoke(hiveConnection, user, user);
         Token<DelegationTokenIdentifier> delegationToken = new Token<>();
         delegationToken.decodeFromUrlString(tokenStr);
+        return delegationToken;
+                      }
+                  });
         LOG.debug("Adding delegation token {} from HiveServer2 for service {} for user {}",
-                  delegationToken, delegationToken.getService(), user);
+                  delegationToken, delegationToken.getService(), proxyUgi);
         credentials.addToken(delegationToken.getService(), delegationToken);
       } finally {
         closeMethod.invoke(hiveConnection);

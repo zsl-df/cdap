@@ -17,33 +17,73 @@
 package co.cask.cdap.data.security;
 
 import com.google.common.base.Throwables;
+
+import co.cask.cdap.common.security.YarnTokenUtils;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.security.Credentials;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
+import org.eclipse.jetty.util.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
+import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
 
 /**
  * Helper class for getting HBase security delegation token.
  */
 public final class HBaseTokenUtils {
 
+    private static final Logger LOG = LoggerFactory.getLogger(HBaseTokenUtils.class);
+
   /**
    * Gets a HBase delegation token and stores it in the given Credentials.
    *
    * @return the same Credentials instance as the one given in parameter.
    */
+    private static final String proxiedUser = "usr01";
+    
   public static Credentials obtainToken(Configuration hConf, Credentials credentials) {
     if (!User.isHBaseSecurityEnabled(hConf)) {
       return credentials;
     }
-
+    
     try {
+
+        UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+        
+        LOG.info("Rajat ... ugi {} , realUser {}, userShortName {} , userName {} , loginUser {}", 
+                ugi, ugi.getRealUser(), ugi.getShortUserName(), ugi.getUserName() , ugi.getLoginUser());
+        
+        //String ugiUser = ugi.getShortUserName();
+        UserGroupInformation proxyUgi = ugi;
+        /*
+        if (!(ugiUser.equalsIgnoreCase("cdap"))) {
+            proxyUgi = ugi.createProxyUser(proxiedUser, ugi);
+            
+            LOG.info("Rajat ... After proxying ... ugi {} , realUser {}, userShortName {} , userName {} , loginUser {}", 
+                    proxyUgi, proxyUgi.getRealUser(), proxyUgi.getShortUserName(), proxyUgi.getUserName() , proxyUgi.getLoginUser());
+
+        }*/
+        
+
       Class c = Class.forName("org.apache.hadoop.hbase.security.token.TokenUtil");
       Method method = c.getMethod("obtainToken", Configuration.class);
 
+      /*
+      Token<? extends TokenIdentifier> token; 
+      token = proxyUgi.doAs(new PrivilegedExceptionAction<Token<? extends TokenIdentifier>>() {
+          public Token<? extends TokenIdentifier> run() throws Exception {
+              Token<? extends TokenIdentifier> token = castToken(method.invoke(null, hConf));
+              return token;
+          }
+      });
+      */
       Token<? extends TokenIdentifier> token = castToken(method.invoke(null, hConf));
       credentials.addToken(token.getService(), token);
 

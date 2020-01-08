@@ -39,6 +39,8 @@ import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
@@ -67,6 +69,8 @@ public final class MessagingProgramStateWriter implements ProgramStateWriter {
   @Override
   public void start(ProgramRunId programRunId, ProgramOptions programOptions, @Nullable String twillRunId,
                     ProgramDescriptor programDescriptor) {
+    LOG.info("Inside messaging programstate writer start API for program {}", programRunId);
+    
     ImmutableMap.Builder<String, String> properties = ImmutableMap.<String, String>builder()
       .put(ProgramOptionConstants.PROGRAM_RUN_ID, GSON.toJson(programRunId))
       .put(ProgramOptionConstants.PROGRAM_STATUS, ProgramRunStatus.STARTING.name())
@@ -82,6 +86,14 @@ public final class MessagingProgramStateWriter implements ProgramStateWriter {
 
   @Override
   public void running(ProgramRunId programRunId, @Nullable String twillRunId) {
+    running(programRunId, twillRunId, null);
+  }
+
+  @Override
+  public void running(ProgramRunId programRunId, @Nullable String twillRunId, 
+      @Nullable Map<String, String> customProperties) {
+    LOG.info("Inside messaging programstate writer running API for program {}", programRunId); 
+    
     ImmutableMap.Builder<String, String> properties = ImmutableMap.<String, String>builder()
       .put(ProgramOptionConstants.PROGRAM_RUN_ID, GSON.toJson(programRunId))
       .put(ProgramOptionConstants.LOGICAL_START_TIME, String.valueOf(System.currentTimeMillis()))
@@ -89,21 +101,30 @@ public final class MessagingProgramStateWriter implements ProgramStateWriter {
     if (twillRunId != null) {
       properties.put(ProgramOptionConstants.TWILL_RUN_ID, twillRunId);
     }
+    if (customProperties != null) {
+      properties.putAll(customProperties);
+    }
     programStatePublisher.publish(Notification.Type.PROGRAM_STATUS, properties.build());
   }
 
   @Override
   public void completed(ProgramRunId programRunId) {
+    LOG.info("Inside messaging programstate writer stop API for program {}", programRunId); 
+
     stop(programRunId, ProgramRunStatus.COMPLETED, null);
   }
 
   @Override
   public void killed(ProgramRunId programRunId) {
+    LOG.info("Inside messaging programstate writer killed API for program {}", programRunId); 
+
     stop(programRunId, ProgramRunStatus.KILLED, null);
   }
 
   @Override
   public void error(ProgramRunId programRunId, Throwable failureCause) {
+    LOG.info("Inside messaging programstate writer error API for program {}", programRunId); 
+
     stop(programRunId, ProgramRunStatus.FAILED, failureCause);
   }
 

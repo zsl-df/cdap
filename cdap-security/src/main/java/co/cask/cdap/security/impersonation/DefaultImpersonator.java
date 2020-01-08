@@ -68,7 +68,7 @@ public class DefaultImpersonator implements Impersonator {
                     ImpersonatedOpType impersonatedOpType) throws Exception {
     UserGroupInformation ugi = getUGI(entityId, impersonatedOpType);
     if (!UserGroupInformation.getCurrentUser().equals(ugi)) {
-      LOG.debug("Performing doAs with UGI {} for entity {} and impersonation operation type {}", ugi, entityId,
+      LOG.info("Performing doAs with UGI {} for entity {} and impersonation operation type {}", ugi, entityId,
                 impersonatedOpType);
     }
     return ImpersonationUtils.doAs(ugi, callable);
@@ -84,6 +84,9 @@ public class DefaultImpersonator implements Impersonator {
     UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
     // don't impersonate if kerberos isn't enabled OR if the operation is in the system namespace
     if (!kerberosEnabled || NamespaceId.SYSTEM.equals(entityId.getNamespaceId())) {
+        LOG.info("Not impersonating for entity {}",
+                entityId);
+      
       return currentUser;
     }
 
@@ -92,7 +95,7 @@ public class DefaultImpersonator implements Impersonator {
     // and hence we should not allow another impersonation. See CDAP-8641 and CDAP-13123
     // Note that this is just a temporary fix and we will need to revisit the impersonation model in the future.
     if (!currentUser.getShortUserName().equals(masterShortUsername)) {
-      LOG.debug("Not impersonating for {} as the call is already impersonated as {}",
+      LOG.info("Not impersonating for {} as the call is already impersonated as {}",
                 impersonationRequest, currentUser);
       IMPERSONATION_FAILTURE_LOG.warn("Not impersonating for {} as the call is already impersonated as {}",
                                       impersonationRequest, currentUser);

@@ -100,7 +100,7 @@ public class TokenSecureStoreRenewer extends SecureStoreRenewer {
       // this shouldn't happen
       LOG.debug("Cannot determine current user", e);
     }
-    LOG.debug("Updating credentials for application {}, run {}, tokens {}, with current user {}",
+    LOG.info("Updating credentials for application {}, run {}, tokens {}, with current user {}",
               application, runId, credentials.getAllTokens(), currentUser);
     secureStoreWriter.write(YarnSecureStore.create(credentials));
   }
@@ -125,7 +125,8 @@ public class TokenSecureStoreRenewer extends SecureStoreRenewer {
         JobHistoryServerTokenUtils.obtainToken(yarnConf, refreshedCredentials);
       }*/
       if (User.isSecurityEnabled()) {
-        HiveTokenUtils.obtainTokens(cConf, refreshedCredentials);/**
+        //HiveTokenUtils.obtainTokens(cConf, refreshedCredentials);
+        /**
          * Removed dependency of getting the token from Job history server on CDAP start as,
          * In HDP 3.1 Hive do not have ATSHook enabled.
          * It was required for HDP 2.6 where, 
@@ -139,6 +140,8 @@ public class TokenSecureStoreRenewer extends SecureStoreRenewer {
       if (secureStore instanceof DelegationTokensUpdater) {
         String renewer = UserGroupInformation.getCurrentUser().getShortUserName();
         ((DelegationTokensUpdater) secureStore).addDelegationTokens(renewer, refreshedCredentials);
+        LOG.info("In createCredentials delegation token updater if block ..  tokens {}, with renewer {}",
+                refreshedCredentials.getAllTokens(), renewer);
       }
 
       YarnUtils.addDelegationTokens(yarnConf, locationFactory, refreshedCredentials);

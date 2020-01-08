@@ -35,7 +35,9 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -50,6 +52,9 @@ public final class YarnTokenUtils {
    *
    * @return the same Credentials instance as the one given in parameter.
    */
+  
+  private static final String proxiedUser = "usr01";
+
   public static Credentials obtainToken(YarnConfiguration configuration, Credentials credentials) {
     if (!UserGroupInformation.isSecurityEnabled()) {
       return credentials;
@@ -59,6 +64,23 @@ public final class YarnTokenUtils {
       YarnClient yarnClient = YarnClient.createYarnClient();
       yarnClient.init(configuration);
       yarnClient.start();
+      
+      UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+      
+      LOG.info("Rajat ... ugi {} , realUser {}, userShortName {} , userName {} , loginUser {}", 
+              ugi, ugi.getRealUser(), ugi.getShortUserName(), ugi.getUserName() , ugi.getLoginUser());
+      
+
+      //String ugiUser = ugi.getShortUserName();
+      UserGroupInformation proxyUgi = ugi;
+      /*
+      if (!(ugiUser.equalsIgnoreCase("cdap"))) {
+          proxyUgi = ugi.createProxyUser(proxiedUser, ugi);
+          LOG.info("Rajat ... After proxying ... ugi {} , realUser {}, userShortName {} , userName {} , loginUser {}", 
+                  proxyUgi, proxyUgi.getRealUser(), proxyUgi.getShortUserName(), proxyUgi.getUserName() , proxyUgi.getLoginUser());
+
+      }*/
+
 
       try {
         if (configuration.getBoolean(Constants.Explore.TIMELINE_SERVICE_ENABLED, false)) {
@@ -67,13 +89,33 @@ public final class YarnTokenUtils {
           Method method = yarnClient.getClass().getDeclaredMethod("getTimelineDelegationToken");
           method.setAccessible(true);
           Token<? extends TokenIdentifier> atsToken = (Token<? extends TokenIdentifier>) method.invoke(yarnClient);
+          
+          /*
+          Token<? extends TokenIdentifier> atsToken; 
+          atsToken = proxyUgi.doAs(new PrivilegedExceptionAction<Token<? extends TokenIdentifier>>() {
+              public Token<? extends TokenIdentifier> run() throws Exception {
+                  Token<? extends TokenIdentifier> token = (Token<? extends TokenIdentifier>) method.invoke(yarnClient);;
+                  return token;
+              }
+          });*/
+          
+          
           if (atsToken != null) {
             credentials.addToken(atsToken.getService(), atsToken);
             LOG.debug("Added Yarn Timeline Server delegation token: {}", atsToken);
           }
         }
 
-
+        /*
+        org.apache.hadoop.yarn.api.records.Token rmDelegationToken = proxyUgi.doAs(
+                new PrivilegedExceptionAction<org.apache.hadoop.yarn.api.records.Token>() {
+                    public org.apache.hadoop.yarn.api.records.Token run() throws Exception {
+                        Text renewer = new Text(UserGroupInformation.getCurrentUser().getShortUserName());
+                        org.apache.hadoop.yarn.api.records.Token rmDelegationToken = yarnClient.getRMDelegationToken(renewer);
+                        return rmDelegationToken;
+                    }
+                });*/
+        
         Text renewer = new Text(UserGroupInformation.getCurrentUser().getShortUserName());
         org.apache.hadoop.yarn.api.records.Token rmDelegationToken = yarnClient.getRMDelegationToken(renewer);
 

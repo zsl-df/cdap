@@ -16,6 +16,7 @@
 
 package co.cask.cdap.internal.app.program;
 
+import co.cask.cdap.proto.ProgramType;
 import co.cask.cdap.app.runtime.ProgramController;
 import co.cask.cdap.app.runtime.ProgramStateWriter;
 import co.cask.cdap.internal.app.runtime.AbstractListener;
@@ -70,7 +71,15 @@ public class StateChangeListener extends AbstractListener {
   @Override
   public void alive() {
     LOG.trace("Program {} is alive.", programRunId);
-    programStateWriter.running(programRunId, twillRunId);
+    /*
+     * For Spark program, skip sending RUNNING status notification
+     * as this notification will be sent by Spark Driver itself.
+     * Check RAFD-3500
+     */
+    if (!(programRunId.getType().getPrettyName().equalsIgnoreCase(
+        ProgramType.SPARK.getPrettyName()))) {
+      programStateWriter.running(programRunId, twillRunId);
+    }
   }
 
   @Override
