@@ -143,4 +143,9 @@ public final class ProgramOptionConstants {
    */
   public static final String LOGGED_IN_USER = "loggedInUser";
   
+  /*
+   * Yarn Application Id Key String in TMS Notification Properties Map
+   */
+  public static final String YARN_APPLICATION_TRACKING_URL_KEY = "yarnApplicationTrackingUrl";
+  
 }
