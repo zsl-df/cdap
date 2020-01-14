@@ -44,7 +44,7 @@ import static java.lang.Thread.currentThread;
  * A POJO class for storing source information being set from {@link SparkBatchSourceContext} and used in
  * {@link BatchSparkPipelineDriver}.
  */
-final class SparkBatchSourceFactory {
+public final class SparkBatchSourceFactory {
 
   private final Map<String, Input.StreamInput> streams;
   private final Map<String, InputFormatProvider> inputFormatProviders;
@@ -173,7 +173,7 @@ final class SparkBatchSourceFactory {
 
     if (datasetInfos.containsKey(inputName)) {
       DatasetInfo datasetInfo = datasetInfos.get(inputName);
-      return sec.fromDataset(datasetInfo.getDatasetName(), datasetInfo.getDatasetArgs());
+      return sec.rddFromDataset(datasetInfo.getDatasetName(), datasetInfo.getDatasetArgs());
     }
     // This should never happen since the constructor is private and it only get calls from static create() methods
     // which make sure one and only one of those source type will be specified.

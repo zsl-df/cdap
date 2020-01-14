@@ -84,7 +84,8 @@ import co.cask.cdap.etl.proto.v2.ArgumentMapping;
 import co.cask.cdap.etl.proto.v2.ETLBatchConfig;
 import co.cask.cdap.etl.proto.v2.PluginPropertyMapping;
 import co.cask.cdap.etl.proto.v2.TriggeringPropertyMapping;
-import co.cask.cdap.etl.spark.batch.ETLSpark;
+//import co.cask.cdap.etl.spark.batch.ETLSpark;
+import co.cask.cdap.etl.spark.dataframe.ETLSparkDF;
 import co.cask.cdap.etl.spec.StageSpec;
 import co.cask.cdap.internal.io.SchemaTypeAdapter;
 import com.google.common.collect.ImmutableSet;
@@ -790,13 +791,14 @@ public class SmartWorkflow extends AbstractWorkflow {
       applicationConfigurer.addSpark(new ExternalSparkProgram(batchPhaseSpec, stageSpec));
       programAdder.addSpark(programName);
     } else if (useSpark) {
-      applicationConfigurer.addSpark(new ETLSpark(batchPhaseSpec));
+      applicationConfigurer.addSpark(new ETLSparkDF(batchPhaseSpec));
       programAdder.addSpark(programName);
-    } else {
-      applicationConfigurer.addMapReduce(new ETLMapReduce(batchPhaseSpec,
-                                                          new HashSet<>(connectorDatasets.values())));
-      programAdder.addMapReduce(programName);
     }
+//    else {
+//      applicationConfigurer.addMapReduce(new ETLMapReduce(batchPhaseSpec,
+//                                                          new HashSet<>(connectorDatasets.values())));
+//      programAdder.addMapReduce(programName);
+//    }
     return programAdder;
   }
 

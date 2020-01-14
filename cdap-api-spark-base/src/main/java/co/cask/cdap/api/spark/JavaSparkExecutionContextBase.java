@@ -130,8 +130,8 @@ public abstract class JavaSparkExecutionContextBase implements SchedulableProgra
    * @return A new {@link JavaPairRDD} instance that reads from the given dataset
    * @throws DatasetInstantiationException if the dataset doesn't exist
    */
-  public <K, V> JavaPairRDD<K, V> fromDataset(String datasetName) {
-    return fromDataset(datasetName, Collections.<String, String>emptyMap());
+  public <K, V> JavaPairRDD<K, V> rddFromDataset(String datasetName) {
+    return rddFromDataset(datasetName, Collections.<String, String>emptyMap());
   }
 
   /**
@@ -144,8 +144,8 @@ public abstract class JavaSparkExecutionContextBase implements SchedulableProgra
    * @return A new {@link JavaPairRDD} instance that reads from the given dataset
    * @throws DatasetInstantiationException if the dataset doesn't exist
    */
-  public <K, V> JavaPairRDD<K, V> fromDataset(String namespace, String datasetName) {
-    return fromDataset(namespace, datasetName, Collections.<String, String>emptyMap());
+  public <K, V> JavaPairRDD<K, V> rddFromDataset(String namespace, String datasetName) {
+    return rddFromDataset(namespace, datasetName, Collections.<String, String>emptyMap());
   }
 
   /**
@@ -158,8 +158,8 @@ public abstract class JavaSparkExecutionContextBase implements SchedulableProgra
    * @return A new {@link JavaPairRDD} instance that reads from the given dataset
    * @throws DatasetInstantiationException if the dataset doesn't exist
    */
-  public <K, V> JavaPairRDD<K, V> fromDataset(String datasetName, Map<String, String> arguments) {
-    return fromDataset(datasetName, arguments, null);
+  public <K, V> JavaPairRDD<K, V> rddFromDataset(String datasetName, Map<String, String> arguments) {
+    return rddFromDataset(datasetName, arguments, null);
   }
 
   /**
@@ -173,8 +173,8 @@ public abstract class JavaSparkExecutionContextBase implements SchedulableProgra
    * @return A new {@link JavaPairRDD} instance that reads from the given dataset
    * @throws DatasetInstantiationException if the dataset doesn't exist
    */
-  public <K, V> JavaPairRDD<K, V> fromDataset(String namespace, String datasetName, Map<String, String> arguments) {
-    return fromDataset(namespace, datasetName, arguments, null);
+  public <K, V> JavaPairRDD<K, V> rddFromDataset(String namespace, String datasetName, Map<String, String> arguments) {
+    return rddFromDataset(namespace, datasetName, arguments, null);
   }
 
   /**
@@ -189,7 +189,7 @@ public abstract class JavaSparkExecutionContextBase implements SchedulableProgra
    * @return A new {@link JavaPairRDD} instance that reads from the given dataset
    * @throws DatasetInstantiationException if the dataset doesn't exist
    */
-  public abstract <K, V> JavaPairRDD<K, V> fromDataset(String datasetName,
+  public abstract <K, V> JavaPairRDD<K, V> rddFromDataset(String datasetName,
                                                        Map<String, String> arguments,
                                                        @Nullable Iterable<? extends Split> splits);
 
@@ -206,7 +206,7 @@ public abstract class JavaSparkExecutionContextBase implements SchedulableProgra
    * @return A new {@link JavaPairRDD} instance that reads from the given dataset
    * @throws DatasetInstantiationException if the dataset doesn't exist
    */
-  public abstract <K, V> JavaPairRDD<K, V> fromDataset(String namespace, String datasetName,
+  public abstract <K, V> JavaPairRDD<K, V> rddFromDataset(String namespace, String datasetName,
                                                        Map<String, String> arguments,
                                                        @Nullable Iterable<? extends Split> splits);
 
