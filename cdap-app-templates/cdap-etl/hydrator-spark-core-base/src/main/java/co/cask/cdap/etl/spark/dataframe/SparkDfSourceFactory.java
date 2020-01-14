@@ -214,7 +214,7 @@ public final class SparkDfSourceFactory {
       LOG.info("sbbbbb remove-me createDf datasetInfo name :: " + datasetInfo.getDatasetName());
       LOG.info("sbbbbb remove-me createDf datasetInfo args :: " + datasetInfo.getDatasetArgs());
 
-      JavaPairRDD<Object, Object> pairRDD = sec.fromDataset(datasetInfo.getDatasetName(), datasetInfo.getDatasetArgs());
+      JavaPairRDD<Object, Object> pairRDD = sec.rddFromDataset(datasetInfo.getDatasetName(), datasetInfo.getDatasetArgs());
       LOG.info("sbbbbb remove-me createDf pairRDD :: " + pairRDD);
       if(pairRDD!=null){
         LOG.info("sbbbbb remove-me createDf pairRDD  size:: " + pairRDD.count());

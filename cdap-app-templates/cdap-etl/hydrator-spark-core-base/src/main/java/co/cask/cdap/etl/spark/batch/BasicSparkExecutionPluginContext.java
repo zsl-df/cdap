@@ -73,18 +73,18 @@ public class BasicSparkExecutionPluginContext extends AbstractTransformContext i
 
   @Override
   public <K, V> JavaPairRDD<K, V> fromDataset(String datasetName) {
-    return sec.fromDataset(datasetName);
+    return sec.rddFromDataset(datasetName);
   }
 
   @Override
   public <K, V> JavaPairRDD<K, V> fromDataset(String datasetName, Map<String, String> arguments) {
-    return sec.fromDataset(datasetName, arguments);
+    return sec.rddFromDataset(datasetName, arguments);
   }
 
   @Override
   public <K, V> JavaPairRDD<K, V> fromDataset(String datasetName, Map<String, String> arguments,
                                               @Nullable Iterable<? extends Split> splits) {
-    return sec.fromDataset(datasetName, arguments, splits);
+    return sec.rddFromDataset(datasetName, arguments, splits);
   }
 
   @Override

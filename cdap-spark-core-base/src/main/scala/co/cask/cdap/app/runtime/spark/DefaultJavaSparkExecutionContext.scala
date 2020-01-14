@@ -40,6 +40,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.LongWritable
 import org.apache.spark.api.java.{JavaPairRDD, JavaRDD}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.DataFrame
 import org.apache.twill.api.RunId
 
 import scala.collection.JavaConversions._
@@ -94,28 +95,30 @@ class DefaultJavaSparkExecutionContext(sec: SparkExecutionContext) extends JavaS
 
   override def getSparkExecutionContext: SparkExecutionContext = sec
 
-  override def fromDataset[K, V](datasetName: String, arguments: util.Map[String, String],
-                                 splits: java.lang.Iterable[_ <: Split]): JavaPairRDD[K, V] = {
+  override def fromDataset(datasetName: String, arguments: util.Map[String, String],
+                                 splits: java.lang.Iterable[_ <: Split]): DataFrame = {
     // Create the implicit fake ClassTags to satisfy scala type system at compilation time.
-    implicit val kTag: ClassTag[K] = createClassTag
-    implicit val vTag: ClassTag[V] = createClassTag
+//    implicit val kTag: ClassTag[K] = createClassTag
+//    implicit val vTag: ClassTag[V] = createClassTag
     //TODO temp commenting
     // uncommented
-    JavaPairRDD.fromRDD(
-      sec.fromDataset(SparkRuntimeEnv.getContext, datasetName, arguments.toMap, Option(splits).map(_.toIterable)))
+    //JavaPairRDD.fromRDD(
+      sec.fromDataset(SparkRuntimeEnv.getContext, datasetName, arguments.toMap, Option(splits).map(_.toIterable))
+    //)
     return null;
   }
 
-  override def fromDataset[K, V](namespace: String, datasetName: String, arguments: util.Map[String, String],
-                                 splits: java.lang.Iterable[_ <: Split]): JavaPairRDD[K, V] = {
+  override def fromDataset(namespace: String, datasetName: String, arguments: util.Map[String, String],
+                                 splits: java.lang.Iterable[_ <: Split]): DataFrame = {
     // Create the implicit fake ClassTags to satisfy scala type system at compilation time.
-    implicit val kTag: ClassTag[K] = createClassTag
-    implicit val vTag: ClassTag[V] = createClassTag
+//    implicit val kTag: ClassTag[K] = createClassTag
+//    implicit val vTag: ClassTag[V] = createClassTag
     //TODO temp commenting
     // uncommented
-    JavaPairRDD.fromRDD(
+    //JavaPairRDD.fromRDD(
       sec.fromDataset(SparkRuntimeEnv.getContext, namespace, datasetName, arguments.toMap,
-        Option(splits).map(_.toIterable)))
+        Option(splits).map(_.toIterable))
+    //)
     return null;
   }
 
