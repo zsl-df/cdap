@@ -328,7 +328,7 @@ public abstract class PipelineSpecGenerator<C extends ETLConfig,
                       etlPlugin.getType(), etlPlugin.getName(), pluginId));
     }
     try {
-      if (type.equals(BatchJoiner.PLUGIN_TYPE) || type.equals(SparkJoiner.PLUGIN_TYPE)) {
+      if (type.equals(BatchJoiner.PLUGIN_TYPE) || type.equals(SparkJoiner.PLUGIN_TYPE) || type.equals(SparkDataframeJoiner.PLUGIN_TYPE)) {
         MultiInputPipelineConfigurable multiPlugin = (MultiInputPipelineConfigurable) plugin;
         multiPlugin.configurePipeline(pipelineConfigurer);
       } else if (type.equals(SplitterTransform.PLUGIN_TYPE)) {
