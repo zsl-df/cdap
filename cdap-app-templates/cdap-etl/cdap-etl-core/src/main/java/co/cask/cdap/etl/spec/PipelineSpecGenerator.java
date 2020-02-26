@@ -33,6 +33,7 @@ import co.cask.cdap.etl.api.batch.BatchJoiner;
 import co.cask.cdap.etl.api.batch.BatchSource;
 import co.cask.cdap.etl.api.batch.SparkJoiner;
 import co.cask.cdap.etl.api.condition.Condition;
+import co.cask.cdap.etl.api.dataframe.SparkDataframeJoiner;
 import co.cask.cdap.etl.common.ArtifactSelectorProvider;
 import co.cask.cdap.etl.common.Constants;
 import co.cask.cdap.etl.common.DefaultPipelineConfigurer;
@@ -183,6 +184,7 @@ public abstract class PipelineSpecGenerator<C extends ETLConfig,
         // Do not allow more than one input schema for stages other than Joiner and Action
         if (!BatchJoiner.PLUGIN_TYPE.equals(nextStageType)
           && !SparkJoiner.PLUGIN_TYPE.equals(nextStageType)
+          && !SparkDataframeJoiner.PLUGIN_TYPE.equals(nextStageType)
           && !Action.PLUGIN_TYPE.equals(nextStageType)
           && !Condition.PLUGIN_TYPE.equals(nextStageType)
           && !hasSameSchema(outputStageConfigurer.getInputSchemas(), nextStageInputSchema)) {
