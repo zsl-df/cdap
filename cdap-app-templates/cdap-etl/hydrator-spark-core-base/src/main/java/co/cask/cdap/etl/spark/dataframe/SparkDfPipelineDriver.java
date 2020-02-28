@@ -52,6 +52,7 @@ import co.cask.cdap.internal.io.SchemaTypeAdapter;
 import com.google.common.collect.SetMultimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 //import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
@@ -164,6 +165,11 @@ public class SparkDfPipelineDriver extends SparkPipelineRunner implements JavaSp
           StageSpec stageSpec,
           Map<String, SparkCollection<Object>> inputs,
           StageStatisticsCollector collector) throws Exception {
+
+    SparkConf sparkConf = sparkSession.sparkContext().getConf();
+    boolean metricsEnabled = sparkConf.getBoolean(Constants.SPARK_PIPELINE_METRICS_ENABLE_FLAG, true);
+    boolean cachingEnabled = sparkConf.getBoolean(Constants.SPARK_PIPELINE_AUTOCACHE_ENABLE_FLAG, true);
+
     PluginFunctionContext pluginFunctionContext = new PluginFunctionContext(stageSpec, sec, collector);
 
     SparkDataframeJoiner<Object> sparkDataframeJoiner = pluginFunctionContext.createPlugin();
@@ -177,15 +183,27 @@ public class SparkDfPipelineDriver extends SparkPipelineRunner implements JavaSp
     Map<String, Dataset> data = new HashMap<>();
     for (Map.Entry<String, SparkCollection<Object>> entry : inputs.entrySet()) {
       Dataset inputDataset = ((CDataset)entry.getValue().getUnderlying()).getDataset(pluginContext, sparkSession);
-      Encoder encoder = RowEncoder.apply(inputDataset.schema());
-      MapFunction mapFunction = new CountingFunction<>(stageSpec.getName(), sec.getMetrics(), "records.in", null);
-      data.put(entry.getKey(), inputDataset.map(mapFunction, encoder).cache());
+
+      if (metricsEnabled) {
+        Encoder inputEncoder = RowEncoder.apply(inputDataset.schema());
+        MapFunction inputMapFunction = new CountingFunction<>(stageSpec.getName(), sec.getMetrics(), "records.in", null);
+        inputDataset = inputDataset.map(inputMapFunction, inputEncoder);
+      }
+      if (cachingEnabled) {
+        inputDataset = inputDataset.cache();
+      }
+      data.put(entry.getKey(), inputDataset);
     }
+
     Dataset outputDataset = sparkDataframeJoiner.join(pluginContext, data);
-    Encoder outputEncoder = RowEncoder.apply(outputDataset.schema());
-    MapFunction outputMapFunction = new CountingFunction<>(stageSpec.getName(), sec.getMetrics(), "records.out", sec.getDataTracer(stageSpec.getName()));
-    Dataset countedOutput = outputDataset.map(outputMapFunction, outputEncoder);
-    return new DataframeCollection(sparkSession, sec, datasetContext, sinkFactory, new CDataset(countedOutput));
+
+    if (metricsEnabled) {
+      Encoder outputEncoder = RowEncoder.apply(outputDataset.schema());
+      MapFunction outputMapFunction = new CountingFunction<>(stageSpec.getName(), sec.getMetrics(), "records.out", sec.getDataTracer(stageSpec.getName()));
+      outputDataset = outputDataset.map(outputMapFunction, outputEncoder);
+    }
+
+    return new DataframeCollection(sparkSession, sec, datasetContext, sinkFactory, new CDataset(outputDataset));
   }
 
   @Override

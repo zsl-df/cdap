@@ -235,7 +235,7 @@ public class DataframeCollection<T> implements SparkCollection<T> {
     }
 
     if (cachingEnabled) {
-      inputDataset.cache();
+      inputDataset = inputDataset.cache();
     }
 
 //    return wrap(compute.transform(sparkPluginContext, countedInput)
