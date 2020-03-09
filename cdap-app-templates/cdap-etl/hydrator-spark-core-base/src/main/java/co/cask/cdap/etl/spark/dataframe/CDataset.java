@@ -23,6 +23,7 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
+import java.util.Map;
 
 public class CDataset {
     private static final Logger LOG = LoggerFactory.getLogger(CDataset.class);
@@ -135,7 +136,15 @@ public class CDataset {
             return dataset;
         } else if(type == CDatasetType.RDD){
 
-//            LOG.info("converting RDD to Dataset");
+            LOG.info("converting RDD to Dataset");
+
+            for (Map.Entry<String,Schema> entry : context.getInputSchemas().entrySet()) {
+                LOG.info("key1 ::" + entry.getKey());
+                LOG.info("val1 ::" + entry.getValue().toString());
+            }
+
+
+
 //            for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
 //                LOG.info(ste.toString());
 //            }
