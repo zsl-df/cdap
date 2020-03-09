@@ -182,7 +182,7 @@ public class SparkDfPipelineDriver extends SparkPipelineRunner implements JavaSp
 
     Map<String, Dataset> data = new HashMap<>();
     for (Map.Entry<String, SparkCollection<Object>> entry : inputs.entrySet()) {
-      Dataset inputDataset = ((CDataset)entry.getValue().getUnderlying()).getDataset(pluginContext, sparkSession);
+      Dataset inputDataset = ((CDataset)entry.getValue().getUnderlying()).getDataset(pluginContext, sparkSession, entry.getKey());
 
       if (metricsEnabled) {
         Encoder inputEncoder = RowEncoder.apply(inputDataset.schema());

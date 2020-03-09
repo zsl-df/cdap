@@ -132,23 +132,27 @@ public class CDataset {
     }
 
     public Dataset<Row> getDataset(SparkExecutionPluginContext context, SparkSession sparkSession){
+        return getDataset(context, sparkSession, null);
+    }
+
+    public Dataset<Row> getDataset(SparkExecutionPluginContext context, SparkSession sparkSession, String stage){
         if(type == CDatasetType.Dataset){
             return dataset;
         } else if(type == CDatasetType.RDD){
 
             LOG.info("converting RDD to Dataset");
 
-            for (Map.Entry<String,Schema> entry : context.getInputSchemas().entrySet()) {
-                LOG.info("key1 ::" + entry.getKey());
-                LOG.info("val1 ::" + entry.getValue().toString());
+            Schema inputSchema = null;
+            if(context.getInputSchemas().size() == 1){
+                inputSchema = context.getInputSchema();
+            } else if(stage!=null){
+                inputSchema = context.getInputSchemas().get(stage);
             }
 
-
-
-//            for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-//                LOG.info(ste.toString());
-//            }
-            Schema inputSchema = context.getInputSchema();
+            if (inputSchema==null) {
+                throw new IllegalArgumentException("input schema not found, RDD to Dataset conversion failed");
+            }
+            
             final StructType st = DataFrames.toDataType(inputSchema);
             return rddToDataset(st, sparkSession);
 
