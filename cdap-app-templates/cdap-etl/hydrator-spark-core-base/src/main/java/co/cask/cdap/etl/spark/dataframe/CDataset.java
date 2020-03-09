@@ -42,7 +42,7 @@ public class CDataset {
         if (JavaRDD.class.isInstance(o)) {
             rdd = (JavaRDD) o;
             type = CDatasetType.RDD;
-            operator = DatasetOperator.getInstance();
+            operator = RDDOperator.getInstance();
         } else if (JavaPairRDD.class.isInstance(o)) {
             pairRDD = (JavaPairRDD) o;
             type = CDatasetType.PairRDD;
@@ -143,16 +143,15 @@ public class CDataset {
             LOG.info("converting RDD to Dataset");
 
             Schema inputSchema = null;
-            if(context.getInputSchemas().size() == 1){
-                inputSchema = context.getInputSchema();
-            } else if(stage!=null){
+
+            if(stage!=null){
+                // for joiner case
                 inputSchema = context.getInputSchemas().get(stage);
+            } else {
+                // assuming schema will be same for all inputs in all other cases.
+                inputSchema = context.getInputSchema();
             }
 
-            if (inputSchema==null) {
-                throw new IllegalArgumentException("input schema not found, RDD to Dataset conversion failed");
-            }
-            
             final StructType st = DataFrames.toDataType(inputSchema);
             return rddToDataset(st, sparkSession);
 
